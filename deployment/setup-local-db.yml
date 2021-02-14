@@ -1,0 +1,24 @@
+- name: setup local postgres db
+  hosts: local
+  user: "{{ deployer_user }}"
+  tasks:
+    - name: Create database
+      postgresql_db:
+        name: "{{ app_name }}"
+      become_user: postgres
+      become: yes
+
+    - name: Configure a new postgresql user
+      postgresql_user:
+        db: "{{ db_name }}"
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: ALL
+        role_attr_flags: NOSUPERUSER
+      become: yes
+      become_user: postgres
+#  environment:
+#    DB_NAME: "{{ app_name }}"
+#    DB_USER: "{{ app_name }}"
+#    DB_PASSWORD: "{{ app_name }}"
+#    DB_HOST: "{{ localhost }}"

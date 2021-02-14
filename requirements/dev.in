@@ -1,0 +1,10 @@
+-r base.txt
+pytest
+pytest-django
+pytest-sugar
+pytest-xdist
+flake8
+black
+isort
+mypy
+ansible

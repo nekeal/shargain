@@ -1,0 +1,26 @@
+app_name: {{ project_name }}
+
+deployer_user: deployer
+deployer_group: deployer
+
+code_repository_url: "https://{{ github_user }}:{{ github_token }}@github.com/..."
+repo_name: "{{ app_name }}"
+branch_name: 'master'
+ssh_dir: ~/.ssh/id_rsa.pub
+
+# virtualenv
+venv_dir: '/home/{{ deployer_user }}/.virtualenvs/{{ app_name }}'
+venv_python: '{{ venv_dir }}/bin/python'
+
+repo_dir: "/home/{{deployer_user}}/{{ repo_name }}"
+app_dir: "{{ repo_dir }}"
+static_dir: "{{ app_dir }}/public"
+media_dir: "{{ app_dir }}/media"
+log_dir: "/var/log/gunicorn"
+
+# Http server details
+wsgi_server_port:
+nginx_server_name:
+
+django_wsgi_module: "{{app_name}}.wsgi"
+django_settings_module: "{{app_name}}.settings.production"

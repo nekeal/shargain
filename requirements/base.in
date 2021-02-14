@@ -1,0 +1,11 @@
+Django
+djangorestframework
+djoser
+djangorestframework-simplejwt
+drf-flex-fields
+django-jazzmin
+django-extensions
+django-admin-display
+ipython
+psycopg2-binary
+python-dotenv
