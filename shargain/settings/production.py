@@ -4,9 +4,6 @@ DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
-env_path = Path(".env")
-load_dotenv(dotenv_path=env_path)
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -41,5 +38,5 @@ DATABASES = {
 }
 
 # On server static and media files are stored outside BASE_DIR
-STATIC_ROOT = BASE_DIR.parent.joinpath("public")
-MEDIA_ROOT = BASE_DIR.parent.joinpath("media")
+STATIC_ROOT = BASE_DIR.joinpath("static")
+MEDIA_ROOT = BASE_DIR.joinpath("media")

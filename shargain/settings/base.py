@@ -9,9 +9,10 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
 import os
 from pathlib import Path
+
+from celery.schedules import crontab
 
 PROJECT_NAME = "shargain"
 
@@ -25,15 +26,21 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "shargain.commons.apps.CommonsConfig",
+    "shargain.accounts.apps.AccountsConfig",
+    "shargain.offers.apps.OffersConfig",
+    "shargain.notifications.apps.NotificationsConfig",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -67,10 +74,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "shargain.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -89,11 +92,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = "accounts.CustomUser"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pl-pl"
 
 TIME_ZONE = "Europe/Warsaw"
 
@@ -112,3 +116,10 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR.joinpath("public")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR.joinpath("media")
+
+CELERY_BEAT_SCHEDULE = {
+    "check_for_closed_offers": {
+        "task": "shargain.offers.tasks.check_for_closed_offers",
+        "schedule": crontab(minute="0,30"),
+    },
+}

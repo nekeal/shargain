@@ -6,6 +6,9 @@ drf-flex-fields
 django-jazzmin
 django-extensions
 django-admin-display
+celery
 ipython
 psycopg2-binary
 python-dotenv
+requests
+bs4
