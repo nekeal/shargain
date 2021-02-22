@@ -1,5 +1,15 @@
 .DEFAULT_GOAL := help
 
+define BROWSER_PYSCRIPT
+import os, webbrowser, sys
+
+from urllib.request import pathname2url
+
+webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
+endef
+export BROWSER_PYSCRIPT
+
+
 define PRINT_HELP_PYSCRIPT
 import re, sys
 
@@ -36,29 +46,32 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 test: ## run tests quickly with the default Python
-	pytest
+	pytest shargain
 
 test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	pytest --cov=bonobo
-	run coverage report -m
+	pytest --cov=shargain shargain
+	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
 quality-check: ## check quality of code
-	black --check bonobo
-	isort --check bonobo
-	flake8 bonobo
-	mypy bonobo
+	black --check shargain
+	isort --check shargain
+	flake8 shargain
+	mypy shargain
 
 autoformatters: ## runs auto formatters
-	black bonobo
-	isort bonobo
+	black shargain
+	isort shargain
 
-bootstrap:  ## install requirements
-	pip install -r requirements-dev.txt
+pip-compile:
+	ls requirements/*.in | xargs -n 1 pip-compile
+
+bootstrap: ## bootstrap project
+	pip install -r requirements/dev.txt
 	python manage.py migrate
 	python manage.py loaddata fixtures/*
 
@@ -67,14 +80,17 @@ rebuild-db:  ## recreates database with fixtures
 	python manage.py migrate
 	python manage.py loaddata fixtures/*
 
-bootstrap-docker:  ## install requirements
+bootstrap-docker:  ## bootstrap project in docker
 	docker-compose up -d
+	docker-compose exec web pip install -r requirements/dev.txt
 	docker-compose exec web python manage.py loaddata fixtures/*
 
-docker-build:  ## buld current revision
-	docker build --target backend-production $(TAGS) .
+show-docker-tags: ## shows docker tags for building and pushing image
+	echo $(TAGS)
 
-docker-push: ## push docker image from current revision
+docker-build:  ## build docker image
+	docker build $(TAGS) .
+
+docker-push:
 	docker push $(DOCKER_REGISTRY):$(COMMIT_SHA)
 	docker push $(DOCKER_REGISTRY):$(BRANCH_NAME)
-
