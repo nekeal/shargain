@@ -1,4 +1,0 @@
-POSTGRES_USER=shargain
-POSTGRES_DB=shargain
-POSTGRES_PASSWORD=shargain
-COMPOSE_PROJECT_NAME=shargain

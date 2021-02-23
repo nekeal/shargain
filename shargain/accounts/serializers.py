@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from accounts.models import CustomUser
+from shargain.accounts.models import CustomUser
 
 
 class UserSerializer(serializers.ModelSerializer):

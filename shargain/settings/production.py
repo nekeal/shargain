@@ -2,8 +2,9 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", ["*"])
 
+# ------------- LOGGING -------------
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -30,13 +31,13 @@ LOGGING = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "postgres"),
-        "USER": os.environ.get("POSTGRES_USER", "postgres"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "NAME": env("POSTGRES_DB", "postgres"),
+        "USER": env("POSTGRES_USER", "postgres"),
+        "PASSWORD": env("POSTGRES_PASSWORD", ""),
+        "HOST": env("POSTGRES_HOST", "localhost"),
     }
 }
 
-# On server static and media files are stored outside BASE_DIR
+# ------------- STATIC -------------
 STATIC_ROOT = BASE_DIR.joinpath("static")
 MEDIA_ROOT = BASE_DIR.joinpath("media")

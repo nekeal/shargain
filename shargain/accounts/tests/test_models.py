@@ -1,3 +1,8 @@
-from unittest.mock import Mock
+from django.contrib.auth.models import AbstractUser
 
-import pytest
+from ..models import CustomUser
+
+
+class TestCustomUser:
+    def test_custom_user_inherits_from_abstract(self):
+        assert issubclass(CustomUser, AbstractUser)

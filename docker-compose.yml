@@ -14,9 +14,7 @@ services:
       - .:/app
     environment:
       POSTGRES_HOST: postgres
-    env_file:
-      - .local-env
-    command: bash -c "python manage.py migrate && python manage.py runserver 0:8000"
+    command: python manage.py runserver 0:8000"
     depends_on:
       - postgres
 
@@ -25,8 +23,6 @@ services:
     image: postgres:13-alpine
     ports:
       - "5432:5432"
-    env_file:
-      - .local-env
     volumes:
       - pgdata:/var/lib/postgresql/data/
 

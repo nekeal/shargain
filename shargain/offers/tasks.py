@@ -1,8 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
+from celery import shared_task
 from django.utils import timezone
 
-from celery import shared_task
 from shargain.celery import app
 from shargain.offers.models import Offer
 

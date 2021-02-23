@@ -1,13 +1,14 @@
 from .base import *
 
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+SECRET_KEY = "secret_key"
+
+# ------------- DATABASES -------------
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "shargain"),
-        "USER": os.environ.get("POSTGRES_USER", "shargain"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "shargain"),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "NAME": env("POSTGRES_DB", "shargain"),
+        "USER": env("POSTGRES_USER", "shargain"),
+        "PASSWORD": env("POSTGRES_PASSWORD", "shargain"),
+        "HOST": env("POSTGRES_HOST", "localhost"),
     }
 }

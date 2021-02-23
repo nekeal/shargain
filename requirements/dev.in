@@ -4,7 +4,9 @@ pytest-django
 pytest-sugar
 pytest-xdist
 flake8
+flake8-formatter-abspath
 black
 isort
 mypy
+django-stubs
 ansible
