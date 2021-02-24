@@ -8,10 +8,6 @@ amqp==5.0.5
     # via
     #   -r requirements/base.txt
     #   kombu
-ansible-base==2.10.6
-    # via ansible
-ansible==3.0.0
-    # via -r requirements/dev.in
 apipkg==1.5
     # via execnet
 appdirs==1.4.4
@@ -44,8 +40,6 @@ certifi==2020.12.5
     # via
     #   -r requirements/base.txt
     #   requests
-cffi==1.14.5
-    # via cryptography
 chardet==4.0.0
     # via
     #   -r requirements/base.txt
@@ -70,8 +64,6 @@ click==7.1.2
     #   click-didyoumean
     #   click-plugins
     #   click-repl
-cryptography==3.4.6
-    # via ansible-base
 decorator==4.4.2
     # via
     #   -r requirements/base.txt
@@ -124,14 +116,10 @@ jedi==0.18.0
     # via
     #   -r requirements/base.txt
     #   ipython
-jinja2==2.11.3
-    # via ansible-base
 kombu==5.0.2
     # via
     #   -r requirements/base.txt
     #   celery
-markupsafe==1.1.1
-    # via jinja2
 marshmallow==3.10.0
     # via
     #   -r requirements/base.txt
@@ -148,7 +136,6 @@ mypy==0.812
     #   django-stubs
 packaging==20.9
     # via
-    #   ansible-base
     #   pytest
     #   pytest-sugar
 parso==0.8.1
@@ -184,8 +171,6 @@ py==1.10.0
     #   pytest-forked
 pycodestyle==2.6.0
     # via flake8
-pycparser==2.20
-    # via cffi
 pyflakes==2.2.0
     # via flake8
 pygments==2.8.0
@@ -219,8 +204,6 @@ pytz==2021.1
     #   celery
     #   django
     #   django-dbbackup
-pyyaml==5.4.1
-    # via ansible-base
 regex==2020.11.13
     # via black
 requests==2.25.1
