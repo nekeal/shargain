@@ -59,7 +59,7 @@ idna==2.10
     # via requests
 ipython-genutils==0.2.0
     # via traitlets
-ipython==7.16.1
+ipython==7.20.0
     # via -r requirements/base.in
 jedi==0.18.0
     # via ipython
