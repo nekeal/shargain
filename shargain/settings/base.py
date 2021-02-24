@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from celery.schedules import crontab
@@ -47,6 +46,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -104,7 +104,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ------------- INTERNALIZATION -------------
-LANGUAGE_CODE = "pl-pl"
+LANGUAGE_CODE = "en-us"
+
+LOCALE_PATHS = [BASE_DIR.joinpath(PROJECT_NAME).joinpath("locale")]
 
 TIME_ZONE = "Europe/Warsaw"
 
