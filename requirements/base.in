@@ -11,3 +11,5 @@ requests
 bs4
 ipython
 environs
+pyTelegramBotAPI
+discord
