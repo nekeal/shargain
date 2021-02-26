@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
 from django_admin_display import admin_display
 
 from shargain.offers.models import Offer, ScrappingTarget
@@ -11,11 +13,15 @@ class OfferAdmin(admin.ModelAdmin):
     list_filter = ["target", "url"]
     ordering = ("-published_at",)
 
+    @admin_display(short_description=ugettext_lazy("Link to offer"))
     def get_link(self, obj):
-        return mark_safe(f"<a href='{obj.url}'>Przejdz do oferty</a>")
+        button_text = _("Go to offer")
+        return mark_safe(f"<a href='{obj.url}'>{button_text}</a>")
 
     @admin_display(
-        short_description="Otwarte", boolean=True, admin_order_field="closed_at"
+        short_description=ugettext_lazy("Opened"),
+        boolean=True,
+        admin_order_field="closed_at",
     )
     def get_is_open(self, obj):
         return not bool(obj.closed_at)
@@ -24,4 +30,3 @@ class OfferAdmin(admin.ModelAdmin):
 @admin.register(ScrappingTarget)
 class ScrappingTargetAdmin(admin.ModelAdmin):
     pass
-    # list_display = ("title", )

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 
 class NotificationPlatformChoices(models.TextChoices):
@@ -13,3 +14,7 @@ class NotificationChannel(models.Model):
     )
     webhook_url = models.URLField(blank=True)
     token = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        verbose_name = _("Notification channel")
+        verbose_name_plural = ""
