@@ -34,9 +34,12 @@ click==7.1.2
     #   click-didyoumean
     #   click-plugins
     #   click-repl
+    #   django-click
 decorator==4.4.2
     # via ipython
 django-admin-display==1.3.0
+    # via -r requirements/base.in
+django-click==2.2.0
     # via -r requirements/base.in
 django-dbbackup==3.3.0
     # via -r requirements/base.in

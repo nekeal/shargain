@@ -5,29 +5,17 @@
 #    pip-compile requirements/deployment.in
 #
 ansible-base==2.10.6
-    # via
-    #   -c requirements/dev.txt
-    #   ansible
+    # via ansible
 ansible==3.0.0
-    # via
-    #   -c requirements/dev.txt
-    #   -r requirements/deployment.in
+    # via -r requirements/deployment.in
 cffi==1.14.5
-    # via
-    #   -c requirements/dev.txt
-    #   cryptography
+    # via cryptography
 cryptography==3.4.6
-    # via
-    #   -c requirements/dev.txt
-    #   ansible-base
+    # via ansible-base
 jinja2==2.11.3
-    # via
-    #   -c requirements/dev.txt
-    #   ansible-base
+    # via ansible-base
 markupsafe==1.1.1
-    # via
-    #   -c requirements/dev.txt
-    #   jinja2
+    # via jinja2
 mitogen==0.2.10rc1
     # via -r requirements/deployment.in
 packaging==20.9
@@ -35,14 +23,10 @@ packaging==20.9
     #   -c requirements/dev.txt
     #   ansible-base
 pycparser==2.20
-    # via
-    #   -c requirements/dev.txt
-    #   cffi
+    # via cffi
 pyparsing==2.4.7
     # via
     #   -c requirements/dev.txt
     #   packaging
 pyyaml==5.4.1
-    # via
-    #   -c requirements/dev.txt
-    #   ansible-base
+    # via ansible-base
