@@ -7,6 +7,9 @@ from shargain.offers.models import Offer, ScrappingTarget
 
 class NewOfferNotificationService:
     def __init__(self, offers: List[Offer], scrapping_target: ScrappingTarget):
+        assert (
+            scrapping_target.notification_config_id
+        ), "Scrapping target has no notification_config"
         self.offers = offers
         self._scrapping_target = scrapping_target
 
@@ -15,7 +18,7 @@ class NewOfferNotificationService:
         for offer in self.offers:
             offer_message = self.get_message_for_offer(offer)
             if len(message + offer_message) > self.get_maximum_message_length(
-                self._scrapping_target.notification_config.channel
+                self._scrapping_target.notification_config.channel  # type: ignore
             ):
                 self._send(message)
                 message = self.get_message_header() + offer_message
@@ -31,7 +34,7 @@ class NewOfferNotificationService:
 
     def _get_notification_sender_class(self):
         return self.get_notification_sender_class(
-            self._scrapping_target.notification_config.channel
+            self._scrapping_target.notification_config.channel  # type: ignore
         )
 
     @staticmethod
