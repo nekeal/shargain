@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 22:07+0100\n"
+"POT-Creation-Date: 2021-02-28 15:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,37 +20,53 @@ msgstr ""
 "%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n"
 "%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
-#: shargain/notifications/models.py:19 shargain/offers/models.py:12
+#: shargain/notifications/models.py:11 shargain/offers/models.py:8
+msgid "Name"
+msgstr "Nazwa"
+
+#: shargain/notifications/models.py:13
+msgid "Channel"
+msgstr "Kanał"
+
+#: shargain/notifications/models.py:17
+msgid "Webhook url"
+msgstr "Webhook url"
+
+#: shargain/notifications/models.py:18
+msgid "Token"
+msgstr "Token"
+
+#: shargain/notifications/models.py:19
+msgid "Chat ID"
+msgstr "ID czatu"
+
+#: shargain/notifications/models.py:22 shargain/offers/models.py:12
 msgid "Notification channel"
 msgstr "Kanał powiadomień"
 
-#: shargain/notifications/models.py:20
+#: shargain/notifications/models.py:23
 #, fuzzy
 #| msgid "Notification channel"
 msgid "Notification channels"
 msgstr "Kanały powiadomień"
 
-#: shargain/offers/admin.py:15
+#: shargain/offers/admin.py:16
 #, fuzzy
 #| msgid "Go to offer"
 msgid "Link to offer"
 msgstr "Link do oferty"
 
-#: shargain/offers/admin.py:17
+#: shargain/offers/admin.py:18
 msgid "Go to offer"
 msgstr "Przejdz do oferty"
 
-#: shargain/offers/admin.py:21
+#: shargain/offers/admin.py:22
 msgid "Opened"
 msgstr "Otwarte"
 
 #: shargain/offers/apps.py:7 shargain/offers/models.py:43
 msgid "Offers"
 msgstr "Oferty"
-
-#: shargain/offers/models.py:8
-msgid "Name"
-msgstr "Nazwa"
 
 #: shargain/offers/models.py:23
 msgid "Scrapping target"
