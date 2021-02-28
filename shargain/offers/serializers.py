@@ -38,3 +38,9 @@ class OfferSerializer(serializers.ModelSerializer):
         url = validated_data.pop("url")
         offer, _ = Offer.objects.get_or_create(url=url, defaults=validated_data)
         return offer
+
+
+class ScrappingTargetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScrappingTarget
+        fields = ("name", "url")
