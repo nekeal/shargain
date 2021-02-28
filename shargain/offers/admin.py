@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
 from django_admin_display import admin_display
 
 from shargain.offers.models import Offer, ScrappingTarget
@@ -13,13 +13,13 @@ class OfferAdmin(admin.ModelAdmin):
     list_filter = ["target", "url"]
     ordering = ("-published_at",)
 
-    @admin_display(short_description=ugettext_lazy("Link to offer"))
+    @admin_display(short_description=gettext_lazy("Link to offer"))
     def get_link(self, obj):
         button_text = _("Go to offer")
         return mark_safe(f"<a href='{obj.url}'>{button_text}</a>")
 
     @admin_display(
-        short_description=ugettext_lazy("Opened"),
+        short_description=gettext_lazy("Opened"),
         boolean=True,
         admin_order_field="closed_at",
     )

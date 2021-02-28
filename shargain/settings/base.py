@@ -38,6 +38,7 @@ LOCAL_APPS = [
     "shargain.accounts.apps.AccountsConfig",
     "shargain.offers.apps.OffersConfig",
     "shargain.notifications.apps.NotificationsConfig",
+    "shargain.scrapper",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

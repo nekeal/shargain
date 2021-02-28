@@ -4,9 +4,12 @@ djangorestframework
 django-jazzmin
 django-extensions
 django-admin-display
+django-click
 celery
 psycopg2-binary
 requests
 bs4
 ipython
 environs
+pyTelegramBotAPI
+discord

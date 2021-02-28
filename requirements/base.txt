@@ -4,10 +4,16 @@
 #
 #    pip-compile requirements/base.in
 #
+aiohttp==3.7.4
+    # via discord.py
 amqp==5.0.5
     # via kombu
 asgiref==3.3.1
     # via django
+async-timeout==3.0.1
+    # via aiohttp
+attrs==20.3.0
+    # via aiohttp
 backcall==0.2.0
     # via ipython
 beautifulsoup4==4.9.3
@@ -20,8 +26,10 @@ celery==5.0.5
     # via -r requirements/base.in
 certifi==2020.12.5
     # via requests
-chardet==4.0.0
-    # via requests
+chardet==3.0.4
+    # via
+    #   aiohttp
+    #   requests
 click-didyoumean==0.0.3
     # via celery
 click-plugins==1.1.1
@@ -34,9 +42,16 @@ click==7.1.2
     #   click-didyoumean
     #   click-plugins
     #   click-repl
+    #   django-click
 decorator==4.4.2
     # via ipython
+discord.py==1.6.0
+    # via discord
+discord==1.0.1
+    # via -r requirements/base.in
 django-admin-display==1.3.0
+    # via -r requirements/base.in
+django-click==2.2.0
     # via -r requirements/base.in
 django-dbbackup==3.3.0
     # via -r requirements/base.in
@@ -56,7 +71,9 @@ djangorestframework==3.12.2
 environs==9.3.1
     # via -r requirements/base.in
 idna==2.10
-    # via requests
+    # via
+    #   requests
+    #   yarl
 ipython-genutils==0.2.0
     # via traitlets
 ipython==7.20.0
@@ -67,6 +84,10 @@ kombu==5.0.2
     # via celery
 marshmallow==3.10.0
     # via environs
+multidict==5.1.0
+    # via
+    #   aiohttp
+    #   yarl
 parso==0.8.1
     # via jedi
 pexpect==4.8.0
@@ -83,6 +104,8 @@ ptyprocess==0.7.0
     # via pexpect
 pygments==2.8.0
     # via ipython
+pytelegrambotapi==3.7.6
+    # via -r requirements/base.in
 python-dotenv==0.15.0
     # via environs
 pytz==2021.1
@@ -91,7 +114,9 @@ pytz==2021.1
     #   django
     #   django-dbbackup
 requests==2.25.1
-    # via -r requirements/base.in
+    # via
+    #   -r requirements/base.in
+    #   pytelegrambotapi
 six==1.15.0
     # via
     #   click-repl
@@ -102,6 +127,8 @@ sqlparse==0.4.1
     # via django
 traitlets==5.0.5
     # via ipython
+typing-extensions==3.7.4.3
+    # via aiohttp
 urllib3==1.26.3
     # via requests
 vine==5.0.0
@@ -110,6 +137,8 @@ vine==5.0.0
     #   celery
 wcwidth==0.2.5
     # via prompt-toolkit
+yarl==1.6.3
+    # via aiohttp
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
