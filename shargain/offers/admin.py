@@ -10,7 +10,7 @@ from shargain.offers.models import Offer, ScrappingTarget
 @admin.register(Offer)
 class OfferAdmin(admin.ModelAdmin):
     list_display = ("title", "price", "get_is_open", "get_link", "published_at")
-    list_filter = ["target", "url"]
+    list_filter = ["target", ]
     ordering = ("-published_at",)
 
     @admin_display(short_description=gettext_lazy("Link to offer"))
