@@ -2,6 +2,8 @@
 
 from django.db import migrations, models
 
+from shargain.notifications.models import NotificationChannelChoices
+
 
 class Migration(migrations.Migration):
 
@@ -22,21 +24,33 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("name", models.CharField(max_length=100)),
+                ("name", models.CharField(max_length=100, verbose_name="Name")),
                 (
                     "channel",
                     models.CharField(
-                        choices=[("discord", "Discord"), ("telegram", "Telegram")],
+                        choices=NotificationChannelChoices.choices,
                         max_length=200,
+                        verbose_name="Channel",
                     ),
                 ),
-                ("webhook_url", models.URLField(blank=True)),
-                ("token", models.CharField(blank=True, max_length=100)),
-                ("chatid", models.CharField(blank=True, max_length=100)),
+                (
+                    "webhook_url",
+                    models.URLField(blank=True, verbose_name="Webhook url"),
+                ),
+                (
+                    "token",
+                    models.CharField(blank=True, max_length=100, verbose_name="Token"),
+                ),
+                (
+                    "chatid",
+                    models.CharField(
+                        blank=True, max_length=100, verbose_name="Chat ID"
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Notification channel",
-                "verbose_name_plural": "",
+                "verbose_name_plural": "Notification channels",
             },
         ),
     ]
