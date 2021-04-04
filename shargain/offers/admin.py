@@ -2,6 +2,7 @@ import textwrap
 from datetime import timedelta
 
 from django.contrib import admin
+from django.db.models.expressions import F
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy
 from django.utils.translation import ugettext as _
@@ -24,6 +25,10 @@ class OfferAdmin(admin.ModelAdmin):
         "target",
     ]
     ordering = ("-published_at",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(duration=F("closed_at") - F("created_at"))
 
     @admin_display(short_description=gettext_lazy("Title"), admin_order_field="title")
     def get_title(self, obj):
@@ -49,6 +54,7 @@ class OfferAdmin(admin.ModelAdmin):
 
     @admin_display(
         short_description=gettext_lazy("Duration"),
+        admin_order_field="duration",
     )
     def get_duration(self, obj):
         if obj.closed_at:
