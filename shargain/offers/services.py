@@ -31,5 +31,9 @@ class OfferBatchCreateService:
         return offers
 
     def _notify(self, new_offers, scrapping_target):
-        if new_offers and scrapping_target.notification_config:
+        if (
+            new_offers
+            and scrapping_target.notification_config
+            and scrapping_target.enable_notifications
+        ):
             self.notification_service_class(new_offers, scrapping_target).run()
