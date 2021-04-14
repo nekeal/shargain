@@ -4,9 +4,9 @@
 #
 #    pip-compile requirements/deployment.in
 #
-ansible-base==2.10.6
+ansible-base==2.10.8
     # via ansible
-ansible==3.0.0
+ansible==3.2.0
     # via -r requirements/deployment.in
 cffi==1.14.5
     # via cryptography
@@ -16,7 +16,7 @@ jinja2==2.11.3
     # via ansible-base
 markupsafe==1.1.1
     # via jinja2
-mitogen==0.2.10rc1
+mitogen==0.3.0rc1
     # via -r requirements/deployment.in
 packaging==20.9
     # via
