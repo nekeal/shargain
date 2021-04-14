@@ -1,0 +1,14 @@
+---
+- name: "shargain v0.1.0.nekeal - This playbook configures server and deploys shargain"
+  hosts: all
+  user: deployer
+  become: yes
+  tasks: []
+  vars_files:
+    - "group_vars/secrets.yml"
+  roles:
+    - nekeal.users
+    - nekeal.postgresql_db
+    - nekeal.nginx
+    - nekeal.certbot
+    - nekeal.docker_app
