@@ -1,8 +1,10 @@
 import textwrap
 from datetime import timedelta
+from typing import List, Optional, Tuple, Union
 
 from django.contrib import admin
 from django.db.models.expressions import F
+from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy
 from django.utils.translation import ugettext as _
@@ -64,4 +66,12 @@ class OfferAdmin(admin.ModelAdmin):
 
 @admin.register(ScrappingTarget)
 class ScrappingTargetAdmin(admin.ModelAdmin):
-    pass
+    fields = ("name", "url", "enable_notifications", "notification_config")
+
+    def get_readonly_fields(
+        self, request: HttpRequest, obj: Optional[ScrappingTarget] = None
+    ) -> Union[List[str], Tuple]:
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+        if obj:
+            readonly_fields.append("name")
+        return readonly_fields
