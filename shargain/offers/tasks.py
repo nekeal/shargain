@@ -3,16 +3,29 @@ from bs4 import BeautifulSoup
 from celery import shared_task
 from django.utils import timezone
 
-from shargain.celery import app
 from shargain.offers.models import Offer
+
+
+def is_olx_offer_closed(response):
+    soup = BeautifulSoup(response.content, "html.parser")
+    offer_removed_box = soup.select("#offer_removed_by_user")
+    if offer_removed_box:
+        return True
+    return False
+
+
+def is_otodom_offer_closed(response):
+    if response.status_code == 404:
+        return True
+    return False
 
 
 def is_offer_closed(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, "html.parser")
-    offer_removed_box = soup.select("#offer_removed_by_user")
-    if offer_removed_box:
-        return url, True
+    if "olx.pl" in url:
+        return url, is_olx_offer_closed(response)
+    if "otodom.pl" in url:
+        return url, is_otodom_offer_closed(response)
     return url, False
 
 
