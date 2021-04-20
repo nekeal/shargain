@@ -4,15 +4,17 @@ FROM python:3.8.7-slim as backend-base
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 WORKDIR /app
-ADD . ./
-CMD ["./entrypoint.sh"]
+
+ADD requirements/base.txt .
 
 FROM backend-base as backend-dev
 ADD requirements/dev.txt .
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r dev.txt
+ADD . ./
 
 FROM backend-base as production
 ADD requirements/prod.txt .
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r prod.txt
+ADD . ./
 RUN python manage.py collectstatic --noinput
 
