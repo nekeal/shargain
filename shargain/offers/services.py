@@ -21,6 +21,12 @@ class OfferBatchCreateService:
         self._notify(new_offers, serializer.validated_data["target"])
         return [offer.url for offer in new_offers]
 
+    @staticmethod
+    def simplify_url(url): # currently not used
+        if "olx.pl" in url:
+            return url.rsplit("#")[0]
+        return url
+
     def create(self, validated_data) -> List[Tuple[Offer, bool]]:
         offers: List[Tuple[Offer, bool]] = []
         for offer_data in validated_data["offers"]:
