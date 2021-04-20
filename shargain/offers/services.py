@@ -22,7 +22,7 @@ class OfferBatchCreateService:
         return [offer.url for offer in new_offers]
 
     @staticmethod
-    def simplify_url(url): # currently not used
+    def simplify_url(url):  # currently not used
         if "olx.pl" in url:
             return url.rsplit("#")[0]
         return url
