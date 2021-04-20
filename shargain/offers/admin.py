@@ -25,7 +25,7 @@ class OfferAdmin(admin.ModelAdmin):
     )
     list_filter = [
         "target",
-        ("closed_at", admin.EmptyFieldListFilter),
+        ("closed_at", admin.filters.EmptyFieldListFilter),  # type: ignore
     ]
     ordering = ("-published_at",)
 
