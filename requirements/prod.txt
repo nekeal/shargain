@@ -44,6 +44,7 @@ certifi==2020.12.5
     # via
     #   -r requirements/base.txt
     #   requests
+    #   sentry-sdk
 chardet==3.0.4
     # via
     #   -r requirements/base.txt
@@ -173,6 +174,8 @@ requests==2.25.1
     # via
     #   -r requirements/base.txt
     #   pytelegrambotapi
+sentry-sdk==1.0.0
+    # via -r requirements/prod.in
 six==1.15.0
     # via
     #   -r requirements/base.txt
@@ -198,6 +201,7 @@ urllib3==1.26.3
     # via
     #   -r requirements/base.txt
     #   requests
+    #   sentry-sdk
 vine==5.0.0
     # via
     #   -r requirements/base.txt
