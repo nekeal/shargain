@@ -16,7 +16,7 @@ apipkg==1.5
     # via execnet
 appdirs==1.4.4
     # via black
-asgiref==3.3.1
+asgiref==3.3.4
     # via
     #   -r requirements/base.txt
     #   django
@@ -99,7 +99,7 @@ django-jazzmin==2.4.4
     # via -r requirements/base.txt
 django-stubs==1.7.0
     # via -r requirements/dev.in
-django==3.1.7
+django==3.2
     # via
     #   -r requirements/base.txt
     #   django-admin-display
