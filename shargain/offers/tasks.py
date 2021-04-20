@@ -7,6 +7,8 @@ from shargain.offers.models import Offer
 
 
 def is_olx_offer_closed(response):
+    if response.url.endswith("#from404"):
+        return True
     soup = BeautifulSoup(response.content, "html.parser")
     offer_removed_box = soup.select("#offer_removed_by_user")
     if offer_removed_box:

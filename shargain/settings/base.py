@@ -104,6 +104,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# ------------- MODELS -------------
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 # ------------- INTERNALIZATION -------------
 LANGUAGE_CODE = "en-us"
 
