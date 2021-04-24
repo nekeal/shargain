@@ -1,9 +1,13 @@
+import logging
+
 import requests
 from bs4 import BeautifulSoup
 from celery import shared_task
 from django.utils import timezone
 
 from shargain.offers.models import Offer
+
+logger = logging.getLogger(__name__)
 
 
 def is_olx_offer_closed(response):
@@ -23,7 +27,11 @@ def is_otodom_offer_closed(response):
 
 
 def is_offer_closed(url):
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except ConnectionResetError:
+        logger.exception(f"Connection error for {ConnectionResetError}")
+        return url, False
     if "olx.pl" in url:
         return url, is_olx_offer_closed(response)
     if "otodom.pl" in url:
