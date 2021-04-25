@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
 
 from shargain.commons.models import TimeStampedModel
@@ -25,6 +26,21 @@ class ScrappingTarget(models.Model):
         verbose_name_plural = _("Scrapping targets")
 
 
+class OfferQueryset(QuerySet):
+
+    def opened(self):
+        return self.filter(closed_at=None)
+
+    def closed(self):
+        return self.exclude(closed_at=None)
+
+    def olx(self):
+        return self.filter(url__contains="olx.pl")
+
+    def otomoto(self):
+        return self.filter(url__contains="otomoto.pl")
+
+
 class Offer(TimeStampedModel):
     url = models.URLField()
     title = models.CharField(verbose_name=_("Title"), max_length=200)
@@ -38,6 +54,8 @@ class Offer(TimeStampedModel):
         verbose_name=_("Published at"), blank=True, null=True
     )
     closed_at = models.DateTimeField(verbose_name=_("Closed at"), blank=True, null=True)
+
+    objects = OfferQueryset.as_manager()
 
     class Meta:
         verbose_name = _("Offer")
