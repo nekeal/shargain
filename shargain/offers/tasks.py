@@ -20,7 +20,7 @@ def is_olx_offer_closed(response):
     return False
 
 
-def is_otodom_offer_closed(response):
+def is_otomoto_offer_closed(response):
     if response.status_code == 404:
         return True
     return False
@@ -34,8 +34,8 @@ def is_offer_closed(url):
         return url, False
     if "olx.pl" in url:
         return url, is_olx_offer_closed(response)
-    if "otodom.pl" in url:
-        return url, is_otodom_offer_closed(response)
+    if "otomoto.pl" in url:
+        return url, is_otomoto_offer_closed(response)
     return url, False
 
 

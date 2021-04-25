@@ -27,7 +27,6 @@ class ScrappingTarget(models.Model):
 
 
 class OfferQueryset(QuerySet):
-
     def opened(self):
         return self.filter(closed_at=None)
 
