@@ -28,6 +28,7 @@ class OfferAdmin(admin.ModelAdmin):
         ("closed_at", admin.filters.EmptyFieldListFilter),  # type: ignore
     ]
     ordering = ("-published_at",)
+    search_fields = ("title", )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

@@ -1,7 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django_filters import rest_framework as filters
 
+from shargain.offers.filters import ScrappingTargetFilterSet
 from shargain.offers.models import Offer, ScrappingTarget
 from shargain.offers.serializers import OfferSerializer, ScrappingTargetSerializer
 from shargain.offers.services import OfferBatchCreateService
@@ -27,3 +29,5 @@ class OfferViewSet(viewsets.ModelViewSet):
 class ScrappingTargetViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ScrappingTarget.objects.all()
     serializer_class = ScrappingTargetSerializer
+    filter_backends = (filters.DjangoFilterBackend, )
+    filterset_class = ScrappingTargetFilterSet

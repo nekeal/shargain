@@ -13,3 +13,4 @@ ipython
 environs
 pyTelegramBotAPI
 discord
+django-filter

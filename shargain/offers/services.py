@@ -16,7 +16,7 @@ class OfferBatchCreateService:
     def run(self):
         serializer = self.serializer_class(**self._serializer_kwargs)
         serializer.is_valid(raise_exception=True)
-        offers = self.create(serializer.validated_data)
+        offers: List[Tuple[Offer, bool]] = self.create(serializer.validated_data)
         new_offers = list(map(lambda r: r[0], filter(lambda x: x[1], offers)))
         self._notify(new_offers, serializer.validated_data["target"])
         return [offer.url for offer in new_offers]
@@ -30,9 +30,15 @@ class OfferBatchCreateService:
     def create(self, validated_data) -> List[Tuple[Offer, bool]]:
         offers: List[Tuple[Offer, bool]] = []
         for offer_data in validated_data["offers"]:
-            offer, created = Offer.objects.get_or_create(
-                **offer_data, target=validated_data["target"]
-            )
+            offer_url = offer_data.pop("url")
+            try:
+                offer, created = Offer.objects.get_or_create(
+                    url=offer_url,
+                    target=validated_data["target"],
+                    defaults=offer_data,
+                )
+            except Offer.MultipleObjectsReturned:
+                offer, created = Offer.objects.filter(url=offer_url, target=validated_data["target"]).first(), False
             offers.append((offer, created))
         return offers
 
