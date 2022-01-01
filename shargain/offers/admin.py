@@ -69,6 +69,7 @@ class OfferAdmin(admin.ModelAdmin):
 @admin.register(ScrappingTarget)
 class ScrappingTargetAdmin(admin.ModelAdmin):
     fields = ("name", "url", "enable_notifications", "is_active", "notification_config")
+    list_display = ("name", "enable_notifications", "is_active")
 
     def get_readonly_fields(
         self, request: HttpRequest, obj: Optional[ScrappingTarget] = None
