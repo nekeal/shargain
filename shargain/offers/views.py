@@ -27,7 +27,7 @@ class OfferViewSet(viewsets.ModelViewSet):
 
 
 class ScrappingTargetViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ScrappingTarget.objects.all()
+    queryset = ScrappingTarget.objects.filter(is_active=True)
     serializer_class = ScrappingTargetSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = ScrappingTargetFilterSet

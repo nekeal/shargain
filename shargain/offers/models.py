@@ -9,6 +9,11 @@ class ScrappingTarget(models.Model):
     name = models.CharField(verbose_name=_("Name"), max_length=100)
     url = models.URLField()
     enable_notifications = models.BooleanField(_("Enable notifications"), default=True)
+    is_active = models.BooleanField(
+        _("Is active"),
+        help_text=_("Defines whether this target should be scrapped"),
+        default=True,
+    )
 
     notification_config = models.ForeignKey(
         verbose_name=_("Notification channel"),
