@@ -1,0 +1,4 @@
+<span>{{ obj.title | wordwrap:30 | linebreaks }}</span>
+{% if obj.main_image_url %}
+    <img style="max-width: 200px;" src="{{ obj.main_image_url }}">
+{% endif %}

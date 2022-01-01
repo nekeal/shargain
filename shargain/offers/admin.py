@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple, Union
 from django.contrib import admin
 from django.db.models.expressions import F
 from django.http import HttpRequest
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy
 from django.utils.translation import ugettext as _
@@ -15,6 +16,7 @@ from shargain.offers.models import Offer, ScrappingTarget
 
 @admin.register(Offer)
 class OfferAdmin(admin.ModelAdmin):
+    exclude = ("main_image_url",)
     list_display = (
         "get_title",
         "price",
@@ -36,7 +38,9 @@ class OfferAdmin(admin.ModelAdmin):
 
     @admin_display(short_description=gettext_lazy("Title"), admin_order_field="title")
     def get_title(self, obj):
-        return mark_safe("<br>".join(textwrap.wrap(obj.title, width=30)))
+        return render_to_string(
+            "admin/fields/main_image_offer.html", context={"obj": obj}
+        )
 
     @admin_display(short_description=gettext_lazy("Link to offer"))
     def get_link(self, obj):

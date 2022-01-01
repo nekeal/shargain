@@ -7,7 +7,7 @@ from shargain.offers.models import Offer, ScrappingTarget
 class OfferBasicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = ("url", "title", "price", "published_at")
+        fields = ("url", "title", "price", "published_at", "main_image_url")
 
 
 class OfferBatchCreateSerializer(serializers.Serializer):

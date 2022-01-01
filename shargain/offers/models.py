@@ -49,6 +49,7 @@ class Offer(TimeStampedModel):
     url = models.URLField()
     title = models.CharField(verbose_name=_("Title"), max_length=200)
     price = models.IntegerField(verbose_name=_("Price"), blank=True, null=True)
+    main_image_url = models.URLField(_("Main image's URL"), blank=True)
 
     target = models.ForeignKey(
         verbose_name=_("Target"), to="ScrappingTarget", on_delete=models.PROTECT
