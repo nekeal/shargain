@@ -1,4 +1,5 @@
 import logging
+from io import BytesIO
 
 import requests
 from bs4 import BeautifulSoup
@@ -30,12 +31,12 @@ def is_offer_closed(url):
     try:
         response = requests.get(url)
     except ConnectionResetError:
-        logger.exception(f"Connection error for {ConnectionResetError}")
-        return url, False
+        logger.exception(f"Connection error for {url}")
+        return url, None, False
     if "olx.pl" in url:
-        return url, is_olx_offer_closed(response)
+        return url, response, is_olx_offer_closed(response)
     if "otomoto.pl" in url:
-        return url, is_otomoto_offer_closed(response)
+        return url, response, is_otomoto_offer_closed(response)
     return url, False
 
 
@@ -44,9 +45,10 @@ def check_for_closed_offers():
     offers_to_check = Offer.objects.filter(closed_at=None)
     print("START CHECKING OFFERS")
     for offer in offers_to_check:
-        url, closed = is_offer_closed(offer.url)
+        url, response, closed = is_offer_closed(offer.url)
         print(url)
+        offer.source_html.save("", BytesIO(response.content))
         if closed:
             print(f"{offer.url} is CLOSED")
             offer.closed_at = timezone.now()
-            offer.save()
+        offer.save()

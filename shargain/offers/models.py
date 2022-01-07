@@ -1,5 +1,7 @@
 from django.db import models
 from django.db.models import QuerySet
+from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from shargain.commons.models import TimeStampedModel
@@ -45,11 +47,19 @@ class OfferQueryset(QuerySet):
         return self.filter(url__contains="otomoto.pl")
 
 
+def get_offer_source_html_path(instance: "Offer", filename: str):
+    now = timezone.localtime()
+    return f"offer_sources/{now.year}/{now.month:02}/{slugify(instance.title)}.html"
+
+
 class Offer(TimeStampedModel):
     url = models.URLField()
     title = models.CharField(verbose_name=_("Title"), max_length=200)
     price = models.IntegerField(verbose_name=_("Price"), blank=True, null=True)
     main_image_url = models.URLField(_("Main image's URL"), blank=True)
+    source_html = models.FileField(
+        verbose_name=_("Source HTML"), upload_to=get_offer_source_html_path, blank=True
+    )
 
     target = models.ForeignKey(
         verbose_name=_("Target"), to="ScrappingTarget", on_delete=models.PROTECT
