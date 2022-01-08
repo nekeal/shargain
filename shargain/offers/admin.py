@@ -1,4 +1,3 @@
-import textwrap
 from datetime import timedelta
 from typing import List, Optional, Tuple, Union
 
@@ -45,7 +44,7 @@ class OfferAdmin(admin.ModelAdmin):
     @admin_display(short_description=gettext_lazy("Link to offer"))
     def get_link(self, obj):
         button_text = _("Go to offer")
-        return mark_safe(f'<a href="{obj.url}" target="_blank>{button_text}</a>')
+        return mark_safe(f'<a href="{obj.url}" target="_blank">{button_text}</a>')
 
     @admin_display(
         short_description=gettext_lazy("Closed at"),
