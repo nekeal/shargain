@@ -37,7 +37,7 @@ def is_offer_closed(url):
         return url, response, is_olx_offer_closed(response)
     if "otomoto.pl" in url:
         return url, response, is_otomoto_offer_closed(response)
-    return url, False
+    return url, response, False
 
 
 @shared_task
