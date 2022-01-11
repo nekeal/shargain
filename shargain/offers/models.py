@@ -48,8 +48,11 @@ class OfferQueryset(QuerySet):
 
 
 def get_offer_source_html_path(instance: "Offer", filename: str):
-    now = timezone.localtime()
-    return f"offer_sources/{now.year}/{now.month:02}/{slugify(instance.title)}.html"
+    _date = instance.published_at or timezone.localtime()
+    return (
+        f"offer_sources/{_date.year}/{_date.month:02}/{_date.day}:02/"
+        f"{slugify(instance.title)}_{instance.id}.html"
+    )
 
 
 class Offer(TimeStampedModel):
