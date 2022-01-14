@@ -130,12 +130,3 @@ STATIC_ROOT = BASE_DIR.joinpath("public")
 # ------------- MEDIA -------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR.joinpath("media")
-
-# ------------- CELERY -------------
-
-CELERY_BEAT_SCHEDULE = {
-    # "check_for_closed_offers": {
-    #     "task": "shargain.offers.tasks.check_for_closed_offers",
-    #     "schedule": crontab(minute="0,30"),
-    # },
-}

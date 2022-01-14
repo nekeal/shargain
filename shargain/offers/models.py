@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import Manager, QuerySet
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -46,11 +46,14 @@ class OfferQueryset(QuerySet):
     def otomoto(self):
         return self.filter(url__contains="otomoto.pl")
 
+    def with_source_html(self):
+        return self.exclude(source_html="")
+
 
 def get_offer_source_html_path(instance: "Offer", filename: str):
     _date = instance.published_at or timezone.localtime()
     return (
-        f"offer_sources/{_date.year}/{_date.month:02}/{_date.day}:02/"
+        f"offer_sources/{_date.year}/{_date.month:02}/{_date.day:02}/"
         f"{slugify(instance.title)}_{instance.id}.html"
     )
 
@@ -72,8 +75,13 @@ class Offer(TimeStampedModel):
         verbose_name=_("Published at"), blank=True, null=True
     )
     closed_at = models.DateTimeField(verbose_name=_("Closed at"), blank=True, null=True)
+    last_check_at = models.DateTimeField(
+        verbose_name=_("Last check at"),
+        help_text=_("Time of last offer check"),
+        default=timezone.localtime,
+    )
 
-    objects = OfferQueryset.as_manager()
+    objects = Manager.from_queryset(OfferQueryset)()
 
     class Meta:
         verbose_name = _("Offer")

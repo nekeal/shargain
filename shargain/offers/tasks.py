@@ -1,9 +1,12 @@
 import logging
+from datetime import timedelta
 from io import BytesIO
 
 import requests
 from bs4 import BeautifulSoup
 from celery import shared_task
+from django.db import transaction
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.utils import timezone
 
 from shargain.offers.models import Offer
@@ -52,3 +55,30 @@ def check_for_closed_offers():
             print(f"{offer.url} is CLOSED")
             offer.closed_at = timezone.now()
         offer.save()
+
+
+@shared_task
+@transaction.atomic()
+def get_offer_source_html(pk=None):
+    if pk:
+        return
+    if not pk:
+        offer = (
+            Offer.objects.select_for_update(skip_locked=True)
+            .filter(created_at__gte=timezone.localtime() - timedelta(days=31))
+            .opened()
+            .annotate(
+                source_html_exists=ExpressionWrapper(
+                    ~Q(source_html=""), output_field=BooleanField()
+                )
+            )
+            .order_by("source_html_exists", "last_check_at")[0]
+        )
+    logger.info("Checking offer [id=%s]", offer.id)
+    response = requests.get(offer.url)
+    if response.status_code == 403:
+        logger.error("Url [url=%s] returned 403 status code", offer.url)
+    offer.source_html.save("", BytesIO(response.content), save=False)
+    offer.last_check_at = timezone.localtime()
+    offer.save(update_fields=["last_check_at", "source_html"])
+    logger.info("Offer [id=%s] updated succesfully", offer.id)

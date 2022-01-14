@@ -11,6 +11,13 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 app.autodiscover_tasks()
 
+app.conf.beat_schedule = {
+    "check_for_closed_offers": {
+        "task": "shargain.offers.tasks.get_offer_source_html",
+        "schedule": 5,
+    }
+}
+
 
 async def wait(t):
     await asyncio.sleep(t)
