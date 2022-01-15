@@ -32,6 +32,7 @@ THIRD_PARTY_APPS = [
     "django_extensions",
     "celery",
     "django_filters",
+    "corsheaders",
 ]
 
 LOCAL_APPS = [
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -130,3 +132,6 @@ STATIC_ROOT = BASE_DIR.joinpath("public")
 # ------------- MEDIA -------------
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR.joinpath("media")
+
+# ------------- REST -------------
+CORS_ALLOW_ALL_ORIGINS = True
