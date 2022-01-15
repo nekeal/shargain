@@ -11,7 +11,7 @@ from shargain.commons.models import TimeStampedModel
 
 class ScrappingTarget(models.Model):
     name = models.CharField(verbose_name=_("Name"), max_length=100)
-    url = models.URLField()
+    url = models.URLField(max_length=1024)
     enable_notifications = models.BooleanField(_("Enable notifications"), default=True)
     is_active = models.BooleanField(
         _("Is active"),
@@ -61,10 +61,10 @@ def get_offer_source_html_path(instance: "Offer", filename: str):
 
 
 class Offer(TimeStampedModel):
-    url = models.URLField()
+    url = models.URLField(max_length=1024)
     title = models.CharField(verbose_name=_("Title"), max_length=200)
     price = models.IntegerField(verbose_name=_("Price"), blank=True, null=True)
-    main_image_url = models.URLField(_("Main image's URL"), blank=True)
+    main_image_url = models.URLField(_("Main image's URL"), blank=True, max_length=1024)
     source_html = models.FileField(
         verbose_name=_("Source HTML"), upload_to=get_offer_source_html_path, blank=True
     )
