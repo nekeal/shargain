@@ -135,3 +135,8 @@ MEDIA_ROOT = BASE_DIR.joinpath("media")
 
 # ------------- REST -------------
 CORS_ALLOW_ALL_ORIGINS = True
+
+# ------------- JAZZMIN -------------
+JAZZMIN_UI_TWEAKS = {
+    "theme": "cyborg",
+}
