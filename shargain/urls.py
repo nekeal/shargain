@@ -4,11 +4,13 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from shargain.notifications.urls import router as notifications_router
 from shargain.offers.urls import router as offers_router
 
 router = DefaultRouter()
 
 router.registry.extend(offers_router.registry)
+router.registry.extend(notifications_router.registry)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
