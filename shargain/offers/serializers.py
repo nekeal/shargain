@@ -43,4 +43,4 @@ class OfferSerializer(serializers.ModelSerializer):
 class ScrappingTargetSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScrappingTarget
-        fields = ("name", "url")
+        fields = ("name", "url", "enable_notifications", "notification_config")
