@@ -41,9 +41,14 @@ class OfferSerializer(serializers.ModelSerializer):
 
 
 class ScrappingTargetSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
     class Meta:
         model = ScrappingTarget
         fields = ("id", "name", "url", "enable_notifications", "notification_config")
+
+    def get_url(self, obj):
+        return [obj.url, ]
 
 
 class AddTargetUrlSerializer(serializers.ModelSerializer):
