@@ -83,7 +83,7 @@ def get_offer_source_html(pk=None):
     offer.last_check_at = timezone.localtime()
     offer.save(update_fields=["last_check_at", "source_html"])
     logger.info("Offer [id=%s] updated succesfully", offer.id)
-    check_if_is_closed.delay(pk)
+    check_if_is_closed.delay(offer.id)
 
 
 @shared_task
