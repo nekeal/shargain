@@ -12,7 +12,7 @@ class OfferBasicSerializer(serializers.ModelSerializer):
 
 class OfferBatchCreateSerializer(serializers.Serializer):
     target = serializers.SlugRelatedField(
-        slug_field="url", queryset=ScrappingTarget.objects.all()
+        slug_field="name", queryset=ScrappingTarget.objects.all()
     )
     offers = OfferBasicSerializer(many=True)
 
@@ -48,7 +48,7 @@ class ScrappingTargetSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "url", "enable_notifications", "notification_config")
 
     def get_url(self, obj):
-        return [obj.url, ]
+        return obj.url
 
 
 class AddTargetUrlSerializer(serializers.ModelSerializer):

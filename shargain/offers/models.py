@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Manager, QuerySet
 from django.utils import timezone
@@ -11,7 +12,7 @@ from shargain.commons.models import TimeStampedModel
 
 class ScrappingTarget(models.Model):
     name = models.CharField(verbose_name=_("Name"), max_length=100)
-    url = models.URLField(max_length=1024)
+    url = ArrayField(models.URLField(max_length=1024), default=list, blank=True)
     enable_notifications = models.BooleanField(_("Enable notifications"), default=True)
     is_active = models.BooleanField(
         _("Is active"),
