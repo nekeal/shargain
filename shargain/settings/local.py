@@ -1,6 +1,7 @@
 from .base import *
 
 SECRET_KEY = "secret_key"
+ALLOWED_HOSTS = ["*"]
 
 # ------------- DATABASES -------------
 DATABASES = {

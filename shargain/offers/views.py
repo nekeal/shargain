@@ -5,7 +5,11 @@ from rest_framework.response import Response
 
 from shargain.offers.filters import ScrappingTargetFilterSet
 from shargain.offers.models import Offer, ScrappingTarget
-from shargain.offers.serializers import OfferSerializer, ScrappingTargetSerializer
+from shargain.offers.serializers import (
+    AddTargetUrlSerializer,
+    OfferSerializer,
+    ScrappingTargetSerializer,
+)
 from shargain.offers.services import OfferBatchCreateService
 
 
@@ -31,3 +35,20 @@ class ScrappingTargetViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelView
     serializer_class = ScrappingTargetSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = ScrappingTargetFilterSet
+
+    def get_serializer_class(self):
+        if self.action == "add_target_url":
+            return AddTargetUrlSerializer
+        return super().get_serializer_class()
+
+    @action(methods=["POST"], detail=True, url_path="add-target-url")
+    def add_target_url(self, request, pk=None):
+        """
+        Action which adds url to existing target
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = self.get_object()
+        obj.url = serializer.validated_data["url"]
+        obj.save(update_fields=["url"])
+        return Response(ScrappingTargetSerializer(obj).data)
