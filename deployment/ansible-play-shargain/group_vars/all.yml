@@ -118,8 +118,12 @@ docker_containers:
     state: started
     network_mode: host
     restart_policy: always
-    user: root
+    user: "{{ _app_user_uid }}:{{ _app_user_uid }}"
     env: "{{ _envvars }}"
+    mounts:
+      - source: "/home/{{ _app_user }}/media"
+        target: /app/media
+        type: bind
     command: "{{ _docker_celery_run_command }}"
     comparisons:
       "*": strict
