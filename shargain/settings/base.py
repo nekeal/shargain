@@ -33,6 +33,7 @@ THIRD_PARTY_APPS = [
     "celery",
     "django_filters",
     "corsheaders",
+    "django_better_admin_arrayfield",
 ]
 
 LOCAL_APPS = [

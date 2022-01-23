@@ -9,8 +9,11 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy
 from django.utils.translation import ugettext as _
 from django_admin_display import admin_display
+from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
+from django_better_admin_arrayfield.models.fields import ArrayField
 
 from shargain.offers.models import Offer, ScrappingTarget
+from shargain.offers.widgets import AdminDynamicArrayWidget
 
 
 @admin.register(Offer)
@@ -70,7 +73,7 @@ class OfferAdmin(admin.ModelAdmin):
 
 
 @admin.register(ScrappingTarget)
-class ScrappingTargetAdmin(admin.ModelAdmin):
+class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     fields = (
         "name",
         "url",
@@ -81,6 +84,9 @@ class ScrappingTargetAdmin(admin.ModelAdmin):
     )
     list_display = ("name", "enable_notifications", "is_active")
     readonly_fields = ("display_grafana_panel",)
+    formfield_overrides = {
+        ArrayField: {'widget': AdminDynamicArrayWidget}
+    }
 
     def get_readonly_fields(
         self, request: HttpRequest, obj: Optional[ScrappingTarget] = None

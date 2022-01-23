@@ -1,11 +1,11 @@
 from urllib.parse import urlparse
 
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Manager, QuerySet
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from django_better_admin_arrayfield.models.fields import ArrayField
 
 from shargain.commons.models import TimeStampedModel
 
