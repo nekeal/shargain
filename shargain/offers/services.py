@@ -11,7 +11,6 @@ class OfferBatchCreateService:
 
     def __init__(self, serializer_kwargs: dict, notify: bool = True):
         self._serializer_kwargs = serializer_kwargs
-        print(serializer_kwargs)
 
     def run(self):
         serializer = self.serializer_class(**self._serializer_kwargs)
