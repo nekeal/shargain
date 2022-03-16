@@ -94,3 +94,4 @@ jobs:
       - name: Run deployment check
 #        uses: docker://willhallonline/ansible:2.12.2-bullseye-slim
         run: ansible-playbook -i inventory.txt shargain.yml -t docker_container -e "_docker_tag=${{ github.sha }}" -C
+
