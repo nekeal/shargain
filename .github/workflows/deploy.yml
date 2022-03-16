@@ -92,6 +92,5 @@ jobs:
         env:
           ImageOS: ubuntu20 # required because in container there is no os_release file
       - name: Run deployment check
-        uses: docker://willhallonline/ansible:2.12.2-bullseye-slim
+#        uses: docker://willhallonline/ansible:2.12.2-bullseye-slim
         run: ansible-playbook -i inventory.txt shargain.yml -t docker_container -e "_docker_tag=${{ github.sha }}" -C
-
