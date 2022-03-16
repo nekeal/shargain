@@ -3,8 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - master
-    - test_gh_actions_ansible_container
+      - master
 jobs:
   deploy:
     if: "false"
@@ -44,14 +43,12 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
           running-workflow-name: deploy
-        env:
-          ImageOS: ubuntu20 # required because in container there is no os_release file
       - name: Run deployment check
         run: ansible-playbook -i inventory.txt shargain.yml -t docker_container -e "_docker_tag=${{ github.sha }}"
   contenerized_deploy:
     runs-on: ubuntu-latest
     container:
-      image: willhallonline/ansible:2.12.2-bullseye-slim
+      image: willhallonline/ansible:latest
     environment: production
     env:
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -73,25 +70,7 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
       - name: Register python site packages
-#        uses: docker://willhallonline/ansible:2.12.2-bullseye-slim
         run: echo "SITE_PACKAGES=$(python3 -c 'import site; print(site.getsitepackages()[0])')" >> $GITHUB_ENV
-
-      - name: Install ruby
-        uses: ruby/setup-ruby@v1.81.0
-        with:
-          ruby-version: 2.7 # Not needed with a .ruby-version file
-        env:
-          ImageOS: ubuntu20
-      - name: Wait for all other check to complete
-        uses: lewagon/wait-on-check-action@v1.1.1
-        with:
-          ref: ${{ github.ref }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-          running-workflow-name: deploy
-        env:
-          ImageOS: ubuntu20 # required because in container there is no os_release file
       - name: Run deployment check
-        uses: docker://willhallonline/ansible:2.12.2-bullseye-slim
         run: ansible-playbook -i inventory.txt shargain.yml -t docker_container -e "_docker_tag=${{ github.sha }}" -C
 
