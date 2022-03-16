@@ -84,9 +84,7 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     )
     list_display = ("name", "enable_notifications", "is_active")
     readonly_fields = ("display_grafana_panel",)
-    formfield_overrides = {
-        ArrayField: {'widget': AdminDynamicArrayWidget}
-    }
+    formfield_overrides = {ArrayField: {"widget": AdminDynamicArrayWidget}}
 
     def get_readonly_fields(
         self, request: HttpRequest, obj: Optional[ScrappingTarget] = None

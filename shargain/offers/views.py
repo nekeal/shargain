@@ -1,6 +1,8 @@
 from django_filters import rest_framework as filters
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from shargain.offers.filters import ScrappingTargetFilterSet
@@ -16,6 +18,14 @@ from shargain.offers.services import OfferBatchCreateService
 class OfferViewSet(viewsets.ModelViewSet):
     serializer_class = OfferSerializer
     queryset = Offer.objects.all()
+    pagination_class = LimitOffsetPagination
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [
+                IsAuthenticated(),
+            ]
+        return super().get_permissions()
 
     def perform_create(self, serializer):
         serializer.get_or_create()

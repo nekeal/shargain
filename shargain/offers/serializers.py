@@ -27,7 +27,7 @@ class OfferBatchCreateSerializer(serializers.Serializer):
 
 class OfferSerializer(serializers.ModelSerializer):
     target = serializers.SlugRelatedField(
-        slug_field="url", queryset=ScrappingTarget.objects.all()
+        slug_field="name", queryset=ScrappingTarget.objects.all()
     )
 
     class Meta:

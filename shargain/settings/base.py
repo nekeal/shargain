@@ -136,6 +136,10 @@ MEDIA_ROOT = BASE_DIR.joinpath("media")
 
 # ------------- REST -------------
 CORS_ALLOW_ALL_ORIGINS = True
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "PAGE_SIZE": 100,
+}
 
 # ------------- JAZZMIN -------------
 JAZZMIN_UI_TWEAKS = {
