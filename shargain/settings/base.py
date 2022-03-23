@@ -145,6 +145,9 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {"HIDE_USERS": True}
+SPECTACULAR_SETTINGS = {
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+}
 
 # ------------- JAZZMIN -------------
 JAZZMIN_UI_TWEAKS = {
