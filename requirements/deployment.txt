@@ -28,5 +28,7 @@ pyparsing==2.4.7
     # via
     #   -c requirements/dev.txt
     #   packaging
-pyyaml==5.4.1
-    # via ansible-base
+pyyaml==6.0
+    # via
+    #   -c requirements/dev.txt
+    #   ansible-base

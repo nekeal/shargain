@@ -29,11 +29,13 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "dbbackup",
     "rest_framework",
+    "rest_framework_simplejwt",
     "django_extensions",
     "celery",
     "django_filters",
     "corsheaders",
     "django_better_admin_arrayfield",
+    "drf_spectacular",
 ]
 
 LOCAL_APPS = [
@@ -139,7 +141,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "PAGE_SIZE": 100,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+DJOSER = {"HIDE_USERS": True}
 
 # ------------- JAZZMIN -------------
 JAZZMIN_UI_TWEAKS = {

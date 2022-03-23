@@ -9,11 +9,15 @@ aiohttp==3.7.4
 amqp==5.0.5
     # via kombu
 asgiref==3.3.4
-    # via django
+    # via
+    #   django
+    #   djoser
 async-timeout==3.0.1
     # via aiohttp
 attrs==20.3.0
-    # via aiohttp
+    # via
+    #   aiohttp
+    #   jsonschema
 backcall==0.2.0
     # via ipython
 beautifulsoup4==4.9.3
@@ -26,6 +30,8 @@ celery==5.0.5
     # via -r requirements/base.in
 certifi==2020.12.5
     # via requests
+cffi==1.15.0
+    # via cryptography
 chardet==3.0.4
     # via
     #   aiohttp
@@ -43,8 +49,18 @@ click==7.1.2
     #   click-plugins
     #   click-repl
     #   django-click
+coreapi==2.3.3
+    # via djoser
+coreschema==0.0.4
+    # via coreapi
+cryptography==36.0.2
+    # via social-auth-core
 decorator==4.4.2
     # via ipython
+defusedxml==0.7.1
+    # via
+    #   python3-openid
+    #   social-auth-core
 discord.py==1.6.0
     # via discord
 discord==1.0.1
@@ -65,6 +81,8 @@ django-filter==2.4.0
     # via -r requirements/base.in
 django-jazzmin==2.4.4
     # via -r requirements/base.in
+django-templated-mail==1.1.1
+    # via djoser
 django==3.1.8
     # via
     #   -r requirements/base.in
@@ -74,7 +92,20 @@ django==3.1.8
     #   django-filter
     #   django-jazzmin
     #   djangorestframework
+    #   djangorestframework-simplejwt
+    #   drf-spectacular
+djangorestframework-simplejwt==4.8.0
+    # via
+    #   -r requirements/base.in
+    #   djoser
 djangorestframework==3.12.2
+    # via
+    #   -r requirements/base.in
+    #   djangorestframework-simplejwt
+    #   drf-spectacular
+djoser==2.1.0
+    # via -r requirements/base.in
+drf-spectacular==0.22.0
     # via -r requirements/base.in
 environs==9.3.1
     # via -r requirements/base.in
@@ -82,20 +113,36 @@ idna==2.10
     # via
     #   requests
     #   yarl
+importlib-resources==5.4.0
+    # via jsonschema
+inflection==0.5.1
+    # via drf-spectacular
 ipython-genutils==0.2.0
     # via traitlets
 ipython==7.20.0
     # via -r requirements/base.in
+itypes==1.2.0
+    # via coreapi
 jedi==0.18.0
     # via ipython
+jinja2==3.0.3
+    # via coreschema
+jsonschema==4.4.0
+    # via drf-spectacular
 kombu==5.0.2
     # via celery
+markupsafe==2.1.1
+    # via jinja2
 marshmallow==3.10.0
     # via environs
 multidict==5.1.0
     # via
     #   aiohttp
     #   yarl
+oauthlib==3.2.0
+    # via
+    #   requests-oauthlib
+    #   social-auth-core
 parso==0.8.1
     # via jedi
 pexpect==4.8.0
@@ -110,25 +157,47 @@ psycopg2-binary==2.8.6
     # via -r requirements/base.in
 ptyprocess==0.7.0
     # via pexpect
+pycparser==2.21
+    # via cffi
 pygments==2.8.0
     # via ipython
+pyjwt==2.3.0
+    # via
+    #   djangorestframework-simplejwt
+    #   social-auth-core
+pyrsistent==0.18.1
+    # via jsonschema
 pytelegrambotapi==3.7.6
     # via -r requirements/base.in
 python-dotenv==0.15.0
     # via environs
+python3-openid==3.2.0
+    # via social-auth-core
 pytz==2021.1
     # via
     #   celery
     #   django
     #   django-dbbackup
+pyyaml==6.0
+    # via drf-spectacular
+requests-oauthlib==1.3.1
+    # via social-auth-core
 requests==2.25.1
     # via
     #   -r requirements/base.in
+    #   coreapi
     #   pytelegrambotapi
+    #   requests-oauthlib
+    #   social-auth-core
 six==1.15.0
     # via
     #   click-repl
     #   django-dbbackup
+    #   social-auth-app-django
+social-auth-app-django==4.0.0
+    # via djoser
+social-auth-core==4.2.0
+    # via social-auth-app-django
 soupsieve==2.2
     # via beautifulsoup4
 sqlparse==0.4.1
@@ -137,6 +206,10 @@ traitlets==5.0.5
     # via ipython
 typing-extensions==3.7.4.3
     # via aiohttp
+uritemplate==4.1.1
+    # via
+    #   coreapi
+    #   drf-spectacular
 urllib3==1.26.3
     # via requests
 vine==5.0.0
@@ -147,6 +220,8 @@ wcwidth==0.2.5
     # via prompt-toolkit
 yarl==1.6.3
     # via aiohttp
+zipp==3.7.0
+    # via importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
