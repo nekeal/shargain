@@ -36,6 +36,28 @@ class ScrappingTarget(models.Model):
         verbose_name_plural = _("Scrapping targets")
 
 
+class ScrapingUrl(models.Model):
+    name = models.CharField(
+        _("Name"), max_length=255, help_text=_("Human readable name for the URL")
+    )
+    url = models.URLField(
+        _("Target URL"),
+        max_length=1024,
+        help_text=_("Target URL to one of the supported sites"),
+    )
+
+    scraping_target = models.ForeignKey(
+        ScrappingTarget,
+        verbose_name=_("Scraping target"),
+        on_delete=models.CASCADE,
+        help_text=_("Group of scraping URLs"),
+    )
+
+    class Meta:
+        verbose_name = _("Link celu")
+        verbose_name_plural = _("Linki celów")
+
+
 class OfferQueryset(QuerySet):
     def opened(self):
         return self.filter(closed_at=None)

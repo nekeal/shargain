@@ -12,7 +12,7 @@ from django_admin_display import admin_display
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 from django_better_admin_arrayfield.models.fields import ArrayField
 
-from shargain.offers.models import Offer, ScrappingTarget
+from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.widgets import AdminDynamicArrayWidget
 
 
@@ -72,6 +72,11 @@ class OfferAdmin(admin.ModelAdmin):
             return timedelta(seconds=seconds)
 
 
+class ScrapingUrlInlineAdmin(admin.TabularInline):
+    model = ScrapingUrl
+    show_change_link = True
+
+
 @admin.register(ScrappingTarget)
 class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     fields = (
@@ -85,7 +90,7 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     list_display = ("name", "enable_notifications", "is_active")
     readonly_fields = ("display_grafana_panel",)
     formfield_overrides = {ArrayField: {"widget": AdminDynamicArrayWidget}}
-
+    inlines = [ScrapingUrlInlineAdmin]
     def get_readonly_fields(
         self, request: HttpRequest, obj: Optional[ScrappingTarget] = None
     ) -> Union[List[str], Tuple]:
@@ -99,3 +104,15 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     )
     def display_grafana_panel(self, obj):
         return render_to_string("admin/grafana_panels.html", context={"obj": obj})
+
+
+@admin.register(ScrapingUrl)
+class ScrapingUrlAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "scraping_target", "get_scraping_urls")
+    search_fields = ("url",)
+
+    @staticmethod
+    def get_scraping_urls(obj: ScrapingUrl) -> str:
+        return mark_safe(
+            f"<a href={obj.url} target=_blank><div style='width:100%'><i class='fas fa-external-link-alt'></i></div></a>"
+        )

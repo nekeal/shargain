@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from shargain.offers.models import Offer, ScrappingTarget
+from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 
 
 class OfferBasicSerializer(serializers.ModelSerializer):
@@ -40,10 +40,29 @@ class OfferSerializer(serializers.ModelSerializer):
         return offer
 
 
+class ScrapingUrlSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScrapingUrl
+        fields = ("id", "name", "url")
+
+
 class ScrappingTargetSerializer(serializers.ModelSerializer):
+    urls = serializers.SerializerMethodField(method_name="get_scraping_urls")
+
     class Meta:
         model = ScrappingTarget
-        fields = ("id", "name", "url", "enable_notifications", "notification_config")
+        fields = (
+            "id",
+            "name",
+            "url",
+            "urls",
+            "enable_notifications",
+            "notification_config",
+        )
+
+    @staticmethod
+    def get_scraping_urls(obj: ScrappingTarget):
+        return [scraping_url.url for scraping_url in obj.scrapingurl_set.all()]
 
 
 class AddTargetUrlSerializer(serializers.ModelSerializer):
