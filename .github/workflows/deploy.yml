@@ -45,5 +45,5 @@ jobs:
         env:
           ImageOS: ubuntu20 # required because in container there is no os_release file
       - name: Run deployment check
-        run: ansible-playbook -i inventory.txt shargain.yml -t docker_container -e "_docker_tag=${{ github.sha }}"
+        run: ansible-playbook -i inventory.txt -l prod shargain.yml -t docker_container -e "_docker_tag=${{ github.sha }}"
 
