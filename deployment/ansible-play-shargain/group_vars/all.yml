@@ -44,6 +44,8 @@ users_groups:
 
 users: "{{ _base_users + _app_users }}"
 
+
+postgresql_major_version: "14"
 postgresql_users:
   - name: "{{ _full_project_name }}"
     password: "{{ _db_password }}"
