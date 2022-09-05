@@ -91,6 +91,7 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     readonly_fields = ("display_grafana_panel",)
     formfield_overrides = {ArrayField: {"widget": AdminDynamicArrayWidget}}
     inlines = [ScrapingUrlInlineAdmin]
+
     def get_readonly_fields(
         self, request: HttpRequest, obj: Optional[ScrappingTarget] = None
     ) -> Union[List[str], Tuple]:
@@ -114,5 +115,9 @@ class ScrapingUrlAdmin(admin.ModelAdmin):
     @staticmethod
     def get_scraping_urls(obj: ScrapingUrl) -> str:
         return mark_safe(
-            f"<a href={obj.url} target=_blank><div style='width:100%'><i class='fas fa-external-link-alt'></i></div></a>"
+            f"<a href={obj.url} target=_blank>"
+            f"<div style='width:100%'>"
+            f"<i class='fas fa-external-link-alt'></i>"
+            f"</div>"
+            f"</a>"
         )
