@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-21 18:42+0200\n"
+"POT-Creation-Date: 2022-10-09 18:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,12 +51,11 @@ msgstr "Kanał powiadomień"
 msgid "Notification channels"
 msgstr "Kanały powiadomień"
 
-#: shargain/offers/admin.py:41 shargain/offers/models.py:84
+#: shargain/offers/admin.py:41 shargain/offers/models.py:88
 msgid "Title"
 msgstr "Tytuł"
 
 #: shargain/offers/admin.py:47
-#| msgid "Go to offer"
 msgid "Link to offer"
 msgstr "Link do oferty"
 
@@ -64,7 +63,7 @@ msgstr "Link do oferty"
 msgid "Go to offer"
 msgstr "Przejdz do oferty"
 
-#: shargain/offers/admin.py:53 shargain/offers/models.py:98
+#: shargain/offers/admin.py:53 shargain/offers/models.py:102
 msgid "Closed at"
 msgstr "Zamknięto"
 
@@ -72,11 +71,15 @@ msgstr "Zamknięto"
 msgid "Duration"
 msgstr "Czas trwania"
 
-#: shargain/offers/admin.py:103
+#: shargain/offers/admin.py:106
 msgid "Stats"
 msgstr "Statystyki"
 
-#: shargain/offers/apps.py:7 shargain/offers/models.py:109
+#: shargain/offers/admin.py:111
+msgid "Urls to scrap"
+msgstr "Linki do sprawdzenia"
+
+#: shargain/offers/apps.py:7 shargain/offers/models.py:113
 msgid "Offers"
 msgstr "Oferty"
 
@@ -105,7 +108,6 @@ msgid "Human readable name for the URL"
 msgstr "Czytelna nazwa dla linku"
 
 #: shargain/offers/models.py:44
-#| msgid "Target"
 msgid "Target URL"
 msgstr "Link celu"
 
@@ -114,7 +116,6 @@ msgid "Target URL to one of the supported sites"
 msgstr "Link celu jednej ze wspieranych stron"
 
 #: shargain/offers/models.py:51
-#| msgid "Scrapping target"
 msgid "Scraping target"
 msgstr "Cel do sprawdzenia"
 
@@ -122,35 +123,43 @@ msgstr "Cel do sprawdzenia"
 msgid "Group of scraping URLs"
 msgstr "Grupa linków do sprawdzenia"
 
-#: shargain/offers/models.py:85
+#: shargain/offers/models.py:57
+msgid "Link celu"
+msgstr ""
+
+#: shargain/offers/models.py:58
+msgid "Linki celów"
+msgstr ""
+
+#: shargain/offers/models.py:89
 msgid "Price"
 msgstr "Cena"
 
-#: shargain/offers/models.py:86
+#: shargain/offers/models.py:90
 msgid "Main image's URL"
 msgstr "Link do głównego zdjęcia"
 
-#: shargain/offers/models.py:88
+#: shargain/offers/models.py:92
 msgid "Source HTML"
 msgstr "Żródłowy HTML"
 
-#: shargain/offers/models.py:92
+#: shargain/offers/models.py:96
 msgid "Target"
 msgstr "Cel"
 
-#: shargain/offers/models.py:96
+#: shargain/offers/models.py:100
 msgid "Published at"
 msgstr "Opublikowano"
 
-#: shargain/offers/models.py:100
+#: shargain/offers/models.py:104
 msgid "Last check at"
 msgstr "Ostatnie sprawdzenie"
 
-#: shargain/offers/models.py:101
+#: shargain/offers/models.py:105
 msgid "Time of last offer check"
 msgstr "Czas ostatniego sprawdzenia oferty"
 
-#: shargain/offers/models.py:108
+#: shargain/offers/models.py:112
 msgid "Offer"
 msgstr "Oferta"
 
