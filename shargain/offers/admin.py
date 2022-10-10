@@ -88,9 +88,10 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
         "display_grafana_panel",
     )
     list_display = ("name", "enable_notifications", "is_active")
-    readonly_fields = ("display_grafana_panel",
-                       "show_scraping_urls",
-                       )
+    readonly_fields = (
+        "display_grafana_panel",
+        "show_scraping_urls",
+    )
     formfield_overrides = {ArrayField: {"widget": AdminDynamicArrayWidget}}
     inlines = [ScrapingUrlInlineAdmin]
 
@@ -110,8 +111,11 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
 
     @admin_display(short_description=_("Urls to scrap"))
     def show_scraping_urls(self, obj: ScrappingTarget):
-        return render_to_string("admin/fields/read_only_urls_to_scrap.html",
-                                context={"scraping_urls": obj.scrapingurl_set.all()})
+        return render_to_string(
+            "admin/fields/read_only_urls_to_scrap.html",
+            context={"scraping_urls": obj.scrapingurl_set.all()},
+        )
+
 
 @admin.register(ScrapingUrl)
 class ScrapingUrlAdmin(admin.ModelAdmin):
