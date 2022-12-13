@@ -12,7 +12,7 @@
       "use_jazzmin": "y",
       "use_drf": "y",
       "use_drf_flex_fields": "n",
-      "use_jwt": "n",
+      "use_jwt": "y",
       "use_sentry": "y",
       "use_django_filters": "n",
       "use_django_extensions": "y",

@@ -1,6 +1,8 @@
 Django
 django-dbbackup
 djangorestframework
+djoser
+djangorestframework-simplejwt
 django-jazzmin
 django-extensions
 django-admin-display
@@ -16,3 +18,4 @@ discord
 django-filter
 django-cors-headers
 django-better-admin-arrayfield
+drf-spectacular
