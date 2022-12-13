@@ -6,8 +6,8 @@ from django.db.models.expressions import F
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
-from django.utils.translation import ugettext as _
 from django_admin_display import admin_display
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 from django_better_admin_arrayfield.models.fields import ArrayField

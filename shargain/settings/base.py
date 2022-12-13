@@ -29,6 +29,8 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "dbbackup",
     "rest_framework",
+    "drf_yasg",
+    "debug_toolbar",
     "django_extensions",
     "celery",
     "django_filters",
@@ -46,10 +48,13 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 # ------------- MIDDLEWARES -------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -134,10 +139,18 @@ STATIC_ROOT = BASE_DIR.joinpath("public")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR.joinpath("media")
 
+
+# ------------- DEBUG TOOLBAR ------------
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
 # ------------- REST -------------
 CORS_ALLOW_ALL_ORIGINS = True
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
 }
 

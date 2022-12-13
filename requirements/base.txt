@@ -8,7 +8,7 @@ aiohttp==3.7.4
     # via discord.py
 amqp==5.0.5
     # via kombu
-asgiref==3.3.4
+asgiref==3.5.2
     # via django
 async-timeout==3.0.1
     # via aiohttp
@@ -16,6 +16,10 @@ attrs==20.3.0
     # via aiohttp
 backcall==0.2.0
     # via ipython
+backports.zoneinfo==0.2.1 ; python_version < "3.9"
+    # via
+    #   -r requirements/base.in
+    #   django
 beautifulsoup4==4.9.3
     # via bs4
 billiard==3.6.3.0
@@ -43,6 +47,12 @@ click==7.1.2
     #   click-plugins
     #   click-repl
     #   django-click
+coreapi==2.3.3
+    # via drf-yasg
+coreschema==0.0.4
+    # via
+    #   coreapi
+    #   drf-yasg
 decorator==4.4.2
     # via ipython
 discord.py==1.6.0
@@ -57,7 +67,9 @@ django-click==2.2.0
     # via -r requirements/base.in
 django-cors-headers==3.11.0
     # via -r requirements/base.in
-django-dbbackup==3.3.0
+django-dbbackup==4.0.2
+    # via -r requirements/base.in
+django-debug-toolbar==3.8.1
     # via -r requirements/base.in
 django-extensions==3.1.1
     # via -r requirements/base.in
@@ -65,16 +77,22 @@ django-filter==2.4.0
     # via -r requirements/base.in
 django-jazzmin==2.4.4
     # via -r requirements/base.in
-django==3.1.8
+django==4.1.4
     # via
     #   -r requirements/base.in
     #   django-admin-display
     #   django-cors-headers
     #   django-dbbackup
+    #   django-debug-toolbar
     #   django-filter
     #   django-jazzmin
     #   djangorestframework
+    #   drf-yasg
 djangorestframework==3.12.2
+    # via
+    #   -r requirements/base.in
+    #   drf-yasg
+drf-yasg==1.21.4
     # via -r requirements/base.in
 environs==9.3.1
     # via -r requirements/base.in
@@ -82,20 +100,30 @@ idna==2.10
     # via
     #   requests
     #   yarl
+inflection==0.5.1
+    # via drf-yasg
 ipython-genutils==0.2.0
     # via traitlets
 ipython==7.20.0
     # via -r requirements/base.in
+itypes==1.2.0
+    # via coreapi
 jedi==0.18.0
     # via ipython
+jinja2==3.1.2
+    # via coreschema
 kombu==5.0.2
     # via celery
+markupsafe==2.1.1
+    # via jinja2
 marshmallow==3.10.0
     # via environs
 multidict==5.1.0
     # via
     #   aiohttp
     #   yarl
+packaging==22.0
+    # via drf-yasg
 parso==0.8.1
     # via jedi
 pexpect==4.8.0
@@ -119,24 +147,33 @@ python-dotenv==0.15.0
 pytz==2021.1
     # via
     #   celery
-    #   django
     #   django-dbbackup
+    #   drf-yasg
 requests==2.25.1
     # via
     #   -r requirements/base.in
+    #   coreapi
     #   pytelegrambotapi
+ruamel.yaml.clib==0.2.7
+    # via ruamel.yaml
+ruamel.yaml==0.17.21
+    # via drf-yasg
 six==1.15.0
-    # via
-    #   click-repl
-    #   django-dbbackup
+    # via click-repl
 soupsieve==2.2
     # via beautifulsoup4
 sqlparse==0.4.1
-    # via django
+    # via
+    #   django
+    #   django-debug-toolbar
 traitlets==5.0.5
     # via ipython
-typing-extensions==3.7.4.3
+typing-extensions==4.4.0
     # via aiohttp
+uritemplate==4.1.1
+    # via
+    #   coreapi
+    #   drf-yasg
 urllib3==1.26.3
     # via requests
 vine==5.0.0
