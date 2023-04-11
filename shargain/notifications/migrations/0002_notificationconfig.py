@@ -6,7 +6,6 @@ from shargain.notifications.models import NotificationChannelChoices
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("notifications", "0001_initial"),
     ]

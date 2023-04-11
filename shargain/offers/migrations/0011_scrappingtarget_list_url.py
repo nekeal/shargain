@@ -13,7 +13,6 @@ def migrate_char_to_array(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offers", "0010_auto_20220115_1709"),
     ]

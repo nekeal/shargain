@@ -7,7 +7,7 @@ Django app which stores scrapped data.
 # Prerequisites
 
 ## Native way with virtualenv
-- [Python3.8](https://www.python.org/downloads/)
+- [Python3.10](https://www.python.org/downloads/)
 - [Virtualenv](https://virtualenv.pypa.io/en/latest/)
 
 ## Docker way

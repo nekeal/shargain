@@ -6,7 +6,6 @@ import shargain.offers.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offers", "0007_offer_main_image_url"),
     ]

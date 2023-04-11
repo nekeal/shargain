@@ -17,7 +17,6 @@ def migrate_scraping_urls_to_different_model(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("offers", "0011_scrappingtarget_list_url"),
     ]

@@ -18,9 +18,10 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Build & Publish Backend Image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           push: true
+          provenance: false # try to set it to true later on
           cache-from: |
               type=registry,ref=${{ secrets.REGISTRY_URL }}/${{ secrets.DOCKER_REPOSITORY }}:${{ env.BRANCH_NAME }}
           cache-to: type=inline
