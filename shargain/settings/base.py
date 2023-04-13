@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from celery.schedules import crontab
-from environs import Env
+from django.utils.translation import gettext_lazy as _
+from environs import Env, load_dotenv
 
 env = Env()
+load_dotenv(".env")
 
 PROJECT_NAME = "shargain"
 
@@ -154,5 +155,15 @@ REST_FRAMEWORK = {
 
 # ------------- JAZZMIN -------------
 JAZZMIN_UI_TWEAKS = {
+    "navbar": "navbar-dark",
     "theme": "cyborg",
 }
+JAZZMIN_SETTINGS = {
+    "site_brand": "Shargain",
+    "site_title": "Shargain",
+    "site_header": "Shargain",
+    "welcome_sign": _("Snap bargain with Shargain"),
+}
+
+# ------------- NOTIFICATIONS -------------
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", "")

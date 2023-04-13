@@ -1,3 +1,6 @@
+import warnings
+
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -15,7 +18,7 @@ class NotificationConfig(models.Model):
         choices=NotificationChannelChoices.choices,
     )
     webhook_url = models.URLField(verbose_name=_("Webhook url"), blank=True)
-    token = models.CharField(verbose_name=_("Token"), max_length=100, blank=True)
+    _token = models.CharField(verbose_name=_("Token"), max_length=100, blank=True)
     chatid = models.CharField(verbose_name=_("Chat ID"), max_length=100, blank=True)
 
     class Meta:
@@ -24,3 +27,16 @@ class NotificationConfig(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def token(self):
+        """
+        token parameter is deprecated and should no longer be used.
+        This property provides backward compatibility.
+        :return: Token from settings
+        """
+        warnings.warn(
+            "Token parameter is deprecated and should no longer be used.",
+            DeprecationWarning,
+        )
+        return settings.TELEGRAM_BOT_TOKEN
