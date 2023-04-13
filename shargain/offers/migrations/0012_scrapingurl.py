@@ -60,6 +60,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
+            options={
+                "verbose_name": "Scraping URL",
+                "verbose_name_plural": "Scraping URLs",
+            },
         ),
         migrations.RunPython(
             migrate_scraping_urls_to_different_model, migrations.RunPython.noop

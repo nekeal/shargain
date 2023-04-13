@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from celery.schedules import crontab
-from environs import Env
+from django.utils.translation import gettext_lazy as _
+from environs import Env, load_dotenv
 
 env = Env()
+load_dotenv(".env")
 
 PROJECT_NAME = "shargain"
 
@@ -48,8 +49,6 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
 # ------------- MIDDLEWARES -------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -58,7 +57,7 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -156,5 +155,15 @@ REST_FRAMEWORK = {
 
 # ------------- JAZZMIN -------------
 JAZZMIN_UI_TWEAKS = {
+    "navbar": "navbar-dark",
     "theme": "cyborg",
 }
+JAZZMIN_SETTINGS = {
+    "site_brand": "Shargain",
+    "site_title": "Shargain",
+    "site_header": "Shargain",
+    "welcome_sign": _("Snap bargain with Shargain"),
+}
+
+# ------------- NOTIFICATIONS -------------
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", "")

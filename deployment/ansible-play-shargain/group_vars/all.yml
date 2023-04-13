@@ -36,6 +36,7 @@ _base_envvars:
   POSTGRES_DB: "{{ _full_project_name }}"
   POSTGRES_USER: "{{ _full_project_name }}"
   POSTGRES_PASSWORD: "{{ _db_password }}"
+  TELEGRAM_BOT_TOKEN: "{{ telegram_bot_token }}"
 _additional_envvars: {}
 _envvars: "{{ _base_envvars | combine(_additional_envvars) }}"
 
