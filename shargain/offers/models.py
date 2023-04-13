@@ -54,8 +54,8 @@ class ScrapingUrl(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Link celu")
-        verbose_name_plural = _("Linki celów")
+        verbose_name = _("Scraping URL")
+        verbose_name_plural = _("Scraping URLs")
 
 
 class OfferQueryset(QuerySet):
