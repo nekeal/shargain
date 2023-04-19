@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-09 18:48+0200\n"
+"POT-Creation-Date: 2023-04-19 20:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,36 +20,44 @@ msgstr ""
 "%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n"
 "%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
-#: shargain/notifications/models.py:11 shargain/offers/models.py:14
+#: shargain/notifications/models.py:14 shargain/offers/models.py:14
 #: shargain/offers/models.py:41
 msgid "Name"
 msgstr "Nazwa"
 
-#: shargain/notifications/models.py:13
+#: shargain/notifications/models.py:16
 msgid "Channel"
 msgstr "Kanał"
 
-#: shargain/notifications/models.py:17
+#: shargain/notifications/models.py:20
 msgid "Webhook url"
 msgstr "Webhook url"
 
-#: shargain/notifications/models.py:18
+#: shargain/notifications/models.py:21
 msgid "Token"
 msgstr "Token"
 
-#: shargain/notifications/models.py:19
+#: shargain/notifications/models.py:22
 msgid "Chat ID"
 msgstr "ID czatu"
 
-#: shargain/notifications/models.py:22 shargain/offers/models.py:24
+#: shargain/notifications/models.py:25 shargain/offers/models.py:24
 msgid "Notification channel"
 msgstr "Kanał powiadomień"
 
-#: shargain/notifications/models.py:23
+#: shargain/notifications/models.py:26
 #, fuzzy
 #| msgid "Notification channel"
 msgid "Notification channels"
 msgstr "Kanały powiadomień"
+
+#: shargain/notifications/views/admin.py:27
+msgid "Error sending test notification: {}"
+msgstr "Błąd podczas wysyłania testowego powiadomienia"
+
+#: shargain/notifications/views/admin.py:29
+msgid "Test notification sent successfully"
+msgstr "Testowe powiadomienie wysłane pomyślnie"
 
 #: shargain/offers/admin.py:41 shargain/offers/models.py:88
 msgid "Title"
@@ -71,11 +79,11 @@ msgstr "Zamknięto"
 msgid "Duration"
 msgstr "Czas trwania"
 
-#: shargain/offers/admin.py:106
+#: shargain/offers/admin.py:107
 msgid "Stats"
 msgstr "Statystyki"
 
-#: shargain/offers/admin.py:111
+#: shargain/offers/admin.py:112
 msgid "Urls to scrap"
 msgstr "Linki do sprawdzenia"
 
@@ -124,12 +132,16 @@ msgid "Group of scraping URLs"
 msgstr "Grupa linków do sprawdzenia"
 
 #: shargain/offers/models.py:57
-msgid "Link celu"
-msgstr ""
+#, fuzzy
+#| msgid "Scraping target"
+msgid "Scraping URL"
+msgstr "Cel do sprawdzenia"
 
 #: shargain/offers/models.py:58
-msgid "Linki celów"
-msgstr ""
+#, fuzzy
+#| msgid "Group of scraping URLs"
+msgid "Scraping URLs"
+msgstr "Grupa linków do sprawdzenia"
 
 #: shargain/offers/models.py:89
 msgid "Price"
@@ -162,6 +174,10 @@ msgstr "Czas ostatniego sprawdzenia oferty"
 #: shargain/offers/models.py:112
 msgid "Offer"
 msgstr "Oferta"
+
+#: shargain/settings/base.py:165
+msgid "Snap bargain with Shargain"
+msgstr ""
 
 #~ msgid "Opened"
 #~ msgstr "Otwarte"

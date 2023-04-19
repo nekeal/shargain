@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+
+{% block extra_actions %}
+    <hr>
+    <form action=""></form>
+    <form action="{% url "admin:notifications_notificationconfig_test_notification" object_id %}" method="post">
+        {% csrf_token %}
+        <button class="btn btn-info form-control">Send test notification</button>
+    </form>
+{% endblock %}
