@@ -1,3 +1,4 @@
+import uuid
 import warnings
 
 from django.conf import settings
@@ -10,6 +11,10 @@ class NotificationChannelChoices(models.TextChoices):
     TELEGRAM = "telegram", "Telegram"
 
 
+def get_random_register_token():
+    return uuid.uuid1().hex
+
+
 class NotificationConfig(models.Model):
     name = models.CharField(verbose_name=_("Name"), max_length=100)
     channel = models.CharField(
@@ -19,6 +24,15 @@ class NotificationConfig(models.Model):
     )
     webhook_url = models.URLField(verbose_name=_("Webhook url"), blank=True)
     _token = models.CharField(verbose_name=_("Token"), max_length=100, blank=True)
+    register_token = models.CharField(
+        verbose_name=_("Register token"),
+        max_length=100,
+        unique=True,
+        blank=True,
+        null=True,
+        default=get_random_register_token,
+        help_text=_("Token used to register the channel (chat_id)"),
+    )
     chatid = models.CharField(verbose_name=_("Chat ID"), max_length=100, blank=True)
 
     class Meta:
