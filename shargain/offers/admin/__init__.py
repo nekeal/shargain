@@ -12,6 +12,7 @@ from django_admin_display import admin_display
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 from django_better_admin_arrayfield.models.fields import ArrayField
 
+from shargain.offers.admin.forms import ScrappingTargetAdminForm
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.widgets import AdminDynamicArrayWidget
 
@@ -79,6 +80,7 @@ class ScrapingUrlInlineAdmin(admin.TabularInline):
 
 @admin.register(ScrappingTarget)
 class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
+    form = ScrappingTargetAdminForm
     fields = (
         "name",
         "enable_notifications",
