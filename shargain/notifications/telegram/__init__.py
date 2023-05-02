@@ -26,7 +26,9 @@ class TelegramBot:
             cls._bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL)
 
 
-@TelegramBot.get_bot().message_handler(commands=["register"])
+@TelegramBot.get_bot().message_handler(
+    commands=["register"], regexp=r"^/register \w{32}$"
+)
 def register_channel_handler(message: Message) -> None:
     """
     The purpose of this method is to configure NotificationConfig using
