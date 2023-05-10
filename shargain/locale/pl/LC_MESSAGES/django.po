@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-19 20:46+0200\n"
+"POT-Creation-Date: 2023-05-12 23:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,76 +16,165 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n"
-"%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n"
-"%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
+"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
+"n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
-#: shargain/notifications/models.py:14 shargain/offers/models.py:14
+#: shargain/accounts/models.py:31 shargain/notifications/models.py:28
+msgid "Register token"
+msgstr "Token rejestracyjny"
+
+#: shargain/accounts/models.py:32
+msgid "Register tokens"
+msgstr "Tokeny rejestracyjne"
+
+#: shargain/notifications/models.py:19 shargain/offers/models.py:14
 #: shargain/offers/models.py:41
 msgid "Name"
 msgstr "Nazwa"
 
-#: shargain/notifications/models.py:16
+#: shargain/notifications/models.py:21
 msgid "Channel"
 msgstr "Kanał"
 
-#: shargain/notifications/models.py:20
+#: shargain/notifications/models.py:25
 msgid "Webhook url"
 msgstr "Webhook url"
 
-#: shargain/notifications/models.py:21
+#: shargain/notifications/models.py:26
 msgid "Token"
 msgstr "Token"
 
-#: shargain/notifications/models.py:22
+#: shargain/notifications/models.py:34
+msgid "Token used to register the channel (chat_id)"
+msgstr "Token używany do rejestracji kanału (chat_id)"
+
+#: shargain/notifications/models.py:36
 msgid "Chat ID"
 msgstr "ID czatu"
 
-#: shargain/notifications/models.py:25 shargain/offers/models.py:24
+#: shargain/notifications/models.py:39 shargain/offers/models.py:24
 msgid "Notification channel"
 msgstr "Kanał powiadomień"
 
-#: shargain/notifications/models.py:26
-#, fuzzy
-#| msgid "Notification channel"
+#: shargain/notifications/models.py:40
 msgid "Notification channels"
 msgstr "Kanały powiadomień"
 
-#: shargain/notifications/views/admin.py:27
+#: shargain/notifications/services/telegram.py:89
+msgid "This token is invalid or already used"
+msgstr "Ten token jest nieprawidłowy lub został użyty"
+
+#: shargain/notifications/services/telegram.py:102
+msgid ""
+"This name is already taken or notifications are already configured for this "
+"chat"
+msgstr ""
+"Ta nazwa jest już zajęta lub powiadomienia dla tego czatu są już "
+"skonfigurowane"
+
+#: shargain/notifications/services/telegram.py:112
+msgid ""
+"Notifications configured successfully. Now you can add links to track using /"
+"add command"
+msgstr ""
+"Powiadomienia skonfigurowane pomyślnie. Możesz teraz dodać linki do "
+"obserwacji za pomocą polecenia /add"
+
+#: shargain/notifications/services/telegram.py:122
+msgid "Invalid format of message. Please use /configure <token> <name> format"
+msgstr ""
+"Niepraawidłowy format wiadomości. Użyj formatu: /configure <token> <nazwa>"
+
+#: shargain/notifications/services/telegram.py:155
+#: shargain/notifications/services/telegram.py:202
+#: shargain/notifications/services/telegram.py:258
+msgid "You need to configure notifications first. Use /configure command"
+msgstr "Musisz najpierw skonfigurować powiadomienia. Użyj polecenia /configure"
+
+#: shargain/notifications/services/telegram.py:163
+#: shargain/notifications/services/telegram.py:210
+#: shargain/notifications/services/telegram.py:266
+msgid ""
+"You haven't configured this chat yet (use /configure command or contact "
+"administrator)"
+msgstr ""
+"Ten czat nie został jeszcze skonfigurowany (użyj polecenia /configure lub "
+"skontaktuj się z administratorem)"
+
+#: shargain/notifications/services/telegram.py:168
+msgid "Link added successfully. You will be notified about new offers soon"
+msgstr ""
+"Link dodany pomyślnie. Wkrótce otrzymasz powiadomienia o nowych ofertach"
+
+#: shargain/notifications/services/telegram.py:176
+msgid "Invalid format of message. Please use /add <url> [name] format"
+msgstr "Nieprawidłowy format wiadomości. Użyj formatu: /add <url> [nazwa]"
+
+#: shargain/notifications/services/telegram.py:192
+#: shargain/notifications/services/telegram.py:214
+msgid "You don't have any added links yet"
+msgstr "Nie posiadasz jeszcze żadnych dodanych obserwacji"
+
+#: shargain/notifications/services/telegram.py:218
+msgid "Invalid format of message. Please use /list format"
+msgstr "Nieprawidłowy format wiadomości. Użyj formatu: /list"
+
+#: shargain/notifications/services/telegram.py:239
+msgid "Scraping url with this index does not exist. Check /list command"
+msgstr "URL z tym indeksem nie istnieje. Sprawdź polecenie /list"
+
+#: shargain/notifications/services/telegram.py:275
+msgid ""
+"Invalid format of message. Please use /delete <number> format. Where number "
+"is a number of link from /list command"
+msgstr ""
+"Nieprawidłowy format wiadomości. Użyj /delete <id>. <id> to numer z wyniku "
+"polecenia /list"
+
+#: shargain/notifications/views/admin.py:28
 msgid "Error sending test notification: {}"
 msgstr "Błąd podczas wysyłania testowego powiadomienia"
 
-#: shargain/notifications/views/admin.py:29
+#: shargain/notifications/views/admin.py:30
 msgid "Test notification sent successfully"
 msgstr "Testowe powiadomienie wysłane pomyślnie"
 
-#: shargain/offers/admin.py:41 shargain/offers/models.py:88
+#: shargain/offers/admin/__init__.py:42 shargain/offers/models.py:88
 msgid "Title"
 msgstr "Tytuł"
 
-#: shargain/offers/admin.py:47
+#: shargain/offers/admin/__init__.py:48
 msgid "Link to offer"
 msgstr "Link do oferty"
 
-#: shargain/offers/admin.py:49
+#: shargain/offers/admin/__init__.py:50
 msgid "Go to offer"
 msgstr "Przejdz do oferty"
 
-#: shargain/offers/admin.py:53 shargain/offers/models.py:102
+#: shargain/offers/admin/__init__.py:54 shargain/offers/models.py:102
 msgid "Closed at"
 msgstr "Zamknięto"
 
-#: shargain/offers/admin.py:66
+#: shargain/offers/admin/__init__.py:67
 msgid "Duration"
 msgstr "Czas trwania"
 
-#: shargain/offers/admin.py:107
+#: shargain/offers/admin/__init__.py:109
 msgid "Stats"
 msgstr "Statystyki"
 
-#: shargain/offers/admin.py:112
+#: shargain/offers/admin/__init__.py:114
 msgid "Urls to scrap"
 msgstr "Linki do sprawdzenia"
+
+#: shargain/offers/admin/forms.py:18
+msgid "Only telegram channel is supported for now"
+msgstr "Tylko telegram jest obecnie obsługiwany"
+
+#: shargain/offers/admin/forms.py:21
+msgid "You must first register a channel (or specify a chat_id manually)"
+msgstr "Musisz najpierw zarejestrować kanał (lub ręcznie określić chat_id)"
 
 #: shargain/offers/apps.py:7 shargain/offers/models.py:113
 msgid "Offers"
@@ -129,19 +218,15 @@ msgstr "Cel do sprawdzenia"
 
 #: shargain/offers/models.py:53
 msgid "Group of scraping URLs"
-msgstr "Grupa linków do sprawdzenia"
+msgstr "Grupa linków do śledzenia"
 
 #: shargain/offers/models.py:57
-#, fuzzy
-#| msgid "Scraping target"
 msgid "Scraping URL"
 msgstr "Cel do sprawdzenia"
 
 #: shargain/offers/models.py:58
-#, fuzzy
-#| msgid "Group of scraping URLs"
 msgid "Scraping URLs"
-msgstr "Grupa linków do sprawdzenia"
+msgstr "Linki do śledzenia"
 
 #: shargain/offers/models.py:89
 msgid "Price"
@@ -175,9 +260,14 @@ msgstr "Czas ostatniego sprawdzenia oferty"
 msgid "Offer"
 msgstr "Oferta"
 
-#: shargain/settings/base.py:165
-msgid "Snap bargain with Shargain"
+#: shargain/settings/base.py:121
+msgid "English"
 msgstr ""
 
-#~ msgid "Opened"
-#~ msgstr "Otwarte"
+#: shargain/settings/base.py:122
+msgid "Polish"
+msgstr ""
+
+#: shargain/settings/base.py:168
+msgid "Snap bargain with Shargain"
+msgstr ""
