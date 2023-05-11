@@ -1,11 +1,20 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import CustomUser
+from .models import CustomUser, RegisterToken
 
 
+@admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     pass
 
 
-admin.site.register(CustomUser, CustomUserAdmin)
+@admin.register(RegisterToken)
+class RegisterTokenAdmin(admin.ModelAdmin):
+    list_display = (
+        "token",
+        "created_at",
+        "already_used",
+    )
+    list_filter = ("already_used",)
+    search_fields = ("token",)
