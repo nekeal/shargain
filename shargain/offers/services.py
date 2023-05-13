@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from shargain.notifications.services import NewOfferNotificationService
+from shargain.notifications.services.notifications import NewOfferNotificationService
 from shargain.offers.models import Offer
 from shargain.offers.serializers import OfferBatchCreateSerializer
 
