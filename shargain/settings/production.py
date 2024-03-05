@@ -51,3 +51,6 @@ DATABASES = {
 # ------------- STATIC -------------
 STATIC_ROOT = BASE_DIR.joinpath("static")
 MEDIA_ROOT = BASE_DIR.joinpath("media")
+
+# ------------- SECURITY -------------
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
