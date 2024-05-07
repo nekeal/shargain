@@ -54,4 +54,4 @@ MEDIA_ROOT = BASE_DIR.joinpath("media")
 STATIC_URL = "https://s3c.bcode.app/"
 
 # ------------- SECURITY -------------
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

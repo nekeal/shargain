@@ -2,14 +2,14 @@ import abc
 import logging
 import re
 from dataclasses import dataclass
-from functools import cached_property
+from functools import cache, cached_property
 from typing import Iterable, TypeGuard
 
 from django.core.validators import URLValidator
 from django.db.models import Q, QuerySet
+from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from telebot.types import Message
-from typing_extensions import reveal_type
 
 from shargain.accounts.models import RegisterToken
 from shargain.notifications.models import NotificationChannelChoices, NotificationConfig
@@ -54,24 +54,36 @@ class BaseTelegramHandler(abc.ABC):
 
 
 class SetupScrapingTargetWithNotificationsHandler(BaseTelegramHandler):
-    command_regex = re.compile(r"^/configure (?P<token>\w+) (?P<name>[\w\-_\s]+)$")
+    command_regex = re.compile(r"^/configure (?P<token>\w+)$")
 
     @cached_property
     def target_name(self) -> str:
         return self._regex_match.group("name")
 
+    @staticmethod
+    @cache
+    def get_notification_config_name(register_token: RegisterToken) -> str:
+        return slugify(register_token.description)
+
+    @staticmethod
+    @cache
+    def get_scraping_target_name(register_token: RegisterToken) -> str:
+        return slugify(register_token.description)
+
     @cached_property
     def token(self) -> str:
         return self._regex_match.group("token")
 
-    def create_objects(self) -> tuple[NotificationConfig, ScrappingTarget]:
+    def create_objects(
+        self, register_token: RegisterToken
+    ) -> tuple[NotificationConfig, ScrappingTarget]:
         notification_config = NotificationConfig.objects.create(
-            name=self.target_name,
+            name=self.get_notification_config_name(register_token),
             channel=NotificationChannelChoices.TELEGRAM,
             chatid=self.chat_id,
         )
         scraping_target = ScrappingTarget.objects.create(
-            name=self.target_name,
+            name=self.get_scraping_target_name(register_token),
             enable_notifications=True,
             is_active=True,
             notification_config=notification_config,
@@ -79,33 +91,34 @@ class SetupScrapingTargetWithNotificationsHandler(BaseTelegramHandler):
         return notification_config, scraping_target
 
     def handle(self) -> str:
-        if (
-            RegisterToken.objects.filter(already_used=False, token=self.token).update(
-                already_used=True
-            )
-            == 0
-        ):
+        token_qs = RegisterToken.objects.filter(already_used=False, token=self.token)
+        if not (token := token_qs.first()):
             logger.info("Token is invalid or already used [token=%s]", self.token)
             return _("This token is invalid or already used")
+        token_qs.update(already_used=True)  # mark token as used
+
         if (
             NotificationConfig.objects.filter(
-                Q(name=self.target_name) | Q(chatid=self.message.chat.id)
+                Q(name=self.get_notification_config_name(token))
+                | Q(chatid=self.message.chat.id)
             ).exists()
-            or ScrappingTarget.objects.filter(name=self.target_name).exists()
+            or ScrappingTarget.objects.filter(
+                name=self.get_scraping_target_name(token)
+            ).exists()
         ):
             logger.info(
                 "Target already exists [target_name=%s] [chat_id=%s]",
-                self.target_name,
+                self.get_scraping_target_name(token),
                 self.chat_id,
             )
             return _(
                 "This name is already taken or notifications"
                 " are already configured for this chat"
             )
-        self.create_objects()
+        self.create_objects(token)
         logger.info(
             "Target created [target_name=%s] [chat_id=%s]",
-            self.target_name,
+            self.get_scraping_target_name(token),
             self.chat_id,
         )
         return _(
@@ -118,9 +131,7 @@ class SetupScrapingTargetWithNotificationsHandler(BaseTelegramHandler):
             self.chat_id,
             self.message.text,
         )
-        return _(
-            "Invalid format of message. Please use /configure <token> <name> format"
-        )
+        return _("Invalid format of message. Please use /configure <token> format")
 
 
 class AddScrapingLinkHandler(BaseTelegramHandler):

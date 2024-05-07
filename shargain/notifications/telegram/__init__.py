@@ -90,9 +90,9 @@ def start_handler(message: Message) -> None:
     logger.info("Starting bot")
     TelegramBot.get_bot().send_message(
         message.chat.id,
-        "Hello! I'm Shargain bot. I can send you notifications about new deals. "
-        "To start receiving notifications, please register your channel using "
-        "the following command: /register <token> <name>",
+        "Hello! I'm a Shargain bot. I can send you notifications about new offers. "
+        "To start receiving notifications, please register your channel or this conversation using "
+        "the following command: /configure <token>",
     )
 
 
