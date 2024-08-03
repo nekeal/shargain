@@ -1,0 +1,50 @@
+version: '3.7'
+x-common-backend: &common-backend
+  image: registry.heroku.com/shargain/web:prod
+  user: 1000:1000
+  networks:
+    - traefik
+    - bridge
+  env_file: .env
+
+services:
+  backend:
+    <<: *common-backend
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.shargain.entrypoints=websecure"
+      - "traefik.http.routers.shargain.rule=Host(`${COMPOSE_DOMAIN_NAME}`)"
+      - "traefik.http.services.shargain.loadbalancer.server.port=8010"
+      - "traefik.http.routers.shargain.tls=true"
+    command: "gunicorn shargain.wsgi -w 4 -b 0.0.0.0:8010"
+    depends_on:
+      - migrations
+  migrations:
+    <<: *common-backend
+    restart: no
+    command: "python manage.py migrate"
+  collectstatic:
+    <<: *common-backend
+    restart: no
+    command: "python manage.py collectstatic --no-input"
+    volumes:
+      - source: traefik_shared_static_files
+        target: /app/static
+        type: volume
+        volume:
+          subpath: "shargain"
+    depends_on:
+      - backend
+
+volumes:
+  static_files:
+  traefik_shared_static_files:
+    external: true
+
+
+networks:
+  traefik:
+    external: true
+  bridge:
