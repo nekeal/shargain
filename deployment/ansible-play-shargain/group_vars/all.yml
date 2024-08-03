@@ -7,7 +7,7 @@ _app_dir: "/home/{{ _app_user }}/shargain"
 _git_repo_url: git@github.com:nekeal/shargain.git
 _git_repo_version: master
 _docker_tag: "{{ _git_repo_version }}"
-_docker_run_command: "gunicorn shargain.wsgi -b localhost:{{ _app_port }}"
+_docker_run_command: "gunicorn shargain.wsgi -w 4 -b 0.0.0.0:{{ _app_port }}"
 _docker_celery_run_command: "celery -A shargain worker -B -l debug"
 _base_ssh_keys:
   - nekeal
@@ -46,7 +46,7 @@ users_groups:
 users: "{{ _base_users + _app_users }}"
 
 
-postgresql_major_version: "14"
+postgresql_major_version: "16"
 postgresql_users:
   - name: "{{ _full_project_name }}"
     password: "{{ _db_password }}"
@@ -92,20 +92,41 @@ nginx_vhosts:
 docker_containers:
   - name: "{{ _full_project_name }}"
     image: "{{ _docker_image_name }}:{{ _docker_tag }}"
-    pull: yes
+    pull: no
     state: started
-    network_mode: host
+    networks:
+      - name: "traefik"
+      - name: "bridge"
+    published_ports:
+        - "{{ _app_port }}:{{ _app_port }}"
     restart_policy: always
     mounts:
-      - source: "/home/{{ _app_user }}/static"
+      - source: "static_files"
         target: /app/static
-        type: bind
+        type: volume
+#        volume_options:
+#          subpath: "shargain"
+#          external: true
+      - source: "traefik_shared_static_files"
+        target: /tmp/static
+        type: volume
+        volume_options:
+          subpath: "shargain"
+          external: true
       - source: "/home/{{ _app_user }}/media"
         target: /app/media
         type: bind
+
     user: "{{ _app_user_uid }}:{{ _app_user_uid }}"
     env: "{{ _envvars }}"
     command: "{{ _docker_run_command }}"
+    labels:
+       "traefik.enable": "true"
+       traefik.docker.network: "traefik"
+       traefik.http.routers.shargain.entrypoints: "websecure"
+       traefik.http.routers.shargain.rule: "Host(`shargain.bcode.app`)"
+       traefik.http.services.shargain.loadbalancer.server.port: "8010"
+       traefik.http.routers.shargain.tls: "true"
     comparisons:
       "*": strict
     pre_release_commands:
@@ -147,7 +168,4 @@ docker_app_create_directories:
       - static
 
 docker_registry_state: present
-docker_registry_users:
-  - nekeal
-  - root
-  - deployer
+docker_registry_users: []

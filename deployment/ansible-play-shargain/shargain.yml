@@ -1,7 +1,7 @@
 ---
 - name: "shargain v0.1.0.nekeal - This playbook configures server and deploys shargain"
   hosts: all
-  user: deployer
+  user: admin
   become: yes
   tasks: []
   vars_files:
