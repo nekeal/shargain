@@ -1,5 +1,3 @@
-[tool.black]
-max-line-length = 120
 [project]
 name = "shargain"
 version = "0.0.1"
@@ -35,13 +33,11 @@ dev = [
     "pytest-django",
     "pytest-sugar",
     "pytest-xdist",
-    "flake8",
-    "flake8-formatter-abspath",
     "black",
-    "isort",
     "mypy",
     "django-stubs",
     "types-requests",
+    "ruff>=0.11.10",
 ]
 deployment = [
     "ansible>=10.7.0",
@@ -51,10 +47,61 @@ deployment = [
 [tool.uv]
 package = false
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+extend-exclude = [
+    "__pycache__",
+    "build",
+]
+[tool.ruff.lint]
+select = [
+    "A", # flake8 builtins
+    "S",   # flake8-bandit
+    "DJ",  # flake8-django
+    "PT",  # flake8-pytest-style
+    "TID", # flake8-tidy-imports
+    "INT", # flake8-gettext
+    "PTH", # flake8-use-pathlib
+    "T10", # flake8-debugger
+    "ERA", # flake8-eradicate
+    "C4", # flake8-comprehensions
+    "B", # flake8-bugbear
+    "G", # flake8-logging-format
+    "E", # pycodestyle error
+    "W", # pycodestyle warning
+    "F", # pyflakes
+    "N", # pep8-naming
+    "UP", # pyupgrade
+    "I", # isort
+    "C9", # mccabe
+    "I", # isort
+]
 
-[tool.coverage.report]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = [
+    "S101",     # "Use of `assert` detected"
+    "ARG",      # "Unused function argument". Fixtures can be unused.
+    "S105",     # "Possible hardcoded password".
+]
+"**settings/**" = [
+    "F405",     # variable may be undefined due to * import
+    "F403",      # allow * imports
+    "TID252",   # Allow relative imports
+]
+"**/settings/tests.py" = [
+    "S105",
+]
+"**/settings/local.py" = [
+    "S105",
+]
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = [
+    "classmethod",
+]
+
 [tool.coverage.run]
 branch = true
 

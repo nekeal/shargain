@@ -58,14 +58,13 @@ coverage: ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 quality-check: ## check quality of code
-	black --check shargain
-	isort --check shargain
-	flake8 shargain
+	ruff check shargain
+	ruff format --check shargain
 	mypy shargain
 
 autoformatters: ## runs auto formatters
-	black shargain
-	isort shargain
+	ruff format shargain
+	ruff check --fix shargain
 
 bootstrap: ## bootstrap project
 	pip install -r requirements/dev.txt
