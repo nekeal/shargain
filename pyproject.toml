@@ -1,5 +1,55 @@
 [tool.black]
 max-line-length = 120
+[project]
+name = "shargain"
+version = "0.0.1"
+dependencies = [
+    "django",
+    "django-dbbackup",
+    "djangorestframework",
+    "drf-yasg",
+    "django-jazzmin",
+    "django-extensions",
+    "django-debug-toolbar",
+    "django-admin-display",
+    "django-click",
+    "celery",
+    "psycopg2-binary",
+    "requests",
+    "bs4",
+    "ipython",
+    "environs",
+    "pytelegrambotapi",
+    "discord",
+    "django-filter",
+    "django-cors-headers",
+    "django-better-admin-arrayfield",
+    "gunicorn",
+    "sentry-sdk",
+]
+
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-django",
+    "pytest-sugar",
+    "pytest-xdist",
+    "flake8",
+    "flake8-formatter-abspath",
+    "black",
+    "isort",
+    "mypy",
+    "django-stubs",
+    "types-requests",
+]
+deployment = [
+    "ansible>=10.7.0",
+    "mitogen>=0.3.23",
+]
+
+[tool.uv]
+package = false
 
 [tool.isort]
 profile = "black"

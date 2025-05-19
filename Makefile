@@ -67,9 +67,6 @@ autoformatters: ## runs auto formatters
 	black shargain
 	isort shargain
 
-pip-compile:
-	ls requirements/*.in | xargs -n 1 pip-compile
-
 bootstrap: ## bootstrap project
 	pip install -r requirements/dev.txt
 	python manage.py migrate
