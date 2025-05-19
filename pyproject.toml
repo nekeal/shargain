@@ -55,15 +55,18 @@ package = false
 profile = "black"
 
 [tool.coverage.report]
+[tool.coverage.run]
 branch = true
+
+[tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:"
 ]
 omit = [
-    "**/fixtures.py",
     "manage.py",
     "**/wsgi.py",
+    "**/asgi.py",
     "**/settings/*.py",
     "**/migrations/*.py",
 ]
@@ -71,14 +74,45 @@ omit = [
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "shargain.settings.local"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-norecursedirs = ["deployment*",
-                 ".git/*",
-                 ".mypy_cache/*",
-                 ".pytest_cache/*",
-                 "migrations/*",
-                 "shargain/frontend/*"
+norecursedirs = [".git/*",
+    ".mypy_cache/*",
+    ".pytest_cache/*",
+    "migrations/*",
+    "settings/*",
 ]
 addopts = "--nomigrations"
+
+[tool.mypy]
+plugins = [
+    "mypy_django_plugin.main",
+    "mypy_drf_plugin.main",
+]
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+
+[tool.django-stubs]
+django_settings_module = "shargain.settings.local"
+
+[[tool.mypy.overrides]]
+module = [
+    "*.migrations.*",
+    "*.settings.*",
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "factory.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "django_extensions.*",
+    "factory.*",
+    "celery.*",
+]
+ignore_missing_imports = true
 
 [tool.tox]
 legacy_tox_ini = """
