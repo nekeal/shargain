@@ -12,8 +12,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="scrappingtarget",
             name="enable_notifications",
-            field=models.BooleanField(
-                default=True, verbose_name="Enable notifications"
-            ),
+            field=models.BooleanField(default=True, verbose_name="Enable notifications"),
         ),
     ]

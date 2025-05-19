@@ -42,9 +42,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "chatid",
-                    models.CharField(
-                        blank=True, max_length=100, verbose_name="Chat ID"
-                    ),
+                    models.CharField(blank=True, max_length=100, verbose_name="Chat ID"),
                 ),
             ],
             options={

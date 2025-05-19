@@ -37,9 +37,7 @@ class Migration(migrations.Migration):
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "valid_until",
-                    models.DateTimeField(
-                        default=shargain.accounts.models.get_default_valid_until
-                    ),
+                    models.DateTimeField(default=shargain.accounts.models.get_default_valid_until),
                 ),
                 ("already_used", models.BooleanField(default=False)),
                 ("description", models.CharField(blank=True, max_length=255)),

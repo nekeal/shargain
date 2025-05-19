@@ -11,9 +11,7 @@ class OfferBasicSerializer(serializers.ModelSerializer):
 
 
 class OfferBatchCreateSerializer(serializers.Serializer):
-    target = serializers.SlugRelatedField(
-        slug_field="name", queryset=ScrappingTarget.objects.all()
-    )
+    target = serializers.SlugRelatedField(slug_field="name", queryset=ScrappingTarget.objects.all())
     offers = OfferBasicSerializer(many=True)
 
     class Meta:
@@ -26,9 +24,7 @@ class OfferBatchCreateSerializer(serializers.Serializer):
 
 
 class OfferSerializer(serializers.ModelSerializer):
-    target = serializers.SlugRelatedField(
-        slug_field="name", queryset=ScrappingTarget.objects.all()
-    )
+    target = serializers.SlugRelatedField(slug_field="name", queryset=ScrappingTarget.objects.all())
 
     class Meta:
         model = Offer

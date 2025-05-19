@@ -50,9 +50,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="offer",
             name="published_at",
-            field=models.DateTimeField(
-                blank=True, null=True, verbose_name="Published at"
-            ),
+            field=models.DateTimeField(blank=True, null=True, verbose_name="Published at"),
         ),
         migrations.AlterField(
             model_name="offer",

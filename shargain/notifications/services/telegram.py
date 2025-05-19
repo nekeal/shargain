@@ -74,9 +74,7 @@ class SetupScrapingTargetWithNotificationsHandler(BaseTelegramHandler):
     def token(self) -> str:
         return self._regex_match.group("token")
 
-    def create_objects(
-        self, register_token: RegisterToken
-    ) -> tuple[NotificationConfig, ScrappingTarget]:
+    def create_objects(self, register_token: RegisterToken) -> tuple[NotificationConfig, ScrappingTarget]:
         notification_config = NotificationConfig.objects.create(
             name=self.get_notification_config_name(register_token),
             channel=NotificationChannelChoices.TELEGRAM,
@@ -99,31 +97,23 @@ class SetupScrapingTargetWithNotificationsHandler(BaseTelegramHandler):
 
         if (
             NotificationConfig.objects.filter(
-                Q(name=self.get_notification_config_name(token))
-                | Q(chatid=self.message.chat.id)
+                Q(name=self.get_notification_config_name(token)) | Q(chatid=self.message.chat.id)
             ).exists()
-            or ScrappingTarget.objects.filter(
-                name=self.get_scraping_target_name(token)
-            ).exists()
+            or ScrappingTarget.objects.filter(name=self.get_scraping_target_name(token)).exists()
         ):
             logger.info(
                 "Target already exists [target_name=%s] [chat_id=%s]",
                 self.get_scraping_target_name(token),
                 self.chat_id,
             )
-            return _(
-                "This name is already taken or notifications"
-                " are already configured for this chat"
-            )
+            return _("This name is already taken or notifications are already configured for this chat")
         self.create_objects(token)
         logger.info(
             "Target created [target_name=%s] [chat_id=%s]",
             self.get_scraping_target_name(token),
             self.chat_id,
         )
-        return _(
-            "Notifications configured successfully. Now you can add links to track using /add command"
-        )
+        return _("Notifications configured successfully. Now you can add links to track using /add command")
 
     def handle_invalid_format(self) -> str:
         logger.info(
@@ -156,26 +146,12 @@ class AddScrapingLinkHandler(BaseTelegramHandler):
         return True
 
     def handle(self):
-        if not (
-            notification_config := NotificationConfig.objects.filter(
-                chatid=self.chat_id
-            ).first()
-        ):
+        if not (notification_config := NotificationConfig.objects.filter(chatid=self.chat_id).first()):
             logger.info("Notification config does not exist [chat_id=%s]", self.chat_id)
-            return _(
-                "You need to configure notifications first. Use /configure command"
-            )
-        if not (
-            scraping_target := ScrappingTarget.objects.get(
-                notification_config=notification_config
-            )
-        ):
-            return _(
-                "You haven't configured this chat yet (use /configure command or contact administrator)"
-            )
-        ScrapingUrl.objects.create(
-            url=self.url, scraping_target=scraping_target, name=self.name
-        )
+            return _("You need to configure notifications first. Use /configure command")
+        if not (scraping_target := ScrappingTarget.objects.get(notification_config=notification_config)):
+            return _("You haven't configured this chat yet (use /configure command or contact administrator)")
+        ScrapingUrl.objects.create(url=self.url, scraping_target=scraping_target, name=self.name)
         return _("Link added successfully. You will be notified about new offers soon")
 
     def handle_invalid_format(self):
@@ -203,23 +179,11 @@ class ListScrapingLinksHandler(BaseTelegramHandler):
         return result or _("You don't have any added links yet")
 
     def handle(self):
-        if not (
-            notification_config := NotificationConfig.objects.filter(
-                chatid=self.chat_id
-            ).first()
-        ):
+        if not (notification_config := NotificationConfig.objects.filter(chatid=self.chat_id).first()):
             logger.info("Notification config does not exist [chat_id=%s]", self.chat_id)
-            return _(
-                "You need to configure notifications first. Use /configure command"
-            )
-        if not (
-            scraping_target := ScrappingTarget.objects.filter(
-                notification_config=notification_config
-            ).first()
-        ):
-            return _(
-                "You haven't configured this chat yet (use /configure command or contact administrator)"
-            )
+            return _("You need to configure notifications first. Use /configure command")
+        if not (scraping_target := ScrappingTarget.objects.filter(notification_config=notification_config).first()):
+            return _("You haven't configured this chat yet (use /configure command or contact administrator)")
         scraping_urls = self.get_scraping_urls(scraping_target)
         if not scraping_urls:
             return _("You don't have any added links yet")
@@ -240,15 +204,11 @@ class DeleteScrapingLinkHandler(BaseTelegramHandler):
         return int(self._regex_match.group("index")) - 1
 
     @staticmethod
-    def delete_scraping_url_by_index(
-        scraping_urls: QuerySet[ScrapingUrl], index: int
-    ) -> TelegramActionResult:
+    def delete_scraping_url_by_index(scraping_urls: QuerySet[ScrapingUrl], index: int) -> TelegramActionResult:
         if index >= scraping_urls.count():
             return TelegramActionResult(
                 success=False,
-                message=_(
-                    "Scraping url with this index does not exist. Check /list command"
-                ),
+                message=_("Scraping url with this index does not exist. Check /list command"),
             )
         list_scraping_urls = list(scraping_urls)
         scraping_urls[index].delete()
@@ -259,23 +219,11 @@ class DeleteScrapingLinkHandler(BaseTelegramHandler):
         )
 
     def handle(self):
-        if not (
-            notification_config := NotificationConfig.objects.filter(
-                chatid=self.chat_id
-            ).first()
-        ):
+        if not (notification_config := NotificationConfig.objects.filter(chatid=self.chat_id).first()):
             logger.info("Notification config does not exist [chat_id=%s]", self.chat_id)
-            return _(
-                "You need to configure notifications first. Use /configure command"
-            )
-        if not (
-            scraping_target := ScrappingTarget.objects.filter(
-                notification_config=notification_config
-            ).first()
-        ):
-            return _(
-                "You haven't configured this chat yet (use /configure command or contact administrator)"
-            )
+            return _("You need to configure notifications first. Use /configure command")
+        if not (scraping_target := ScrappingTarget.objects.filter(notification_config=notification_config).first()):
+            return _("You haven't configured this chat yet (use /configure command or contact administrator)")
         result = self.delete_scraping_url_by_index(
             ListScrapingLinksHandler.get_scraping_urls(scraping_target), self.index
         )

@@ -65,7 +65,5 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Scraping URLs",
             },
         ),
-        migrations.RunPython(
-            migrate_scraping_urls_to_different_model, migrations.RunPython.noop
-        ),
+        migrations.RunPython(migrate_scraping_urls_to_different_model, migrations.RunPython.noop),
     ]

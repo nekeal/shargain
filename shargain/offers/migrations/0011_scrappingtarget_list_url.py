@@ -33,7 +33,5 @@ class Migration(migrations.Migration):
             model_name="scrappingtarget",
             name="url",
         ),
-        migrations.RenameField(
-            model_name="scrappingtarget", old_name="list_url", new_name="url"
-        ),
+        migrations.RenameField(model_name="scrappingtarget", old_name="list_url", new_name="url"),
     ]

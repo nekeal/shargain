@@ -38,18 +38,12 @@ class OfferBatchCreateService:
                 )
             except Offer.MultipleObjectsReturned:
                 offer, created = (
-                    Offer.objects.filter(
-                        url=offer_url, target=validated_data["target"]
-                    ).first(),
+                    Offer.objects.filter(url=offer_url, target=validated_data["target"]).first(),
                     False,
                 )
             offers.append((offer, created))
         return offers
 
     def _notify(self, new_offers, scrapping_target):
-        if (
-            new_offers
-            and scrapping_target.notification_config
-            and scrapping_target.enable_notifications
-        ):
+        if new_offers and scrapping_target.notification_config and scrapping_target.enable_notifications:
             self.notification_service_class(new_offers, scrapping_target).run()

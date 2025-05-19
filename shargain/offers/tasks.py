@@ -68,11 +68,7 @@ def get_offer_source_html(pk=None):
             Offer.objects.select_for_update(skip_locked=True)
             .filter(created_at__gte=timezone.localtime() - timedelta(days=31))
             .opened()
-            .annotate(
-                source_html_exists=ExpressionWrapper(
-                    ~Q(source_html=""), output_field=BooleanField()
-                )
-            )
+            .annotate(source_html_exists=ExpressionWrapper(~Q(source_html=""), output_field=BooleanField()))
             .order_by("source_html_exists", "last_check_at")[0]
         )
     logger.info("Checking offer [id=%s]", offer.id)

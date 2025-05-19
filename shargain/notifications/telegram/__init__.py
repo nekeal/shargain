@@ -43,9 +43,7 @@ class TelegramBot:
         cls.get_bot().polling()
 
 
-@TelegramBot.get_bot().message_handler(
-    commands=["register"], regexp=r"^/register \w{32}$"
-)
+@TelegramBot.get_bot().message_handler(commands=["register"], regexp=r"^/register \w{32}$")
 def register_channel_handler(message: Message) -> None:
     """
     The purpose of this method is to configure NotificationConfig using
@@ -58,9 +56,7 @@ def register_channel_handler(message: Message) -> None:
     token = message.text.split()[1]
     with transaction.atomic():
         if not (
-            notification_config := NotificationConfig.objects.select_for_update()
-            .filter(register_token=token)
-            .first()
+            notification_config := NotificationConfig.objects.select_for_update().filter(register_token=token).first()
         ):
             logger.info(
                 "Channel not found for token [username=%s] [token=%s] [chatid=%s]",
@@ -75,9 +71,7 @@ def register_channel_handler(message: Message) -> None:
                 "NotificationConfig is already registered for [chatid=%s]",
                 notification_config.chatid,
             )
-            TelegramBot.get_bot().reply_to(
-                message, "Channel for this token is already registered"
-            )
+            TelegramBot.get_bot().reply_to(message, "Channel for this token is already registered")
             return
         notification_config.chatid = message.chat.id
         notification_config.save()

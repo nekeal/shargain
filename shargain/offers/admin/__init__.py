@@ -41,9 +41,7 @@ class OfferAdmin(admin.ModelAdmin):
 
     @admin_display(short_description=gettext_lazy("Title"), admin_order_field="title")
     def get_title(self, obj):
-        return render_to_string(
-            "admin/fields/main_image_offer.html", context={"obj": obj}
-        )
+        return render_to_string("admin/fields/main_image_offer.html", context={"obj": obj})
 
     @admin_display(short_description=gettext_lazy("Link to offer"))
     def get_link(self, obj):
@@ -57,11 +55,7 @@ class OfferAdmin(admin.ModelAdmin):
     def get_closed_at(self, obj):
         css_class = "btn-outline-danger" if obj.closed_at else "btn-outline-success"
         if obj.closed_at:
-            return mark_safe(
-                f"<div class='{css_class}'>"
-                f"{obj.closed_at.strftime('%d-%m-%y %H:%M')}"
-                f"</div>"
-            )
+            return mark_safe(f"<div class='{css_class}'>{obj.closed_at.strftime('%d-%m-%y %H:%M')}</div>")
 
     @admin_display(
         short_description=gettext_lazy("Duration"),

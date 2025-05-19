@@ -12,9 +12,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="offer",
             name="main_image_url",
-            field=models.URLField(
-                blank=True, max_length=1024, verbose_name="Main image's URL"
-            ),
+            field=models.URLField(blank=True, max_length=1024, verbose_name="Main image's URL"),
         ),
         migrations.AlterField(
             model_name="offer",

@@ -37,9 +37,7 @@ class ScrappingTarget(models.Model):
 
 
 class ScrapingUrl(models.Model):
-    name = models.CharField(
-        _("Name"), max_length=255, help_text=_("Human readable name for the URL")
-    )
+    name = models.CharField(_("Name"), max_length=255, help_text=_("Human readable name for the URL"))
     url = models.URLField(
         _("Target URL"),
         max_length=1024,
@@ -77,10 +75,7 @@ class OfferQueryset(QuerySet):
 
 def get_offer_source_html_path(instance: "Offer", filename: str):
     _date = instance.published_at or timezone.localtime()
-    return (
-        f"offer_sources/{_date.year}/{_date.month:02}/{_date.day:02}/"
-        f"{slugify(instance.title)}_{instance.id}.html"
-    )
+    return f"offer_sources/{_date.year}/{_date.month:02}/{_date.day:02}/{slugify(instance.title)}_{instance.id}.html"
 
 
 class Offer(TimeStampedModel):
@@ -88,17 +83,11 @@ class Offer(TimeStampedModel):
     title = models.CharField(verbose_name=_("Title"), max_length=200)
     price = models.IntegerField(verbose_name=_("Price"), blank=True, null=True)
     main_image_url = models.URLField(_("Main image's URL"), blank=True, max_length=1024)
-    source_html = models.FileField(
-        verbose_name=_("Source HTML"), upload_to=get_offer_source_html_path, blank=True
-    )
+    source_html = models.FileField(verbose_name=_("Source HTML"), upload_to=get_offer_source_html_path, blank=True)
 
-    target = models.ForeignKey(
-        verbose_name=_("Target"), to="ScrappingTarget", on_delete=models.PROTECT
-    )
+    target = models.ForeignKey(verbose_name=_("Target"), to="ScrappingTarget", on_delete=models.PROTECT)
 
-    published_at = models.DateTimeField(
-        verbose_name=_("Published at"), blank=True, null=True
-    )
+    published_at = models.DateTimeField(verbose_name=_("Published at"), blank=True, null=True)
     closed_at = models.DateTimeField(verbose_name=_("Closed at"), blank=True, null=True)
     last_check_at = models.DateTimeField(
         verbose_name=_("Last check at"),

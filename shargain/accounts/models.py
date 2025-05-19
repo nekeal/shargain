@@ -17,9 +17,7 @@ def get_default_valid_until():
 
 
 class RegisterToken(models.Model):
-    token = models.CharField(
-        max_length=32, default=partial(secrets.token_hex, 16), unique=True
-    )
+    token = models.CharField(max_length=32, default=partial(secrets.token_hex, 16), unique=True)
     description = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     valid_until = models.DateTimeField(default=get_default_valid_until)

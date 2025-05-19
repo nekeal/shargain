@@ -17,7 +17,5 @@ class ScrappingTargetAdminForm(ModelForm):
         if notification_config.channel != "telegram":
             raise ValidationError(_("Only telegram channel is supported for now"))
         if not notification_config.chatid:
-            raise ValidationError(
-                _("You must first register a channel (or specify a chat_id manually)")
-            )
+            raise ValidationError(_("You must first register a channel (or specify a chat_id manually)"))
         return notification_config
