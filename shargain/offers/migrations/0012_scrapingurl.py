@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 def migrate_scraping_urls_to_different_model(apps, schema_editor):
     ScrappingTarget = apps.get_model("offers", "ScrappingTarget")
-    ScrappingUrl = apps.get_model("offers", "ScrapingUrl")
+    ScrappingUrl = apps.get_model("offers", "ScrapingUrl")  # noqa N806
     targets = ScrappingTarget.objects.values("id", "url", "name")
     scraping_urls_to_create = [
         ScrappingUrl(name=target["name"], url=u, scraping_target_id=target["id"])

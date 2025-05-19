@@ -1,4 +1,3 @@
-
 from shargain.notifications.models import NotificationChannelChoices
 from shargain.notifications.senders import TelegramNotificationSender
 from shargain.offers.models import Offer, ScrappingTarget
@@ -6,7 +5,7 @@ from shargain.offers.models import Offer, ScrappingTarget
 
 class NewOfferNotificationService:
     def __init__(self, offers: list[Offer], scrapping_target: ScrappingTarget):
-        assert scrapping_target.notification_config_id, "Scrapping target has no notification_config"
+        assert scrapping_target.notification_config_id, "Scrapping target has no notification_config"  # noqa: S101
         self.offers = offers
         self._scrapping_target = scrapping_target
 

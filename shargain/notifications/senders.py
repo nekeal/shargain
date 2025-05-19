@@ -22,7 +22,7 @@ class TelegramNotificationSender(BaseNotificationSender):
         :param bot_token: Telegram bot token. By default, it's taken from settings
         """
         self._bot_token = bot_token or settings.TELEGRAM_BOT_TOKEN
-        assert self._bot_token, "Telegram bot token is not set"
+        assert self._bot_token, "Telegram bot token is not set"  # noqa: S101
         super().__init__(notification_config)
 
     def send(self, message: str):

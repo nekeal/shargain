@@ -25,7 +25,7 @@ class SendTestNotificationView(View):
         try:
             self.send_notification(config)
         except ApiTelegramException as e:
-            messages.error(request, _("Error sending test notification: {}".format(e)))
+            messages.error(request, _("Error sending test notification: {}").format(e))
         else:
             messages.success(request, _("Test notification sent successfully"))
         return redirect(self.get_redirect_url())

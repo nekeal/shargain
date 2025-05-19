@@ -23,9 +23,9 @@ class RegisterToken(models.Model):
     valid_until = models.DateTimeField(default=get_default_valid_until)
     already_used = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.token
-
     class Meta:
         verbose_name = _("Register token")
         verbose_name_plural = _("Register tokens")
+
+    def __str__(self):
+        return self.token

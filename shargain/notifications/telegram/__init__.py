@@ -75,7 +75,7 @@ def register_channel_handler(message: Message) -> None:
             return
         notification_config.chatid = message.chat.id
         notification_config.save()
-        logger.info(f"Channel registered successfully: {notification_config}")
+        logger.info("Channel registered successfully: %s", notification_config)
         TelegramBot.get_bot().reply_to(message, "Channel registered successfully")
 
 

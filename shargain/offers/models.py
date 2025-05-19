@@ -28,12 +28,12 @@ class ScrappingTarget(models.Model):
         null=True,
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name = _("Scrapping target")
         verbose_name_plural = _("Scrapping targets")
+
+    def __str__(self):
+        return self.name
 
 
 class ScrapingUrl(models.Model):
@@ -54,6 +54,9 @@ class ScrapingUrl(models.Model):
     class Meta:
         verbose_name = _("Scraping URL")
         verbose_name_plural = _("Scraping URLs")
+
+    def __str__(self):
+        return f"{self.id}: {self.name}"
 
 
 class OfferQueryset(QuerySet):

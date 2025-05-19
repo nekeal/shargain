@@ -8,7 +8,7 @@ from shargain.offers.models import ScrappingTarget
 class ScrappingTargetAdminForm(ModelForm):
     class Meta:
         model = ScrappingTarget
-        fields = "__all__"
+        fields = "__all__"  # noqa: DJ007
 
     def clean_notification_config(self):
         notification_config = self.cleaned_data["notification_config"]

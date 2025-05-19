@@ -39,7 +39,7 @@ class OlxOffer:
 
     @classmethod
     def from_url(cls, url: str):
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         return cls.from_response(response)
 
     @property

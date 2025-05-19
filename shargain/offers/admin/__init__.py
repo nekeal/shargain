@@ -1,10 +1,10 @@
 from datetime import timedelta
-from typing import List, Optional, Tuple, Union
 
 from django.contrib import admin
 from django.db.models.expressions import F
 from django.http import HttpRequest
 from django.template.loader import render_to_string
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -46,7 +46,7 @@ class OfferAdmin(admin.ModelAdmin):
     @admin_display(short_description=gettext_lazy("Link to offer"))
     def get_link(self, obj):
         button_text = _("Go to offer")
-        return mark_safe(f'<a href="{obj.url}" target="_blank">{button_text}</a>')
+        return format_html('<a href="{}" target="_blank">{}</a>', obj.url, button_text)
 
     @admin_display(
         short_description=gettext_lazy("Closed at"),
@@ -55,7 +55,7 @@ class OfferAdmin(admin.ModelAdmin):
     def get_closed_at(self, obj):
         css_class = "btn-outline-danger" if obj.closed_at else "btn-outline-success"
         if obj.closed_at:
-            return mark_safe(f"<div class='{css_class}'>{obj.closed_at.strftime('%d-%m-%y %H:%M')}</div>")
+            return mark_safe(f"<div class='{css_class}'>{obj.closed_at.strftime('%d-%m-%y %H:%M')}</div>")  # noqa: S308
 
     @admin_display(
         short_description=gettext_lazy("Duration"),
@@ -91,9 +91,7 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     formfield_overrides = {ArrayField: {"widget": AdminDynamicArrayWidget}}
     inlines = [ScrapingUrlInlineAdmin]
 
-    def get_readonly_fields(
-        self, request: HttpRequest, obj: ScrappingTarget | None = None
-    ) -> list[str] | tuple:
+    def get_readonly_fields(self, request: HttpRequest, obj: ScrappingTarget | None = None) -> list[str] | tuple:
         readonly_fields = list(super().get_readonly_fields(request, obj))
         if obj:
             readonly_fields.append("name")
@@ -120,10 +118,7 @@ class ScrapingUrlAdmin(admin.ModelAdmin):
 
     @staticmethod
     def get_scraping_urls(obj: ScrapingUrl) -> str:
-        return mark_safe(
-            f"<a href={obj.url} target=_blank>"
-            f"<div style='width:100%'>"
-            f"<i class='fas fa-external-link-alt'></i>"
-            f"</div>"
-            f"</a>"
+        return format_html(
+            "<a href={} target=_blank><div style='width:100%'><i class='fas fa-external-link-alt'></i></div></a>",
+            obj.url,
         )

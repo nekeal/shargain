@@ -33,9 +33,9 @@ def is_otomoto_offer_closed(response):
 
 def is_offer_closed(url):
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
     except ConnectionResetError:
-        logger.exception(f"Connection error for {url}")
+        logger.exception("Connection error for {}", url)
         return url, None, False
     if "olx.pl" in url:
         return url, response, is_olx_offer_closed(response)
@@ -72,7 +72,7 @@ def get_offer_source_html(pk=None):
             .order_by("source_html_exists", "last_check_at")[0]
         )
     logger.info("Checking offer [id=%s]", offer.id)
-    response = requests.get(offer.url)
+    response = requests.get(offer.url, timeout=10)
     if response.status_code == 403:
         logger.error("Url [url=%s] returned 403 status code", offer.url)
     offer.source_html.save("", BytesIO(response.content), save=False)
