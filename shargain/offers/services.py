@@ -15,7 +15,7 @@ class OfferBatchCreateService:
         serializer = self.serializer_class(**self._serializer_kwargs)
         serializer.is_valid(raise_exception=True)
         offers: list[tuple[Offer, bool]] = self.create(serializer.validated_data)
-        new_offers = list(map(lambda r: r[0], filter(lambda x: x[1], offers)))
+        new_offers = [r[0] for r in filter(lambda x: x[1], offers)]
         self._notify(new_offers, serializer.validated_data["target"])
         return [offer.url for offer in new_offers]
 

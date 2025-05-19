@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 
-from ..models import CustomUser
+from shargain.accounts.models import CustomUser
 
 
 class TestCustomUser:

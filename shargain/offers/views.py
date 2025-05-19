@@ -36,7 +36,7 @@ class OfferViewSet(viewsets.ModelViewSet):
         Action which creates non existing offers and sends
         notifications to configured channel.
         """
-        new_offers_urls = OfferBatchCreateService(dict(data=request.data)).run()
+        new_offers_urls = OfferBatchCreateService({"data": request.data}).run()
         return Response(new_offers_urls)
 
 

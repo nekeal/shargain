@@ -51,6 +51,6 @@ class NotificationConfig(models.Model):
         """
         warnings.warn(
             "Token parameter is deprecated and should no longer be used.",
-            DeprecationWarning,
+            DeprecationWarning, stacklevel=2,
         )
         return settings.TELEGRAM_BOT_TOKEN
