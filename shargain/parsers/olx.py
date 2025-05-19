@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 import requests
 from bs4 import BeautifulSoup
@@ -9,7 +9,7 @@ from requests import Response
 
 @dataclass
 class OlxOffer:
-    _data: Dict[str, Any]
+    _data: dict[str, Any]
 
     @classmethod
     def from_response(cls, response: Response):

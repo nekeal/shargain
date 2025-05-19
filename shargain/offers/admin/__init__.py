@@ -92,8 +92,8 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     inlines = [ScrapingUrlInlineAdmin]
 
     def get_readonly_fields(
-        self, request: HttpRequest, obj: Optional[ScrappingTarget] = None
-    ) -> Union[List[str], Tuple]:
+        self, request: HttpRequest, obj: ScrappingTarget | None = None
+    ) -> list[str] | tuple:
         readonly_fields = list(super().get_readonly_fields(request, obj))
         if obj:
             readonly_fields.append("name")

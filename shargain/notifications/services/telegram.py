@@ -1,9 +1,10 @@
 import abc
 import logging
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cache, cached_property
-from typing import Iterable, TypeGuard
+from typing import TypeGuard
 
 from django.core.validators import URLValidator
 from django.db.models import Q, QuerySet

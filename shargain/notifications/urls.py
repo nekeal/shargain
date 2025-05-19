@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from rest_framework.routers import DefaultRouter
 
@@ -17,4 +17,4 @@ router.register(
     basename="webhook",
 )
 
-urlpatterns: List[Any] = []
+urlpatterns: list[Any] = []

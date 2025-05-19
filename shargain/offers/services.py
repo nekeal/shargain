@@ -1,4 +1,3 @@
-from typing import List, Tuple
 
 from shargain.notifications.services.notifications import NewOfferNotificationService
 from shargain.offers.models import Offer
@@ -15,7 +14,7 @@ class OfferBatchCreateService:
     def run(self):
         serializer = self.serializer_class(**self._serializer_kwargs)
         serializer.is_valid(raise_exception=True)
-        offers: List[Tuple[Offer, bool]] = self.create(serializer.validated_data)
+        offers: list[tuple[Offer, bool]] = self.create(serializer.validated_data)
         new_offers = list(map(lambda r: r[0], filter(lambda x: x[1], offers)))
         self._notify(new_offers, serializer.validated_data["target"])
         return [offer.url for offer in new_offers]
@@ -26,8 +25,8 @@ class OfferBatchCreateService:
             return url.rsplit("#")[0]
         return url
 
-    def create(self, validated_data) -> List[Tuple[Offer, bool]]:
-        offers: List[Tuple[Offer, bool]] = []
+    def create(self, validated_data) -> list[tuple[Offer, bool]]:
+        offers: list[tuple[Offer, bool]] = []
         for offer_data in validated_data["offers"]:
             offer_url = offer_data.pop("url")
             try:

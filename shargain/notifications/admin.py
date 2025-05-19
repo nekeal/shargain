@@ -1,4 +1,3 @@
-from typing import List
 
 from django.contrib import admin
 from django.urls import URLPattern, path
@@ -12,7 +11,7 @@ class NotificationConfigAdmin(admin.ModelAdmin):
     list_display = ("name", "channel")
     exclude = ("_token",)
 
-    def get_urls(self) -> List[URLPattern]:
+    def get_urls(self) -> list[URLPattern]:
         urls = super().get_urls()
         urls.insert(
             0,
