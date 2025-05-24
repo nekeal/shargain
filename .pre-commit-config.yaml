@@ -1,0 +1,46 @@
+
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: trailing-whitespace
+        files: ".+\\.py$"
+      - id: end-of-file-fixer
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        entry: uv run ruff format
+        require_serial: true
+        language: system
+        types: [ python ]
+      - id: ruff
+        name: ruff
+        # Remove --fix, in case you want it to disable autofix when this hook runs
+        entry: uv run ruff check --fix --force-exclude
+        require_serial: true
+        language: system
+        types: [ python ]
+      - id: migrations-check
+        language: system
+        name: Check for uncreated migrations
+        entry: uv run python manage.py makemigrations --check --dry-run
+        files: "(models\\.py$|(migrations/.+\\.py))"
+        pass_filenames: false
+        stages: [ commit ]
+        require_serial: true
+      - id: mypy-check
+        language: system
+        name: Check for mypy
+        entry: uv run mypy shargain
+        stages: [ commit ]
+        files: ".+\\.py$"
+        pass_filenames: false
+        require_serial: true
+  - repo: https://github.com/adamchainz/django-upgrade
+    rev: 1.25.0
+    hooks:
+    -   id: django-upgrade
+        language_version: python3.12
+        args: ["--target-version", "5.1"]

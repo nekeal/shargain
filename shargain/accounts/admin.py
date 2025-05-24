@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import CustomUser, RegisterToken
+from shargain.accounts.models import CustomUser, RegisterToken
 
 
 @admin.register(CustomUser)

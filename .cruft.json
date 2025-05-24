@@ -1,10 +1,48 @@
 {
   "template": "https://github.com/nekeal/cookiecutter-django-api",
-  "commit": "a8a4c25419c6129697b4d0086455b5d8c677fc64",
+  "commit": "cb22c2dd76d4b2a3dfbc6f845cf9b133b4692bb2",
   "context": {
     "cookiecutter": {
       "project_name": "shargain",
       "full_project_name": "Shargain",
+      "python_version": "3.12+",
+      "_python_version_specs": {
+        "3.8+": {
+          "versions": [
+            "3.8",
+            "3.9",
+            "3.10",
+            "3.11",
+            "3.12"
+          ]
+        },
+        "3.9+": {
+          "versions": [
+            "3.9",
+            "3.10",
+            "3.11",
+            "3.12"
+          ]
+        },
+        "3.10+": {
+          "versions": [
+            "3.10",
+            "3.11",
+            "3.12"
+          ]
+        },
+        "3.11+": {
+          "versions": [
+            "3.11",
+            "3.12"
+          ]
+        },
+        "3.12+": {
+          "versions": [
+            "3.12"
+          ]
+        }
+      },
       "github_username": "nekeal",
       "github_repository_name": "shargain",
       "email": "szymon.sc.cader@gmail.com",
@@ -22,6 +60,7 @@
       "use_celery": "y",
       "use_dbbackup": "y",
       "use_react_frontend": "n",
+      "use_pre_commit": "y",
       "_template": "https://github.com/nekeal/cookiecutter-django-api"
     }
   },

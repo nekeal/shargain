@@ -3,6 +3,9 @@ from pathlib import Path
 from django.utils.translation import gettext_lazy as _
 from environs import Env, load_dotenv
 
+from .conf.celery_settings import *  # noqa: F401
+from .conf.theme import *  # noqa: F401
+
 env = Env()
 load_dotenv(".env")
 
@@ -61,6 +64,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
 ]
 
 # ------------- URLS -------------
@@ -89,7 +93,7 @@ TEMPLATES = [
 # ------------- PASSWORDS -------------
 AUTH_USER_MODEL = "accounts.CustomUser"
 
-PASSOWRD_HASHERS = [
+PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
     "django.contrib.auth.hashers.Argon2PasswordHasher",
@@ -127,14 +131,12 @@ TIME_ZONE = "Europe/Warsaw"
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = True
 
 # ------------- STATIC -------------
 STATICFILES_DIRS = []
 
-STATIC_URL = "/static/"
+STATIC_URL = env.str("DJANGO_STATIC_URL", default="/static/")
 STATIC_ROOT = BASE_DIR.joinpath("public")
 
 # ------------- MEDIA -------------
@@ -154,18 +156,6 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
-}
-
-# ------------- JAZZMIN -------------
-JAZZMIN_UI_TWEAKS = {
-    "navbar": "navbar-dark",
-    "theme": "cyborg",
-}
-JAZZMIN_SETTINGS = {
-    "site_brand": "Shargain",
-    "site_title": "Shargain",
-    "site_header": "Shargain",
-    "welcome_sign": _("Snap bargain with Shargain"),
 }
 
 # ------------- NOTIFICATIONS -------------

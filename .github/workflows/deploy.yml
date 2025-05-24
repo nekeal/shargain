@@ -1,31 +1,23 @@
 name: Deploy application
 on:
   workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: [ "Build Docker" ]
+    types:
+      - completed
     branches:
       - master
+
 jobs:
   deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    container:
-      image: willhallonline/ansible:2.12.2-ubuntu-20.04
     environment: production
     env:
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock
       SSH_CONFIG_FILE: /tmp/ssh_config
-      ANSIBLE_VAULT_PASSWORD_FILE: vault
-      ANSIBLE_HOST_KEY_CHECKING: False
-      ANSIBLE_STRATEGY_PLUGINS: $SITE_PACKAGES/ansible_mitogen/plugins/strategy
-      ANSIBLE_NO_LOG: True
-    defaults:
-      run:
-        working-directory: deployment/ansible-play-shargain
     steps:
       - uses: actions/checkout@v4
-      - name: Create vault file
-        run: "echo $VAULT_PASSOWRD > $ANSIBLE_VAULT_PASSWORD_FILE"
-        env:
-          VAULT_PASSOWRD: ${{ secrets.VAULT_PASSWORD }}
       - name: Setup SSH Keys and known_hosts
         run: |
           # Start SSH agent

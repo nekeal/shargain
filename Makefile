@@ -72,10 +72,14 @@ bootstrap: ## bootstrap project
 	$(MANAGE_PY) migrate
 	$(MANAGE_PY) loaddata fixtures/*
 
+install_pre_commit:  ## install pre-commit hooks
+	uv run pre-commit install --install-hooks
+	uv run pre-commit install -t commit-msg
+
 rebuild-db:  ## recreates database with fixtures
 	echo yes | $(MANAGE_PY) reset_db
 	$(MANAGE_PY) migrate
-	$(MANAGE_PY) loaddata fixtures/*
+	[ -d fixtures ] $(MANAGE_PY) loaddata fixtures/* || exit 0
 
 bootstrap-docker:  ## bootstrap project in docker
 	docker compose up --build -d

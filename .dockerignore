@@ -7,6 +7,4 @@ deployment*
 htmlcov
 .pytest_cache
 media
-**/node_modules
-**/frontend/build
-**/frontend/config
+logs

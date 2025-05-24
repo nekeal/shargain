@@ -39,6 +39,7 @@ dev = [
     "django-stubs",
     "types-requests",
     "ruff>=0.11.10",
+    "pre-commit>=4.2.0",
 ]
 deployment = [
     "ansible>=10.7.0",
@@ -120,7 +121,7 @@ omit = [
 ]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "shargain.settings.local"
+DJANGO_SETTINGS_MODULE = "shargain.settings.tests"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 norecursedirs = [".git/*",
     ".mypy_cache/*",
