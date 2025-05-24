@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: deployment/ansible-play-shargain
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Create vault file
         run: "echo $VAULT_PASSOWRD > $ANSIBLE_VAULT_PASSWORD_FILE"
         env:

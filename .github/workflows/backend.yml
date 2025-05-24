@@ -18,7 +18,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
@@ -38,7 +38,7 @@ jobs:
       matrix:
         tox-env: [ruff-lint, ruff-format, mypy]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
