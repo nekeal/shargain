@@ -91,3 +91,6 @@ docker-build:  ## build docker image
 docker-push:
 	docker push $(DOCKER_REGISTRY):$(COMMIT_SHA)
 	docker push $(DOCKER_REGISTRY):$(BRANCH_NAME)
+
+pipeline-status:
+	gh run list -c $(shell git rev-parse HEAD)
