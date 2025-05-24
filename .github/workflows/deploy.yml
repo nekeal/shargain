@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - master
+      - master
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -12,6 +12,7 @@ jobs:
     environment: production
     env:
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      SSH_CONFIG_FILE: /tmp/ssh_config
       ANSIBLE_VAULT_PASSWORD_FILE: vault
       ANSIBLE_HOST_KEY_CHECKING: False
       ANSIBLE_STRATEGY_PLUGINS: $SITE_PACKAGES/ansible_mitogen/plugins/strategy
@@ -27,23 +28,18 @@ jobs:
           VAULT_PASSOWRD: ${{ secrets.VAULT_PASSWORD }}
       - name: Setup SSH Keys and known_hosts
         run: |
+          # Start SSH agent
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
-      - name: Register python site packages
-        run: echo "SITE_PACKAGES=$(python3 -c 'import site; print(site.getsitepackages()[0])')" >> $GITHUB_ENV
-      - name: Install ruby dependency
-        run: |
-          apt-get update
-          apt-get install -y libyaml-dev
-      - name: Wait for all other check to complete
-        uses: lewagon/wait-on-check-action@v1.1.1
-        with:
-          ref: ${{ github.ref }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-          running-workflow-name: deploy
-        env:
-          ImageOS: ubuntu20 # required because in container there is no os_release file
-      - name: Run deployment check
-        run: ansible-playbook -i inventory.txt -l prod shargain.yml -t docker_container -e "_docker_tag=${{ github.sha }}"
-
+          # Create SSH config file from environment variable
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_CONFIG }}" > $SSH_CONFIG_FILE
+          chmod 600 $SSH_CONFIG_FILE
+      - name: Extract branch name
+        run: echo "BRANCH_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+      - name: Deploy via SSH
+        run: >
+          ssh -q -F $SSH_CONFIG_FILE prod "
+            cd shargain &&
+            export IMAGE_TAG=${{ env.BRANCH_NAME }} &&
+            docker compose up -d --pull always"
