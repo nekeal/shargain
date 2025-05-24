@@ -26,6 +26,7 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 COMMIT_SHA := $(shell git rev-parse HEAD)
 BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
 TAGS := -t $(DOCKER_REGISTRY):$(COMMIT_SHA) -t $(DOCKER_REGISTRY):$(BRANCH_NAME)
+MANAGE_PY := uv run python manage.py
 
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
@@ -52,34 +53,34 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	pytest --cov=shargain shargain
+	uv run pytest --cov=shargain shargain
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
 quality-check: ## check quality of code
-	ruff check shargain
-	ruff format --check shargain
-	mypy shargain
+	uv run ruff check shargain
+	uv run ruff format --check shargain
+	uv run mypy shargain
 
 autoformatters: ## runs auto formatters
-	ruff format shargain
-	ruff check --fix shargain
+	uv run ruff format shargain
+	uv run ruff check --fix shargain
 
 bootstrap: ## bootstrap project
-	pip install -r requirements/dev.txt
-	python manage.py migrate
-	python manage.py loaddata fixtures/*
+	uv sync
+	$(MANAGE_PY) migrate
+	$(MANAGE_PY) loaddata fixtures/*
 
 rebuild-db:  ## recreates database with fixtures
-	echo yes | python manage.py reset_db
-	python manage.py migrate
-	python manage.py loaddata fixtures/*
+	echo yes | $(MANAGE_PY) reset_db
+	$(MANAGE_PY) migrate
+	$(MANAGE_PY) loaddata fixtures/*
 
 bootstrap-docker:  ## bootstrap project in docker
-	docker-compose up --build -d
-	docker-compose exec web python manage.py migrate
-	docker-compose exec web python manage.py loaddata fixtures/*
+	docker compose up --build -d
+	docker compose exec web python manage.py migrate
+	docker compose exec web python manage.py loaddata fixtures/*.yaml
 
 show-docker-tags: ## shows docker tags for building and pushing image
 	echo $(TAGS)
