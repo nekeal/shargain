@@ -8,7 +8,7 @@ Django app which stores scrapped data.
 
 ## Native way with virtualenv
 - [Python3.10](https://www.python.org/downloads/)
-- [Virtualenv](https://virtualenv.pypa.io/en/latest/)
+- [uv](https://docs.astral.sh/uv/)
 
 ## Docker way
 - [Docker](https://docs.docker.com/engine/install/)  
@@ -16,7 +16,7 @@ Django app which stores scrapped data.
 
 ## Local Development
 
-## Native way with virtualenv
+## Native way with uv
 
 First create postgresql database:
 
@@ -27,9 +27,7 @@ create database shargain owner shargain;
 ```
 Now you can setup virtualenv and django:
 ```bash
-virtualenv venv
-source venv/bin/activate
-pip install pip-tools
+uv sync
 make bootstrap
 ```
 
