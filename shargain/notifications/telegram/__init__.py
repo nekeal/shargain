@@ -11,7 +11,7 @@ from shargain.notifications.services.telegram import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
     ListScrapingLinksHandler,
-    SetupScrapingTargetWithNotificationsHandler,
+    SetupScrapingTargetHandler,
 )
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ def start_handler(message: Message) -> None:
 @transaction.atomic
 def create_target_and_notifications_handler(message):
     logger.info("Creating scraping target and notifications")
-    response = SetupScrapingTargetWithNotificationsHandler(message).dispatch()
+    response = SetupScrapingTargetHandler(message).dispatch()
     TelegramBot.get_bot().send_message(message.chat.id, response)
 
 
