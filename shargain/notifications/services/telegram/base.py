@@ -1,19 +1,38 @@
 import abc
-import re
-from typing import TypeGuard
+from re import Match, Pattern
+from typing import Protocol
 
-from telebot.types import Message
+
+class MessageProtocol(Protocol):
+    """Protocol defining the interface for message objects used by handlers."""
+
+    @property
+    def text(self) -> str | None:
+        """The text content of the message."""
+        ...
+
+    @property
+    def chat_id(self) -> int:
+        """The chat ID where the message was sent."""
+        ...
+
+    @property
+    def from_user(self) -> int:
+        """The user who sent the message."""
+        ...
 
 
 class BaseTelegramHandler(abc.ABC):
-    command_regex: re.Pattern
+    command_regex: Pattern[str]
 
-    def __init__(self, message: Message):
+    def __init__(self, message: MessageProtocol):
         self.message = message
-        self._regex_match: re.Match = self.command_regex.match(self.message.text)  # type: ignore
+        self._regex_match: Match[str] | None = None
+        if self.message.text:
+            self._regex_match = self.command_regex.match(self.message.text)
 
     @classmethod
-    def command_is_valid(cls, command_match: re.Match | None) -> TypeGuard[re.Match]:
+    def command_is_valid(cls, command_match: Match[str] | None) -> bool:
         return bool(command_match)
 
     def dispatch(self) -> str:
@@ -22,17 +41,19 @@ class BaseTelegramHandler(abc.ABC):
         return self.handle_invalid_format()
 
     @property
-    def chat_id(self):
-        return self.message.chat.id
+    def chat_id(self) -> int:
+        return self.message.chat_id
 
     @property
     def text(self) -> str:
         return self.message.text or ""
 
-    @abc.abstractmethod
-    def handle(self) -> str:
-        pass
+    @property
+    def from_user_id(self) -> int:
+        return self.message.from_user
 
     @abc.abstractmethod
+    def handle(self) -> str: ...
+
     def handle_invalid_format(self) -> str:
-        pass
+        return "Invalid command format."

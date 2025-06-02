@@ -5,12 +5,14 @@ from django.conf import settings
 from django.db import transaction
 from telebot import TeleBot
 from telebot.types import Message
+from telebot.types import Message as TelebotMessage
 
 from shargain.notifications.models import NotificationConfig
 from shargain.notifications.services.telegram import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
     ListScrapingLinksHandler,
+    MessageProtocol,
     SetupScrapingTargetHandler,
 )
 
@@ -41,6 +43,25 @@ class TelegramBot:
         if verbose:
             cls._set_logging_level(logging.DEBUG)
         cls.get_bot().polling()
+
+
+class TelebotMessageAdapter(MessageProtocol):
+    """Adapts telebot's Message to our MessageProtocol."""
+
+    def __init__(self, message: TelebotMessage):
+        self._message = message
+
+    @property
+    def text(self) -> str | None:
+        return self._message.text
+
+    @property
+    def chat_id(self) -> int:
+        return self._message.chat.id
+
+    @property
+    def from_user(self) -> int:
+        return self._message.from_user
 
 
 @TelegramBot.get_bot().message_handler(commands=["register"], regexp=r"^/register \w{32}$")
@@ -94,26 +115,26 @@ def start_handler(message: Message) -> None:
 @transaction.atomic
 def create_target_and_notifications_handler(message):
     logger.info("Creating scraping target and notifications")
-    response = SetupScrapingTargetHandler(message).dispatch()
+    response = SetupScrapingTargetHandler(TelebotMessageAdapter(message)).dispatch()
     TelegramBot.get_bot().send_message(message.chat.id, response)
 
 
 @TelegramBot.get_bot().message_handler(commands=["add"])
 def add_link_handler(message):
     logger.info("Adding link")
-    response = AddScrapingLinkHandler(message).dispatch()
+    response = AddScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
     TelegramBot.get_bot().send_message(message.chat.id, response)
 
 
 @TelegramBot.get_bot().message_handler(commands=["list"])
 def list_links_handler(message):
     logger.info("Listing links")
-    response = ListScrapingLinksHandler(message).dispatch()
+    response = ListScrapingLinksHandler(TelebotMessageAdapter(message)).dispatch()
     TelegramBot.get_bot().send_message(message.chat.id, response)
 
 
 @TelegramBot.get_bot().message_handler(commands=["delete"])
 def delete_link_handler(message):
     logger.info("Deleting link")
-    response = DeleteScrapingLinkHandler(message).dispatch()
+    response = DeleteScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
     TelegramBot.get_bot().send_message(message.chat.id, response)

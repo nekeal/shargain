@@ -19,7 +19,7 @@ class SetupScrapingTargetHandler(BaseTelegramHandler):
 
     @cached_property
     def token(self) -> str:
-        return self._regex_match.group("token")
+        return self._regex_match.group("token")  # type: ignore
 
     @staticmethod
     def get_notification_config_name(register_token: RegisterToken) -> str:

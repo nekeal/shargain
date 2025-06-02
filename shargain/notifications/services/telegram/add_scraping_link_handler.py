@@ -18,12 +18,12 @@ class AddScrapingLinkHandler(BaseTelegramHandler):
 
     @cached_property
     def url(self):
-        return self._regex_match.group("url")
+        return self._regex_match.group("url")  # type: ignore
 
     @cached_property
     def name(self) -> str:
-        if self._regex_match.group("name"):
-            return self._regex_match.group("name").strip()
+        if self._regex_match.group("name"):  # type: ignore
+            return self._regex_match.group("name").strip()  # type: ignore
         return ""
 
     @classmethod

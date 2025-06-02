@@ -21,7 +21,7 @@ class DeleteScrapingLinkHandler(BaseTelegramHandler):
         """
         Index of scraping url to delete. Indexes start from 1 from user perspective but from 0 in the code.
         """
-        return int(self._regex_match.group("index")) - 1
+        return int(self._regex_match.group("index")) - 1  # type: ignore
 
     @staticmethod
     def delete_scraping_url_by_index(scraping_urls: QuerySet[ScrapingUrl], index: int) -> str:
