@@ -9,7 +9,7 @@ from shargain.accounts.models import RegisterToken
 from shargain.notifications.models import NotificationChannelChoices, NotificationConfig
 from shargain.offers.models import ScrappingTarget
 
-from .base import BaseTelegramHandler
+from .base import BaseTelegramHandler, HandlerResult
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +41,11 @@ class SetupScrapingTargetHandler(BaseTelegramHandler):
         )
         return notification_config, scraping_target
 
-    def handle(self) -> str:
+    def handle(self) -> HandlerResult:
         token_qs = RegisterToken.objects.filter(already_used=False, token=self.token)
         if not (token := token_qs.first()):
             logger.info("Token is invalid or already used [token=%s]", self.token)
-            return "This token is invalid or already used"
+            return HandlerResult.as_failure("This token is invalid or already used")
         token_qs.update(already_used=True)
 
         if (
@@ -59,7 +59,9 @@ class SetupScrapingTargetHandler(BaseTelegramHandler):
                 self.get_scraping_target_name(token),
                 self.chat_id,
             )
-            return "This name is already taken or notifications are already configured for this chat"
+            return HandlerResult.as_failure(
+                "This name is already taken or notifications are already configured for this chat"
+            )
 
         self.create_objects(token)
         logger.info(
@@ -67,12 +69,14 @@ class SetupScrapingTargetHandler(BaseTelegramHandler):
             self.get_scraping_target_name(token),
             self.chat_id,
         )
-        return "Notifications configured successfully. Now you can add links to track using /add command"
+        return HandlerResult.as_success(
+            "Notifications configured successfully. Now you can add links to track using /add command"
+        )
 
-    def handle_invalid_format(self) -> str:
+    def handle_invalid_format(self) -> HandlerResult:
         logger.info(
             "Invalid format of message [chat_id=%s] [message=%s]",
             self.chat_id,
             self.message.text,
         )
-        return "Invalid format of message. Please use /configure <token> format"
+        return HandlerResult.as_failure("Invalid format of message. Please use /configure <token> format")

@@ -115,26 +115,26 @@ def start_handler(message: Message) -> None:
 @transaction.atomic
 def create_target_and_notifications_handler(message):
     logger.info("Creating scraping target and notifications")
-    response = SetupScrapingTargetHandler(TelebotMessageAdapter(message)).dispatch()
-    TelegramBot.get_bot().send_message(message.chat.id, response)
+    result = SetupScrapingTargetHandler(TelebotMessageAdapter(message)).dispatch()
+    TelegramBot.get_bot().send_message(message.chat.id, result.message)
 
 
 @TelegramBot.get_bot().message_handler(commands=["add"])
 def add_link_handler(message):
     logger.info("Adding link")
-    response = AddScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
-    TelegramBot.get_bot().send_message(message.chat.id, response)
+    result = AddScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
+    TelegramBot.get_bot().send_message(message.chat.id, result.message)
 
 
 @TelegramBot.get_bot().message_handler(commands=["list"])
 def list_links_handler(message):
     logger.info("Listing links")
-    response = ListScrapingLinksHandler(TelebotMessageAdapter(message)).dispatch()
-    TelegramBot.get_bot().send_message(message.chat.id, response)
+    result = ListScrapingLinksHandler(TelebotMessageAdapter(message)).dispatch()
+    TelegramBot.get_bot().send_message(message.chat.id, result.message)
 
 
 @TelegramBot.get_bot().message_handler(commands=["delete"])
 def delete_link_handler(message):
     logger.info("Deleting link")
-    response = DeleteScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
-    TelegramBot.get_bot().send_message(message.chat.id, response)
+    result = DeleteScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
+    TelegramBot.get_bot().send_message(message.chat.id, result.message)

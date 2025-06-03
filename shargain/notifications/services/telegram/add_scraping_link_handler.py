@@ -8,7 +8,7 @@ from django.core.validators import URLValidator
 from shargain.notifications.models import NotificationConfig
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
 
-from .base import BaseTelegramHandler
+from .base import BaseTelegramHandler, HandlerResult
 
 logger = logging.getLogger(__name__)
 
@@ -34,19 +34,21 @@ class AddScrapingLinkHandler(BaseTelegramHandler):
             return False
         return True
 
-    def handle(self):
+    def handle(self) -> HandlerResult:
         if not (notification_config := NotificationConfig.objects.filter(chatid=self.chat_id).first()):
             logger.info("Notification config does not exist [chat_id=%s]", self.chat_id)
-            return "You need to configure notifications first. Use /configure command"
+            return HandlerResult.as_failure("You need to configure notifications first. Use /configure command")
         if not (scraping_target := ScrappingTarget.objects.get(notification_config=notification_config)):
-            return "You haven't configured this chat yet (use /configure command or contact administrator)"
+            return HandlerResult.as_failure(
+                "You haven't configured this chat yet (use /configure command or contact administrator)"
+            )
         ScrapingUrl.objects.create(url=self.url, scraping_target=scraping_target, name=self.name)
-        return "Link added successfully. You will be notified about new offers soon"
+        return HandlerResult.as_success("Link added successfully. You will be notified about new offers soon")
 
-    def handle_invalid_format(self):
+    def handle_invalid_format(self) -> HandlerResult:
         logger.info(
             "Invalid format of message [chat_id=%s] [message=%s]",
             self.chat_id,
             self.message.text,
         )
-        return "Invalid format of message. Please use /add <url> [name] format"
+        return HandlerResult.as_failure("Invalid format of message. Please use /add <url> [name] format")

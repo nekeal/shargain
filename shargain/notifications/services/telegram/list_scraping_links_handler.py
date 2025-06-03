@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from shargain.notifications.models import NotificationConfig
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
 
-from .base import BaseTelegramHandler
+from .base import BaseTelegramHandler, HandlerResult
 
 logger = logging.getLogger(__name__)
 
@@ -28,16 +28,18 @@ class ListScrapingLinksHandler(BaseTelegramHandler):
             result += f"{i}. {name_segment}{scraping_url.url}\n"
         return result or _("You don't have any added links yet")
 
-    def handle(self):
+    def handle(self) -> HandlerResult:
         if not (notification_config := NotificationConfig.objects.filter(chatid=self.chat_id).first()):
             logger.info("Notification config does not exist [chat_id=%s]", self.chat_id)
-            return _("You need to configure notifications first. Use /configure command")
+            return HandlerResult.as_failure(_("You need to configure notifications first. Use /configure command"))
         if not (scraping_target := ScrappingTarget.objects.filter(notification_config=notification_config).first()):
-            return _("You haven't configured this chat yet (use /configure command or contact administrator)")
+            return HandlerResult.as_failure(
+                _("You haven't configured this chat yet (use /configure command or contact administrator)")
+            )
         scraping_urls = self.get_scraping_urls(scraping_target)
         if not scraping_urls:
-            return _("You don't have any added links yet")
-        return self.format_output(scraping_urls)
+            return HandlerResult.as_success(_("You don't have any added links yet"))
+        return HandlerResult.as_success(self.format_output(scraping_urls))
 
-    def handle_invalid_format(self):
-        return _("Invalid format of message. Please use /list format")
+    def handle_invalid_format(self) -> HandlerResult:
+        return HandlerResult.as_failure(_("Invalid format of message. Please use /list format"))

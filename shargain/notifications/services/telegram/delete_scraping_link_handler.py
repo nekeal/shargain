@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from shargain.notifications.models import NotificationConfig
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
 
-from .base import BaseTelegramHandler
+from .base import BaseTelegramHandler, HandlerResult
 from .list_scraping_links_handler import ListScrapingLinksHandler
 
 logger = logging.getLogger(__name__)
@@ -24,36 +24,40 @@ class DeleteScrapingLinkHandler(BaseTelegramHandler):
         return int(self._regex_match.group("index")) - 1  # type: ignore
 
     @staticmethod
-    def delete_scraping_url_by_index(scraping_urls: QuerySet[ScrapingUrl], index: int) -> str:
+    def delete_scraping_url_by_index(scraping_urls: QuerySet[ScrapingUrl], index: int) -> HandlerResult:
         if index >= scraping_urls.count():
-            return _("Scraping url with this index does not exist. Check /list command")
+            return HandlerResult.as_failure(_("Scraping url with this index does not exist. Check /list command"))
 
         list_scraping_urls = list(scraping_urls)
         scraping_urls[index].delete()
         list_scraping_urls.pop(index)
 
         if not list_scraping_urls:
-            return _("Link deleted. No more links to display.")
+            return HandlerResult.as_success(_("Link deleted. No more links to display."))
 
         result = _("Link deleted. Remaining links:\n\n")
         for i, url in enumerate(list_scraping_urls, 1):
             name_segment = f" ({url.name})" if url.name else ""
             result += f"{i}. {name_segment}: {url.url}\n"
-        return result
+        return HandlerResult.as_success(result)
 
-    def handle(self):
+    def handle(self) -> HandlerResult:
         if not (notification_config := NotificationConfig.objects.filter(chatid=self.chat_id).first()):
             logger.info("Notification config does not exist [chat_id=%s]", self.chat_id)
-            return _("You need to configure notifications first. Use /configure command")
+            return HandlerResult.as_failure(_("You need to configure notifications first. Use /configure command"))
 
         if not (scraping_target := ScrappingTarget.objects.filter(notification_config=notification_config).first()):
-            return _("You haven't configured this chat yet (use /configure command or contact administrator)")
+            return HandlerResult.as_failure(
+                _("You haven't configured this chat yet (use /configure command or contact administrator)")
+            )
 
         scraping_urls = ListScrapingLinksHandler.get_scraping_urls(scraping_target)
         return self.delete_scraping_url_by_index(scraping_urls, self.index)
 
-    def handle_invalid_format(self):
-        return _(
-            "Invalid format of message. Please use /delete <number> format."
-            " Where number is a number of link from /list command"
+    def handle_invalid_format(self) -> HandlerResult:
+        return HandlerResult.as_failure(
+            _(
+                "Invalid format of message. Please use /delete <number> format."
+                " Where number is a number of link from /list command"
+            )
         )
