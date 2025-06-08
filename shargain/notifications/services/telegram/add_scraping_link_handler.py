@@ -38,7 +38,7 @@ class AddScrapingLinkHandler(BaseTelegramHandler):
         if not (notification_config := NotificationConfig.objects.filter(chatid=self.chat_id).first()):
             logger.info("Notification config does not exist [chat_id=%s]", self.chat_id)
             return HandlerResult.as_failure("You need to configure notifications first. Use /configure command")
-        if not (scraping_target := ScrappingTarget.objects.get(notification_config=notification_config)):
+        if not (scraping_target := ScrappingTarget.objects.filter(notification_config=notification_config).first()):
             return HandlerResult.as_failure(
                 "You haven't configured this chat yet (use /configure command or contact administrator)"
             )
