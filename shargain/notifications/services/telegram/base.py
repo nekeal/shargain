@@ -8,7 +8,7 @@ class MessageProtocol(Protocol):
     """Protocol defining the interface for message objects used by handlers."""
 
     @property
-    def text(self) -> str | None:
+    def text(self) -> str:
         """The text content of the message."""
         ...
 

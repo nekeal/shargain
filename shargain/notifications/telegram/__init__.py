@@ -52,7 +52,7 @@ class TelebotMessageAdapter(MessageProtocol):
         self._message = message
 
     @property
-    def text(self) -> str | None:
+    def text(self) -> str:
         return self._message.text
 
     @property
@@ -129,7 +129,7 @@ def add_link_handler(message):
 @TelegramBot.get_bot().message_handler(commands=["list"])
 def list_links_handler(message):
     logger.info("Listing links")
-    result = ListScrapingLinksHandler(TelebotMessageAdapter(message)).dispatch()
+    result = ListScrapingLinksHandler().dispatch_message(TelebotMessageAdapter(message))
     TelegramBot.get_bot().send_message(message.chat.id, result.message)
 
 
