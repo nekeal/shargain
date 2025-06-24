@@ -129,7 +129,8 @@ def add_link_handler(message):
 @TelegramBot.get_bot().message_handler(commands=["list"])
 def list_links_handler(message):
     logger.info("Listing links")
-    result = ListScrapingLinksHandler().dispatch_message(TelebotMessageAdapter(message))
+    chat_id = message.chat.id
+    result = ListScrapingLinksHandler().handle(chat_id=chat_id)
     TelegramBot.get_bot().send_message(message.chat.id, result.message)
 
 
