@@ -5,7 +5,7 @@ from telebot.types import Update
 
 from shargain.notifications.models import NotificationConfig
 from shargain.notifications.serializers import NotificationConfigSerializer
-from shargain.notifications.telegram import TelegramBot
+from shargain.telegram.bot import TelegramBot
 
 
 class NotificationConfigViewSet(viewsets.ReadOnlyModelViewSet):

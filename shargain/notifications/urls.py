@@ -2,11 +2,11 @@ from typing import Any
 
 from rest_framework.routers import DefaultRouter
 
-from shargain.notifications.telegram.utils import get_token_for_webhook_url
 from shargain.notifications.views.api import (
     NotificationConfigViewSet,
     TelegramWebhookViewSet,
 )
+from shargain.telegram.bot import get_token_for_webhook_url
 
 router = DefaultRouter()
 

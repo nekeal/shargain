@@ -6,8 +6,8 @@ from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 
 from shargain.notifications.models import NotificationConfig
-from shargain.notifications.services.telegram.base import HandlerResult, MessageProtocol
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
+from shargain.telegram.application.base import HandlerResult, MessageProtocol
 
 logger = logging.getLogger(__name__)
 

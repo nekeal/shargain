@@ -8,7 +8,7 @@ from telebot.types import Message
 from telebot.types import Message as TelebotMessage
 
 from shargain.notifications.models import NotificationConfig
-from shargain.notifications.services.telegram import (
+from shargain.telegram.application import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
     ListScrapingLinksHandler,
@@ -138,3 +138,13 @@ def delete_link_handler(message):
     logger.info("Deleting link")
     result = DeleteScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
     TelegramBot.get_bot().send_message(message.chat.id, result.message)
+
+
+def get_token_for_webhook_url():
+    """
+    Used for configuring urlpatterns
+    """
+    if not settings.TELEGRAM_WEBHOOK_URL:
+        return "token"
+    else:
+        return settings.TELEGRAM_WEBHOOK_URL.rstrip("/").split("/")[-1]
