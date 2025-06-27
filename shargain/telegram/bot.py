@@ -124,7 +124,7 @@ def create_target_and_notifications_handler(message):
 
 @TelegramBot.get_bot().message_handler(commands=["add"])
 def add_link_handler(message):
-    logger.info("Adding link")
+    logger.error("Adding link")
     chat_id = message.chat.id
 
     command_regex: re.Pattern[str] = re.compile(r"^/add (?P<url>\S+)\s?(?P<name>[\w+\-_\s]+)?$")
@@ -150,9 +150,27 @@ def list_links_handler(message):
 
 @TelegramBot.get_bot().message_handler(commands=["delete"])
 def delete_link_handler(message):
-    logger.info("Deleting link")
-    result = DeleteScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
-    TelegramBot.get_bot().send_message(message.chat.id, result.message)
+    logger.error("Deleting link")
+    chat_id = message.chat.id
+
+    command_regex: re.Pattern[str] = re.compile(r"^/delete (?P<index>\d+)$")
+    match = command_regex.match(message.text)
+
+    if match:
+        index = int(match.group("index")) - 1  # Index of scraping url to delete (convert to 0-based index)
+        response = DeleteScrapingLinkHandler.handle(chat_id, index).message
+    else:
+        logger.info(
+            "Invalid format of message [chat_id=%s] [message=%s]",
+            chat_id,
+            message.text,
+        )
+        response = _(
+            "Invalid format of message. Please use /delete <number> format."
+            " Where number is a number of link from /list command"
+        )
+
+    TelegramBot.get_bot().send_message(message.chat.id, response)
 
 
 def get_token_for_webhook_url():
