@@ -1,8 +1,11 @@
 import logging
+import re
 
 import telebot
 from django.conf import settings
+from django.core.validators import URLValidator
 from django.db import transaction
+from django.utils.translation import gettext as _
 from telebot import TeleBot
 from telebot.types import Message
 from telebot.types import Message as TelebotMessage
@@ -122,8 +125,19 @@ def create_target_and_notifications_handler(message):
 @TelegramBot.get_bot().message_handler(commands=["add"])
 def add_link_handler(message):
     logger.info("Adding link")
-    result = AddScrapingLinkHandler(TelebotMessageAdapter(message)).dispatch()
-    TelegramBot.get_bot().send_message(message.chat.id, result.message)
+    chat_id = message.chat.id
+
+    command_regex: re.Pattern[str] = re.compile(r"^/add (?P<url>\S+)\s?(?P<name>[\w+\-_\s]+)?$")
+    match = command_regex.match(message.text)
+
+    if match and URLValidator.regex.match(match.group("url")):  # type: ignore[union-attr]
+        url = match.group("url")
+        name = (match.group("name") or "").strip()
+        response = AddScrapingLinkHandler().handle(chat_id, url, name).message
+    else:
+        response = _("Invalid format of message. Please use /add <url> [name] format.")
+
+    TelegramBot.get_bot().send_message(message.chat.id, response)
 
 
 @TelegramBot.get_bot().message_handler(commands=["list"])
