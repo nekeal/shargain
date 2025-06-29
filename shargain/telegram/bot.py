@@ -8,6 +8,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 from telebot import TeleBot
 from telebot.types import (
+    BotCommand,
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -40,6 +41,11 @@ class TelegramBot:
         if not cls._bot:
             cls._bot = TeleBot(settings.TELEGRAM_BOT_TOKEN, threaded=False)
             bot = TeleBot(settings.TELEGRAM_BOT_TOKEN)
+            cls._bot.set_my_commands(
+                [
+                    BotCommand("menu", "Show menu"),
+                ]
+            )
             if settings.TELEGRAM_WEBHOOK_URL:
                 logger.info("Setting webhook to %s", settings.TELEGRAM_WEBHOOK_URL)
                 bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL)
