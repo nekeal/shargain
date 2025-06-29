@@ -226,12 +226,17 @@ def process_url(message: Message) -> None:
     try:
         url = message.text.strip()
         URLValidator()(url)
+
+        # Create inline keyboard with skip button
+        markup = types.InlineKeyboardMarkup()
+        skip_button = types.InlineKeyboardButton(text=_("⏩ Skip"), callback_data=f"skip_name:{url}")
+        markup.add(skip_button)
+
         msg = bot.send_message(
-            chat_id,
-            _("📝 Please enter a name for this link (or type /skip to leave it empty):"),
-            reply_markup=types.ForceReply(selective=True),
+            chat_id, _("📝 Please enter a name for this link (or click 'Skip' to leave it empty):"), reply_markup=markup
         )
         bot.register_for_reply(msg, process_name, url=url)
+
     except ValidationError:
         msg = bot.send_message(
             chat_id,
@@ -251,17 +256,44 @@ def process_name(message: Message, url: str) -> None:
     bot = TelegramBot.get_bot()
     chat_id = message.chat.id
     try:
-        text = message.text.strip()
-        name = "" if text.lower() == "/skip" else text
-
-        AddScrapingLinkHandler().handle(chat_id, url, name)
-
-        bot.send_message(chat_id, ListScrapingLinksHandler().handle(chat_id=chat_id).message)
+        name = message.text.strip()
+        save_and_confirm_link(chat_id, url, name)
     except Exception:
         bot.send_message(
             chat_id,
             _("❌ An error occurred. Please try again."),
         )
+
+
+def save_and_confirm_link(chat_id: int, url: str, name: str = "") -> None:
+    """Save the link and show confirmation."""
+    bot = TelegramBot.get_bot()
+    try:
+        AddScrapingLinkHandler().handle(chat_id, url, name)
+        bot.send_message(chat_id, ListScrapingLinksHandler().handle(chat_id=chat_id).message)
+    except Exception:
+        logger.exception("Error saving link")
+        bot.send_message(
+            chat_id,
+            _("❌ An error occurred while saving the link. Please try again."),
+        )
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith("skip_name:"))
+def handle_skip_name(call: types.CallbackQuery) -> None:
+    """Handle skip name button click."""
+    bot = TelegramBot.get_bot()
+    chat_id = call.message.chat.id
+    try:
+        # Extract URL from callback data
+        url = call.data.split(":", 1)[1]
+        save_and_confirm_link(chat_id, url, "")
+    except Exception:
+        bot.send_message(
+            chat_id,
+            _("❌ An error occurred. Please try again."),
+        )
+        bot.answer_callback_query(call.id, _("Error skipping name"))
 
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.DELETE_LINK)
