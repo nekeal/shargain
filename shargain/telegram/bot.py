@@ -8,9 +8,15 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import transaction
 from django.utils.translation import gettext as _
-from telebot import TeleBot
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from telebot.types import Message as TelebotMessage
+from telebot import TeleBot, types
+from telebot.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
+from telebot.types import (
+    Message as TelebotMessage,
+)
 
 from shargain.notifications.models import NotificationConfig
 from shargain.telegram.application import (
@@ -202,33 +208,37 @@ def callback_list_links(call):
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.ADD_LINK)
 def callback_add_link(call):
-    """Handle add link flow start or cancellation."""
-
+    """Start the add link flow with force reply."""
     bot = TelegramBot.get_bot()
+    chat_id = call.message.chat.id
     msg = bot.send_message(
-        call.message.chat.id,
+        chat_id,
         _("🔗 Please send me the URL you want to monitor:"),
+        reply_markup=types.ForceReply(selective=True),
     )
-    bot.register_next_step_handler(msg, process_url)
+    bot.register_for_reply(msg, process_url)
 
 
 def process_url(message: Message) -> None:
-    """Process the URL and prompt for name."""
+    """Process the URL and prompt for name with force reply."""
     bot = TelegramBot.get_bot()
     chat_id = message.chat.id
-    url = message.text.strip()
     try:
+        url = message.text.strip()
         URLValidator()(url)
         msg = bot.send_message(
             chat_id,
             _("📝 Please enter a name for this link (or type /skip to leave it empty):"),
+            reply_markup=types.ForceReply(selective=True),
         )
-        bot.register_next_step_handler(msg, process_name, url)
+        bot.register_for_reply(msg, process_name, url=url)
     except ValidationError:
-        bot.send_message(
+        msg = bot.send_message(
             chat_id,
-            _("❌ Invalid URL. Please try again with a valid URL."),
+            _("❌ Invalid URL. Please send a valid URL:"),
+            reply_markup=types.ForceReply(selective=True),
         )
+        bot.register_for_reply(msg, process_url)
     except Exception:
         bot.send_message(
             chat_id,
@@ -240,15 +250,13 @@ def process_name(message: Message, url: str) -> None:
     """Process the name and save the link."""
     bot = TelegramBot.get_bot()
     chat_id = message.chat.id
-    text = message.text.strip()
     try:
+        text = message.text.strip()
         name = "" if text.lower() == "/skip" else text
-        result = AddScrapingLinkHandler().handle(chat_id, url, name)
-        bot.send_message(
-            chat_id,
-            f"✅ {result.message}\n\n🔗 *URL:* {url}\n📝 *Name:* {name}",
-            parse_mode="Markdown",
-        )
+
+        AddScrapingLinkHandler().handle(chat_id, url, name)
+
+        bot.send_message(chat_id, ListScrapingLinksHandler().handle(chat_id=chat_id).message)
     except Exception:
         bot.send_message(
             chat_id,
