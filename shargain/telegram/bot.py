@@ -2,14 +2,13 @@ import logging
 import re
 from enum import Enum
 
-import telebot
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import transaction
 from django.utils.translation import gettext as _
-from telebot import TeleBot, types
+from telebot import TeleBot
 from telebot.types import (
+    CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
@@ -19,6 +18,7 @@ from telebot.types import (
 )
 
 from shargain.notifications.models import NotificationConfig
+from shargain.telegram.add_link_flow import handle_skip_name, prompt_for_name, start_add_link_flow
 from shargain.telegram.application import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
@@ -26,6 +26,8 @@ from shargain.telegram.application import (
     MessageProtocol,
     SetupScrapingTargetHandler,
 )
+
+from .add_link_flow import AddLinkCallback
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,14 @@ class TelegramBot:
     def get_bot(cls):
         if not cls._bot:
             cls._bot = TeleBot(settings.TELEGRAM_BOT_TOKEN, threaded=False)
-            cls._configure_bot()
+            bot = TeleBot(settings.TELEGRAM_BOT_TOKEN)
+            if settings.TELEGRAM_WEBHOOK_URL:
+                logger.info("Setting webhook to %s", settings.TELEGRAM_WEBHOOK_URL)
+                bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL)
+            else:
+                logger.info("Starting polling")
+                bot.polling(none_stop=True)
+            return bot
         return cls._bot
 
     @classmethod
@@ -47,7 +56,7 @@ class TelegramBot:
 
     @classmethod
     def _set_logging_level(cls, logging_level: int):
-        telebot.logger.setLevel(logging_level)
+        TeleBot.logger.setLevel(logging_level)
 
     @classmethod
     def run(cls, verbose: bool = False):
@@ -225,93 +234,9 @@ def callback_list_links(call):
 
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.ADD_LINK)
-def callback_add_link(call):
-    """Start the add link flow with force reply."""
-    bot = TelegramBot.get_bot()
-    chat_id = call.message.chat.id
-    msg = bot.send_message(
-        chat_id,
-        _("🔗 Please send me the URL you want to monitor:"),
-        reply_markup=types.ForceReply(selective=True),
-    )
-    bot.register_for_reply(msg, process_url)
-
-
-def process_url(message: Message) -> None:
-    """Process the URL and prompt for name with force reply."""
-    bot = TelegramBot.get_bot()
-    chat_id = message.chat.id
-    try:
-        url = message.text.strip()
-        URLValidator()(url)
-
-        # Create inline keyboard with skip button
-        markup = types.InlineKeyboardMarkup()
-        skip_button = types.InlineKeyboardButton(text=_("⏩ Skip"), callback_data=f"skip_name:{url}")
-        markup.add(skip_button)
-
-        msg = bot.send_message(
-            chat_id, _("📝 Please enter a name for this link (or click 'Skip' to leave it empty):"), reply_markup=markup
-        )
-        bot.register_for_reply(msg, process_name, url=url)
-
-    except ValidationError:
-        msg = bot.send_message(
-            chat_id,
-            _("❌ Invalid URL. Please send a valid URL:"),
-            reply_markup=types.ForceReply(selective=True),
-        )
-        bot.register_for_reply(msg, process_url)
-    except Exception:
-        bot.send_message(
-            chat_id,
-            _("❌ An error occurred. Please try again."),
-        )
-
-
-def process_name(message: Message, url: str) -> None:
-    """Process the name and save the link."""
-    bot = TelegramBot.get_bot()
-    chat_id = message.chat.id
-    try:
-        name = message.text.strip()
-        save_and_confirm_link(chat_id, url, name)
-    except Exception:
-        bot.send_message(
-            chat_id,
-            _("❌ An error occurred. Please try again."),
-        )
-
-
-def save_and_confirm_link(chat_id: int, url: str, name: str = "") -> None:
-    """Save the link and show confirmation."""
-    bot = TelegramBot.get_bot()
-    try:
-        AddScrapingLinkHandler().handle(chat_id, url, name)
-        bot.send_message(chat_id, ListScrapingLinksHandler().handle(chat_id=chat_id).message)
-    except Exception:
-        logger.exception("Error saving link")
-        bot.send_message(
-            chat_id,
-            _("❌ An error occurred while saving the link. Please try again."),
-        )
-
-
-@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith("skip_name:"))
-def handle_skip_name(call: types.CallbackQuery) -> None:
-    """Handle skip name button click."""
-    bot = TelegramBot.get_bot()
-    chat_id = call.message.chat.id
-    try:
-        # Extract URL from callback data
-        url = call.data.split(":", 1)[1]
-        save_and_confirm_link(chat_id, url, "")
-    except Exception:
-        bot.send_message(
-            chat_id,
-            _("❌ An error occurred. Please try again."),
-        )
-        bot.answer_callback_query(call.id, _("Error skipping name"))
+def callback_add_link(call: CallbackQuery) -> None:
+    """Start the add link flow."""
+    start_add_link_flow(TelegramBot.get_bot(), call)
 
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.DELETE_LINK)
@@ -324,6 +249,33 @@ def callback_delete_link(call):
         chat_id,
         _("To delete a link first list them with /list and then send: /delete <number>"),
     )
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.PROMPT_NAME_YES))
+def handle_prompt_name_yes(call: CallbackQuery) -> None:
+    """Handle 'Yes' button click for providing a name."""
+    try:
+        prompt_for_name(TelegramBot.get_bot(), call)
+    finally:
+        TelegramBot.get_bot().answer_callback_query(call.id)
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.PROMPT_NAME_NO))
+def handle_prompt_name_no(call: CallbackQuery) -> None:
+    """Handle 'No' button click for skipping name."""
+    try:
+        handle_skip_name(TelegramBot.get_bot(), call)
+    finally:
+        TelegramBot.get_bot().answer_callback_query(call.id)
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.SKIP_NAME))
+def handle_skip_name_callback(call: CallbackQuery) -> None:
+    """Handle skip name button click from the add link flow."""
+    try:
+        handle_skip_name(TelegramBot.get_bot(), call)
+    finally:
+        TelegramBot.get_bot().answer_callback_query(call.id)
 
 
 def get_token_for_webhook_url():
