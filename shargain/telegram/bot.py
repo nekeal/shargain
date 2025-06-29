@@ -1,5 +1,6 @@
 import logging
 import re
+from enum import Enum
 
 import telebot
 from django.conf import settings
@@ -7,8 +8,14 @@ from django.core.validators import URLValidator
 from django.db import transaction
 from django.utils.translation import gettext as _
 from telebot import TeleBot
-from telebot.types import Message
-from telebot.types import Message as TelebotMessage
+from telebot.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
+from telebot.types import (
+    Message as TelebotMessage,
+)
 
 from shargain.notifications.models import NotificationConfig
 from shargain.telegram.application import (
@@ -171,6 +178,73 @@ def delete_link_handler(message):
         )
 
     TelegramBot.get_bot().send_message(message.chat.id, response)
+
+
+class MenuCallback(str, Enum):
+    """Callback data for menu actions."""
+
+    ADD_LINK = "CMD_ADD_LINK"
+    LIST_LINKS = "CMD_LIST_LINKS"
+    DELETE_LINK = "CMD_DELETE_LINK"
+
+
+@TelegramBot.get_bot().message_handler(commands=["menu"])
+def menu_handler(message):
+    """Display main menu with inline keyboard options."""
+    markup = InlineKeyboardMarkup(row_width=2)  # Changed to allow 2 buttons per row
+
+    markup.add(
+        InlineKeyboardButton(
+            text="Add new link",
+            callback_data=MenuCallback.ADD_LINK,
+        )
+    )
+    markup.row(
+        InlineKeyboardButton(
+            text="List all links",
+            callback_data=MenuCallback.LIST_LINKS,
+        ),
+        InlineKeyboardButton(
+            text="Delete a link",
+            callback_data=MenuCallback.DELETE_LINK,
+        ),
+    )
+
+    TelegramBot.get_bot().send_message(message.chat.id, "Select an action:", reply_markup=markup)
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.LIST_LINKS)
+def callback_list_links(call):
+    """Handle listing links from inline keyboard."""
+    chat_id = call.message.chat.id
+    logger.info("Listing links via inline keyboard [chat_id=%s]", chat_id)
+    result = ListScrapingLinksHandler().handle(chat_id=chat_id)
+    TelegramBot.get_bot().answer_callback_query(call.id)
+    TelegramBot.get_bot().send_message(chat_id, result.message)
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.ADD_LINK)
+def callback_add_link(call):
+    """Prompt user how to add link when selected from menu."""
+    chat_id = call.message.chat.id
+    logger.info("Prompting add link via inline keyboard [chat_id=%s]", chat_id)
+    TelegramBot.get_bot().answer_callback_query(call.id)
+    TelegramBot.get_bot().send_message(
+        chat_id,
+        _("To add a link send the command: /add <url> [name]"),
+    )
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.DELETE_LINK)
+def callback_delete_link(call):
+    """Prompt user how to delete a link when selected from menu."""
+    chat_id = call.message.chat.id
+    logger.info("Prompting delete link via inline keyboard [chat_id=%s]", chat_id)
+    TelegramBot.get_bot().answer_callback_query(call.id)
+    TelegramBot.get_bot().send_message(
+        chat_id,
+        _("To delete a link first list them with /list and then send: /delete <number>"),
+    )
 
 
 def get_token_for_webhook_url():
