@@ -4,18 +4,13 @@ from enum import Enum
 
 import telebot
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import transaction
 from django.utils.translation import gettext as _
 from telebot import TeleBot
-from telebot.types import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    Message,
-)
-from telebot.types import (
-    Message as TelebotMessage,
-)
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from telebot.types import Message as TelebotMessage
 
 from shargain.notifications.models import NotificationConfig
 from shargain.telegram.application import (
@@ -129,26 +124,8 @@ def create_target_and_notifications_handler(message):
     TelegramBot.get_bot().send_message(message.chat.id, result.message)
 
 
-@TelegramBot.get_bot().message_handler(commands=["add"])
-def add_link_handler(message):
-    logger.error("Adding link")
-    chat_id = message.chat.id
-
-    command_regex: re.Pattern[str] = re.compile(r"^/add (?P<url>\S+)\s?(?P<name>[\w+\-_\s]+)?$")
-    match = command_regex.match(message.text)
-
-    if match and URLValidator.regex.match(match.group("url")):  # type: ignore[union-attr]
-        url = match.group("url")
-        name = (match.group("name") or "").strip()
-        response = AddScrapingLinkHandler().handle(chat_id, url, name).message
-    else:
-        response = _("Invalid format of message. Please use /add <url> [name] format.")
-
-    TelegramBot.get_bot().send_message(message.chat.id, response)
-
-
 @TelegramBot.get_bot().message_handler(commands=["list"])
-def list_links_handler(message):
+def list_links_handler(message: Message) -> None:
     logger.info("Listing links")
     chat_id = message.chat.id
     result = ListScrapingLinksHandler().handle(chat_id=chat_id)
@@ -156,11 +133,11 @@ def list_links_handler(message):
 
 
 @TelegramBot.get_bot().message_handler(commands=["delete"])
-def delete_link_handler(message):
+def delete_link_handler(message: Message) -> None:
     logger.error("Deleting link")
     chat_id = message.chat.id
 
-    command_regex: re.Pattern[str] = re.compile(r"^/delete (?P<index>\d+)$")
+    command_regex = re.compile(r"^/delete (?P<index>\d+)$")
     match = command_regex.match(message.text)
 
     if match:
@@ -189,7 +166,7 @@ class MenuCallback(str, Enum):
 
 
 @TelegramBot.get_bot().message_handler(commands=["menu"])
-def menu_handler(message):
+def menu_handler(message: Message) -> None:
     """Display main menu with inline keyboard options."""
     markup = InlineKeyboardMarkup(row_width=2)  # Changed to allow 2 buttons per row
 
@@ -225,14 +202,58 @@ def callback_list_links(call):
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.ADD_LINK)
 def callback_add_link(call):
-    """Prompt user how to add link when selected from menu."""
-    chat_id = call.message.chat.id
-    logger.info("Prompting add link via inline keyboard [chat_id=%s]", chat_id)
-    TelegramBot.get_bot().answer_callback_query(call.id)
-    TelegramBot.get_bot().send_message(
-        chat_id,
-        _("To add a link send the command: /add <url> [name]"),
+    """Handle add link flow start or cancellation."""
+
+    bot = TelegramBot.get_bot()
+    msg = bot.send_message(
+        call.message.chat.id,
+        _("🔗 Please send me the URL you want to monitor:"),
     )
+    bot.register_next_step_handler(msg, process_url)
+
+
+def process_url(message: Message) -> None:
+    """Process the URL and prompt for name."""
+    bot = TelegramBot.get_bot()
+    chat_id = message.chat.id
+    url = message.text.strip()
+    try:
+        URLValidator()(url)
+        msg = bot.send_message(
+            chat_id,
+            _("📝 Please enter a name for this link (or type /skip to leave it empty):"),
+        )
+        bot.register_next_step_handler(msg, process_name, url)
+    except ValidationError:
+        bot.send_message(
+            chat_id,
+            _("❌ Invalid URL. Please try again with a valid URL."),
+        )
+    except Exception:
+        bot.send_message(
+            chat_id,
+            _("❌ An error occurred. Please try again."),
+        )
+
+
+def process_name(message: Message, url: str) -> None:
+    """Process the name and save the link."""
+    bot = TelegramBot.get_bot()
+    chat_id = message.chat.id
+    text = message.text.strip()
+    try:
+        name = "" if text.lower() == "/skip" else text
+        result = AddScrapingLinkHandler().handle(chat_id, url, name)
+        bot.send_message(
+            chat_id,
+            f"✅ {result.message}\n\n🔗 *URL:* {url}\n📝 *Name:* {name}",
+            parse_mode="Markdown",
+        )
+    except Exception:
+        bot.send_message(
+            chat_id,
+            _("❌ An error occurred. Please try again."),
+        )
 
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.DELETE_LINK)
