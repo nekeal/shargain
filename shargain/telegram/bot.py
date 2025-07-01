@@ -1,5 +1,6 @@
 import logging
 import re
+import urllib.parse
 from enum import Enum
 
 from django.conf import settings
@@ -19,7 +20,7 @@ from telebot.types import (
 )
 
 from shargain.notifications.models import NotificationConfig
-from shargain.telegram.add_link_flow import handle_skip_name, prompt_for_name, start_add_link_flow
+from shargain.telegram.add_link_flow import handle_skip_name, process_url, prompt_for_name, start_add_link_flow
 from shargain.telegram.application import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
@@ -310,6 +311,85 @@ def handle_skip_name_callback(call: CallbackQuery) -> None:
         handle_skip_name(TelegramBot.get_bot(), call)
     finally:
         TelegramBot.get_bot().answer_callback_query(call.id)
+
+
+def detect_olx_offer_list(message: Message) -> bool:
+    """Check if message contains an OLX offer list URL."""
+    if not message.text:
+        return False
+    # Check for olx.pl domain and not an offer page
+    return "olx.pl" in message.text and "/d/oferta" not in message.text
+
+
+def extract_url(text: str) -> str:
+    """Extract the first URL from the given text."""
+    url_start = text.find("http")
+    if url_start == -1:
+        return ""
+    # Find the end of the URL (first whitespace or end of string)
+    space_pos = text.find(" ", url_start)
+    return text[url_start:space_pos] if space_pos != -1 else text[url_start:]
+
+
+@TelegramBot.get_bot().message_handler(func=detect_olx_offer_list, content_types=["text"])
+def handle_olx_offer_list(message: Message) -> None:
+    """Handle detection of OLX offer list URL."""
+    bot = TelegramBot.get_bot()
+
+    if not (url := extract_url(message.text)):
+        logger.warning("No URL found in message")
+        return
+
+    url_encoded = urllib.parse.quote_plus(url)
+
+    markup = InlineKeyboardMarkup()
+    markup.add(
+        InlineKeyboardButton("✅ Yes", callback_data=f"OLX_ADD:{url_encoded}"),
+        InlineKeyboardButton("❌ No", callback_data="OLX_IGNORE"),
+    )
+
+    bot.send_message(
+        message.chat.id,
+        "🔍 I noticed an OLX offer list. Would you like to add it to monitoring?",
+        reply_to_message_id=message.message_id,
+        reply_markup=markup,
+    )
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(("OLX_ADD:", "OLX_IGNORE")))
+def handle_olx_confirmation(call: CallbackQuery) -> None:
+    """Handle OLX URL confirmation response.
+
+    Callback data format: "OLX_ADD:<url_encoded>" or "OLX_IGNORE"
+    """
+    bot = TelegramBot.get_bot()
+    bot.answer_callback_query(call.id)
+
+    if call.data == "OLX_IGNORE":
+        return
+
+    try:
+        # Extract URL from callback data
+        url_encoded = call.data.split(":", 1)[1]
+        url = urllib.parse.unquote_plus(url_encoded)
+
+        if not url:
+            logger.warning("No URL found in callback data")
+            return
+
+        message = call.message
+        message.text = url
+
+        process_url(bot, message)
+
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except Exception as e:
+            logger.warning("Could not delete message: %s", e)
+
+    except (IndexError, ValueError, AttributeError) as e:
+        logger.error("Error processing OLX confirmation: %s", e)
+        bot.send_message(call.message.chat.id, "❌ An error occurred while processing your request. Please try again.")
 
 
 def get_token_for_webhook_url():
