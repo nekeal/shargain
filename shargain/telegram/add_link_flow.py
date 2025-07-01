@@ -98,7 +98,7 @@ def prompt_for_name(bot: TeleBot, call: types.CallbackQuery) -> None:
         msg = bot.send_message(
             chat_id,
             _("📝 Please enter a name for this link:"),
-            reply_markup=types.ForceReply(selective=True),
+            reply_markup=types.ForceReply(selective=False),
         )
         bot.register_for_reply(msg, lambda m, u=url: process_name(bot, m, u))
     except Exception:
