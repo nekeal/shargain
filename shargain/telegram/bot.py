@@ -128,7 +128,35 @@ def register_channel_handler(message: Message) -> None:
 
 @TelegramBot.get_bot().message_handler(commands=["start"])
 def start_handler(message: Message) -> None:
-    logger.info("Starting bot")
+    """Handle the /start command with optional parameter.
+
+    Supports deep linking in the format: https://t.me/YourBot?start=TOKEN
+    which sends: /start TOKEN
+    """
+    logger.info("Start command received: %s", message.text)
+
+    # Split the message text to check for parameters
+    command_parts = message.text.split()
+
+    if len(command_parts) > 1:
+        # Extract the token after /start
+        token = command_parts[1]
+        logger.warning("Start command with token: %s", token)
+
+        # Use the SetupScrapingTargetHandler to process the token
+        handler = SetupScrapingTargetHandler()
+        result = handler.handle(message.chat.id, token)
+
+        # Send appropriate response based on handler result
+        if result.success:
+            TelegramBot.get_bot().send_message(
+                message.chat.id,
+                "✅ Configuration successful!\n\n"
+                "The bot is now ready to use. You can start adding links to monitor using the /add command.",
+            )
+        else:
+            logger.info("Couldn't start configuration: %s, chat_id: %s", result.message, message.chat.id)
+
     TelegramBot.get_bot().send_message(
         message.chat.id,
         "Hello! I'm a Shargain bot. I can send you notifications about new offers. "
@@ -141,7 +169,7 @@ def start_handler(message: Message) -> None:
 @transaction.atomic
 def create_target_and_notifications_handler(message):
     logger.info("Creating scraping target and notifications")
-    result = SetupScrapingTargetHandler(TelebotMessageAdapter(message)).dispatch()
+    result = SetupScrapingTargetHandler().handle(message.chat.id, message.text.split()[1])
     TelegramBot.get_bot().send_message(message.chat.id, result.message)
 
 
