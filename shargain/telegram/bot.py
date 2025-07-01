@@ -1,6 +1,6 @@
+import base64
 import logging
 import re
-import urllib.parse
 from enum import Enum
 
 from django.conf import settings
@@ -340,11 +340,11 @@ def handle_olx_offer_list(message: Message) -> None:
         logger.warning("No URL found in message")
         return
 
-    url_encoded = urllib.parse.quote_plus(url)
+    url_encoded = base64.urlsafe_b64encode(url.encode())
 
     markup = InlineKeyboardMarkup()
     markup.add(
-        InlineKeyboardButton("✅ Yes", callback_data=f"OLX_ADD:{url_encoded}"),
+        InlineKeyboardButton("✅ Yes", callback_data=f"OLX_ADD:{url_encoded!r}"),
         InlineKeyboardButton("❌ No", callback_data="OLX_IGNORE"),
     )
 
@@ -369,9 +369,8 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
         return
 
     try:
-        # Extract URL from callback data
-        url_encoded = call.data.split(":", 1)[1]
-        url = urllib.parse.unquote_plus(url_encoded)
+        url_encoded = call.data[9:]  # Remove "OLX_ADD:" prefix
+        url = base64.urlsafe_b64decode(url_encoded).decode()
 
         if not url:
             logger.warning("No URL found in callback data")
@@ -387,6 +386,10 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
         except Exception as e:
             logger.warning("Could not delete message: %s", e)
 
+    except Exception as e:
+        logger.error("Error processing URL from callback: %s", e)
+        bot.send_message(call.message.chat.id, "❌ An error occurred while processing the URL. Please try again.")
+        return
     except (IndexError, ValueError, AttributeError) as e:
         logger.error("Error processing OLX confirmation: %s", e)
         bot.send_message(call.message.chat.id, "❌ An error occurred while processing your request. Please try again.")
