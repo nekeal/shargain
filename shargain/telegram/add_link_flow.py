@@ -6,12 +6,16 @@ from enum import Enum
 from django.core.validators import URLValidator
 from django.utils.translation import gettext as _
 from telebot import TeleBot, types
+from telebot.types import CallbackQuery
 from telebot.types import Message as TelebotMessage
 
 from shargain.telegram.application import AddScrapingLinkHandler, ListScrapingLinksHandler
+from shargain.telegram.bot import MenuCallback, TelegramBot
 
 logger = logging.getLogger(__name__)
 url_validator = URLValidator()
+
+bot = TelegramBot.get_bot()
 
 
 class AddLinkCallback(str, Enum):
@@ -20,7 +24,8 @@ class AddLinkCallback(str, Enum):
     PROMPT_NAME_NO = "PROMPT_NAME_NO"
 
 
-def start_add_link_flow(bot, call: types.CallbackQuery) -> None:
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.ADD_LINK)
+def callback_add_link(call: CallbackQuery) -> None:
     """Start the add link flow."""
     chat_id = call.message.chat.id
     msg = bot.send_message(
@@ -38,7 +43,6 @@ def process_url(bot: TeleBot, message: TelebotMessage) -> None:
         url = message.text.strip()
         url_validator(url)
 
-        # Create inline keyboard with yes/no buttons
         markup = types.InlineKeyboardMarkup()
         yes_button = types.InlineKeyboardButton(
             text=_("✅ Yes"), callback_data=f"{AddLinkCallback.PROMPT_NAME_YES}:{url}"
@@ -46,7 +50,6 @@ def process_url(bot: TeleBot, message: TelebotMessage) -> None:
         no_button = types.InlineKeyboardButton(text=_("❌ No"), callback_data=f"{AddLinkCallback.PROMPT_NAME_NO}:{url}")
         markup.row(yes_button, no_button)
 
-        # Ask if user wants to provide a name
         bot.send_message(chat_id, _("📝 Would you like to provide a name for this link?"), reply_markup=markup)
 
     except Exception:
@@ -122,3 +125,30 @@ def handle_skip_name(bot: TeleBot, call: types.CallbackQuery) -> None:
             _("❌ An error occurred while saving the link. Please try again."),
         )
         bot.answer_callback_query(call.id, _("Error skipping name"))
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.PROMPT_NAME_YES))
+def handle_prompt_name_yes(call: CallbackQuery) -> None:
+    """Handle the 'Yes' button click for providing a name."""
+    try:
+        prompt_for_name(TelegramBot.get_bot(), call)
+    finally:
+        TelegramBot.get_bot().answer_callback_query(call.id)
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.PROMPT_NAME_NO))
+def handle_prompt_name_no(call: CallbackQuery) -> None:
+    """Handle the 'No' button click for skipping name."""
+    try:
+        handle_skip_name(TelegramBot.get_bot(), call)
+    finally:
+        TelegramBot.get_bot().answer_callback_query(call.id)
+
+
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.SKIP_NAME))
+def handle_skip_name_callback(call: CallbackQuery) -> None:
+    """Handle skip name button click from the add link flow."""
+    try:
+        handle_skip_name(TelegramBot.get_bot(), call)
+    finally:
+        TelegramBot.get_bot().answer_callback_query(call.id)

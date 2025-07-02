@@ -9,7 +9,6 @@ from django.utils.translation import gettext as _
 from telebot import TeleBot
 from telebot.types import (
     BotCommand,
-    CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
@@ -19,7 +18,6 @@ from telebot.types import (
 )
 
 from shargain.notifications.models import NotificationConfig
-from shargain.telegram.add_link_flow import handle_skip_name, process_url, prompt_for_name, start_add_link_flow
 from shargain.telegram.application import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
@@ -27,8 +25,6 @@ from shargain.telegram.application import (
     MessageProtocol,
     SetupScrapingTargetHandler,
 )
-
-from .add_link_flow import AddLinkCallback
 
 logger = logging.getLogger(__name__)
 
@@ -234,7 +230,7 @@ class MenuCallback(str, Enum):
 
 @TelegramBot.get_bot().message_handler(commands=["menu"])
 def menu_handler(message: Message) -> None:
-    """Display main menu with inline keyboard options."""
+    """Display the main menu with inline keyboard options."""
     markup = InlineKeyboardMarkup(row_width=2)  # Changed to allow 2 buttons per row
 
     markup.add(
@@ -267,15 +263,9 @@ def callback_list_links(call):
     TelegramBot.get_bot().send_message(chat_id, result.message)
 
 
-@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.ADD_LINK)
-def callback_add_link(call: CallbackQuery) -> None:
-    """Start the add link flow."""
-    start_add_link_flow(TelegramBot.get_bot(), call)
-
-
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.DELETE_LINK)
 def callback_delete_link(call):
-    """Prompt user how to delete a link when selected from menu."""
+    """Prompt user how to delete a link when selected from a menu."""
     chat_id = call.message.chat.id
     logger.info("Prompting delete link via inline keyboard [chat_id=%s]", chat_id)
     TelegramBot.get_bot().answer_callback_query(call.id)
@@ -283,109 +273,6 @@ def callback_delete_link(call):
         chat_id,
         _("To delete a link first list them with /list and then send: /delete <number>"),
     )
-
-
-@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.PROMPT_NAME_YES))
-def handle_prompt_name_yes(call: CallbackQuery) -> None:
-    """Handle 'Yes' button click for providing a name."""
-    try:
-        prompt_for_name(TelegramBot.get_bot(), call)
-    finally:
-        TelegramBot.get_bot().answer_callback_query(call.id)
-
-
-@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.PROMPT_NAME_NO))
-def handle_prompt_name_no(call: CallbackQuery) -> None:
-    """Handle 'No' button click for skipping name."""
-    try:
-        handle_skip_name(TelegramBot.get_bot(), call)
-    finally:
-        TelegramBot.get_bot().answer_callback_query(call.id)
-
-
-@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.SKIP_NAME))
-def handle_skip_name_callback(call: CallbackQuery) -> None:
-    """Handle skip name button click from the add link flow."""
-    try:
-        handle_skip_name(TelegramBot.get_bot(), call)
-    finally:
-        TelegramBot.get_bot().answer_callback_query(call.id)
-
-
-def detect_olx_offer_list(message: Message) -> bool:
-    """Check if message contains an OLX offer list URL."""
-    if not message.text:
-        return False
-    # Check for olx.pl domain and not an offer page
-    return "olx.pl" in message.text and "/d/oferta" not in message.text
-
-
-def extract_url(text: str) -> str:
-    """Extract the first URL from the given text."""
-    url_start = text.find("http")
-    if url_start == -1:
-        return ""
-    # Find the end of the URL (first whitespace or end of string)
-    space_pos = text.find(" ", url_start)
-    return text[url_start:space_pos] if space_pos != -1 else text[url_start:]
-
-
-@TelegramBot.get_bot().message_handler(func=detect_olx_offer_list, content_types=["text"])
-def handle_olx_offer_list(message: Message) -> None:
-    """Handle detection of OLX offer list URL."""
-    bot = TelegramBot.get_bot()
-
-    markup = InlineKeyboardMarkup()
-    markup.add(
-        InlineKeyboardButton("✅ Yes", callback_data="OLX_ADD"),
-        InlineKeyboardButton("❌ No", callback_data="OLX_IGNORE"),
-    )
-
-    bot.send_message(
-        message.chat.id,
-        _("🔍 I noticed an OLX offer list. Would you like to add it to monitoring?"),
-        reply_to_message_id=message.message_id,
-        reply_markup=markup,
-    )
-
-
-@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(("OLX_ADD", "OLX_IGNORE")))
-def handle_olx_confirmation(call: CallbackQuery) -> None:
-    """Handle OLX URL confirmation response."""
-
-    bot = TelegramBot.get_bot()
-    bot.answer_callback_query(call.id)
-
-    if call.data == "OLX_IGNORE":
-        return
-
-    try:
-        message = call.message
-
-        if not (message_with_url := message.reply_to_message):
-            logger.warning("No reply to message found in callback")
-            return
-        if not (url := extract_url(message_with_url.text)):
-            logger.warning("No URL found in reply message")
-            return
-
-        message.text = url
-        process_url(bot, message)
-
-        try:
-            bot.delete_message(message.chat.id, message.message_id)
-        except Exception as e:
-            logger.warning("Could not delete message: %s", e)
-
-    except Exception as e:
-        logger.error("Error processing URL from callback: %s", e)
-        bot.send_message(call.message.chat.id, _("❌ An error occurred while processing the URL. Please try again."))
-        return
-    except (IndexError, ValueError, AttributeError) as e:
-        logger.error("Error processing OLX confirmation: %s", e)
-        bot.send_message(
-            call.message.chat.id, _("❌ An error occurred while processing your request. Please try again.")
-        )
 
 
 def get_token_for_webhook_url():
