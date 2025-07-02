@@ -1,4 +1,3 @@
-import base64
 import logging
 import re
 from enum import Enum
@@ -336,32 +335,24 @@ def handle_olx_offer_list(message: Message) -> None:
     """Handle detection of OLX offer list URL."""
     bot = TelegramBot.get_bot()
 
-    if not (url := extract_url(message.text)):
-        logger.warning("No URL found in message")
-        return
-
-    url_encoded = base64.urlsafe_b64encode(url.encode())
-
     markup = InlineKeyboardMarkup()
     markup.add(
-        InlineKeyboardButton("✅ Yes", callback_data=f"OLX_ADD:{url_encoded!r}"),
+        InlineKeyboardButton("✅ Yes", callback_data="OLX_ADD"),
         InlineKeyboardButton("❌ No", callback_data="OLX_IGNORE"),
     )
 
     bot.send_message(
         message.chat.id,
-        "🔍 I noticed an OLX offer list. Would you like to add it to monitoring?",
+        _("🔍 I noticed an OLX offer list. Would you like to add it to monitoring?"),
         reply_to_message_id=message.message_id,
         reply_markup=markup,
     )
 
 
-@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(("OLX_ADD:", "OLX_IGNORE")))
+@TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(("OLX_ADD", "OLX_IGNORE")))
 def handle_olx_confirmation(call: CallbackQuery) -> None:
-    """Handle OLX URL confirmation response.
+    """Handle OLX URL confirmation response."""
 
-    Callback data format: "OLX_ADD:<url_encoded>" or "OLX_IGNORE"
-    """
     bot = TelegramBot.get_bot()
     bot.answer_callback_query(call.id)
 
@@ -369,16 +360,16 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
         return
 
     try:
-        url_encoded = call.data[9:]  # Remove "OLX_ADD:" prefix
-        url = base64.urlsafe_b64decode(url_encoded).decode()
+        message = call.message
 
-        if not url:
-            logger.warning("No URL found in callback data")
+        if not (message_with_url := message.reply_to_message):
+            logger.warning("No reply to message found in callback")
+            return
+        if not (url := extract_url(message_with_url.text)):
+            logger.warning("No URL found in reply message")
             return
 
-        message = call.message
         message.text = url
-
         process_url(bot, message)
 
         try:
@@ -388,11 +379,13 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
 
     except Exception as e:
         logger.error("Error processing URL from callback: %s", e)
-        bot.send_message(call.message.chat.id, "❌ An error occurred while processing the URL. Please try again.")
+        bot.send_message(call.message.chat.id, _("❌ An error occurred while processing the URL. Please try again."))
         return
     except (IndexError, ValueError, AttributeError) as e:
         logger.error("Error processing OLX confirmation: %s", e)
-        bot.send_message(call.message.chat.id, "❌ An error occurred while processing your request. Please try again.")
+        bot.send_message(
+            call.message.chat.id, _("❌ An error occurred while processing your request. Please try again.")
+        )
 
 
 def get_token_for_webhook_url():
