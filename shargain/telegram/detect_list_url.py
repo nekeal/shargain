@@ -1,16 +1,19 @@
 from django.utils.translation import gettext as _
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
+from shargain.offers.websites import OlxWebsiteValidator
 from shargain.telegram.add_link_flow import process_url
 from shargain.telegram.bot import TelegramBot, logger
 
 
 def detect_olx_offer_list(message: Message) -> bool:
     """Check if a message contains an OLX offer list URL."""
-    if not message.text:
+    if not message.text or message.reply_to_message:  # if message is reply to another do not process
         return False
-    # Check for olx.pl domain and not an offer page
-    return not message.reply_to_message and "olx.pl" in message.text and "/d/oferta" not in message.text
+    if not (url := extract_url(message.text.strip())):
+        return False
+
+    return OlxWebsiteValidator().validate_list_url(url)
 
 
 def extract_url(text: str) -> str:
@@ -47,10 +50,10 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
     """Handle OLX URL confirmation response."""
 
     bot = TelegramBot.get_bot()
-    message = call.message
+    message: Message = call.message
 
     if call.data == "OLX_IGNORE":
-        bot.delete_message(message.chat.id, call.message.message_id)
+        bot.delete_message(message.chat.id, message.message_id)
         return
 
     try:
@@ -69,12 +72,10 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
         except Exception as e:
             logger.warning("Could not delete message: %s", e)
 
-    except Exception as e:
-        logger.error("Error processing URL from callback: %s", e)
-        bot.send_message(call.message.chat.id, _("❌ An error occurred while processing the URL. Please try again."))
-        return
     except (IndexError, ValueError, AttributeError) as e:
         logger.error("Error processing OLX confirmation: %s", e)
-        bot.send_message(
-            call.message.chat.id, _("❌ An error occurred while processing your request. Please try again.")
-        )
+        bot.send_message(message.chat.id, _("❌ An error occurred while processing your request. Please try again."))
+    except Exception as e:
+        logger.error("Error processing URL from callback: %s", e)
+        bot.send_message(message.chat.id, _("❌ An error occurred while processing the URL. Please try again."))
+        return

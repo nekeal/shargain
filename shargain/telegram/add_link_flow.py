@@ -3,17 +3,17 @@
 import logging
 from enum import Enum
 
-from django.core.validators import URLValidator
 from django.utils.translation import gettext as _
 from telebot import TeleBot, types
 from telebot.types import CallbackQuery
 from telebot.types import Message as TelebotMessage
 
+from shargain.offers.websites import OlxWebsiteValidator
 from shargain.telegram.application import AddScrapingLinkHandler, ListScrapingLinksHandler
 from shargain.telegram.bot import MenuCallback, TelegramBot
 
 logger = logging.getLogger(__name__)
-url_validator = URLValidator()
+olx_validator = OlxWebsiteValidator()
 
 bot = TelegramBot.get_bot()
 
@@ -39,9 +39,10 @@ def callback_add_link(call: CallbackQuery) -> None:
 def process_url(bot: TeleBot, message: TelebotMessage) -> None:
     """Process the URL input and prompt for name."""
     chat_id = message.chat.id
+    url = message.text.strip()
     try:
-        url = message.text.strip()
-        url_validator(url)
+        if not olx_validator.validate_list_url(url):
+            raise ValueError(_("Invalid URL format. Please provide a valid URL."))
 
         markup = types.InlineKeyboardMarkup()
         yes_button = types.InlineKeyboardButton(
@@ -53,7 +54,7 @@ def process_url(bot: TeleBot, message: TelebotMessage) -> None:
         bot.send_message(chat_id, _("📝 Would you like to provide a name for this link?"), reply_markup=markup)
 
     except Exception:
-        logger.exception("Error in process_url")
+        logger.warning("Error in process_url")
         msg = bot.send_message(
             chat_id,
             _("❌ Invalid URL. Please send a valid URL:"),
