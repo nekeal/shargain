@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-12 23:50+0200\n"
+"POT-Creation-Date: 2025-07-04 18:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,16 +20,16 @@ msgstr ""
 "(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
 "n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
-#: shargain/accounts/models.py:31 shargain/notifications/models.py:28
+#: shargain/accounts/models.py:27 shargain/notifications/models.py:28
 msgid "Register token"
 msgstr "Token rejestracyjny"
 
-#: shargain/accounts/models.py:32
+#: shargain/accounts/models.py:28
 msgid "Register tokens"
 msgstr "Tokeny rejestracyjne"
 
 #: shargain/notifications/models.py:19 shargain/offers/models.py:14
-#: shargain/offers/models.py:41
+#: shargain/offers/models.py:40
 msgid "Name"
 msgstr "Nazwa"
 
@@ -61,77 +61,6 @@ msgstr "Kanał powiadomień"
 msgid "Notification channels"
 msgstr "Kanały powiadomień"
 
-#: shargain/notifications/services/telegram.py:89
-msgid "This token is invalid or already used"
-msgstr "Ten token jest nieprawidłowy lub został użyty"
-
-#: shargain/notifications/services/telegram.py:102
-msgid ""
-"This name is already taken or notifications are already configured for this "
-"chat"
-msgstr ""
-"Ta nazwa jest już zajęta lub powiadomienia dla tego czatu są już "
-"skonfigurowane"
-
-#: shargain/notifications/services/telegram.py:112
-msgid ""
-"Notifications configured successfully. Now you can add links to track using /"
-"add command"
-msgstr ""
-"Powiadomienia skonfigurowane pomyślnie. Możesz teraz dodać linki do "
-"obserwacji za pomocą polecenia /add"
-
-#: shargain/notifications/services/telegram.py:122
-msgid "Invalid format of message. Please use /configure <token> <name> format"
-msgstr ""
-"Niepraawidłowy format wiadomości. Użyj formatu: /configure <token> <nazwa>"
-
-#: shargain/notifications/services/telegram.py:155
-#: shargain/notifications/services/telegram.py:202
-#: shargain/notifications/services/telegram.py:258
-msgid "You need to configure notifications first. Use /configure command"
-msgstr "Musisz najpierw skonfigurować powiadomienia. Użyj polecenia /configure"
-
-#: shargain/notifications/services/telegram.py:163
-#: shargain/notifications/services/telegram.py:210
-#: shargain/notifications/services/telegram.py:266
-msgid ""
-"You haven't configured this chat yet (use /configure command or contact "
-"administrator)"
-msgstr ""
-"Ten czat nie został jeszcze skonfigurowany (użyj polecenia /configure lub "
-"skontaktuj się z administratorem)"
-
-#: shargain/notifications/services/telegram.py:168
-msgid "Link added successfully. You will be notified about new offers soon"
-msgstr ""
-"Link dodany pomyślnie. Wkrótce otrzymasz powiadomienia o nowych ofertach"
-
-#: shargain/notifications/services/telegram.py:176
-msgid "Invalid format of message. Please use /add <url> [name] format"
-msgstr "Nieprawidłowy format wiadomości. Użyj formatu: /add <url> [nazwa]"
-
-#: shargain/notifications/services/telegram.py:192
-#: shargain/notifications/services/telegram.py:214
-msgid "You don't have any added links yet"
-msgstr "Nie posiadasz jeszcze żadnych dodanych obserwacji"
-
-#: shargain/notifications/services/telegram.py:218
-msgid "Invalid format of message. Please use /list format"
-msgstr "Nieprawidłowy format wiadomości. Użyj formatu: /list"
-
-#: shargain/notifications/services/telegram.py:239
-msgid "Scraping url with this index does not exist. Check /list command"
-msgstr "URL z tym indeksem nie istnieje. Sprawdź polecenie /list"
-
-#: shargain/notifications/services/telegram.py:275
-msgid ""
-"Invalid format of message. Please use /delete <number> format. Where number "
-"is a number of link from /list command"
-msgstr ""
-"Nieprawidłowy format wiadomości. Użyj /delete <id>. <id> to numer z wyniku "
-"polecenia /list"
-
 #: shargain/notifications/views/admin.py:28
 msgid "Error sending test notification: {}"
 msgstr "Błąd podczas wysyłania testowego powiadomienia"
@@ -140,31 +69,31 @@ msgstr "Błąd podczas wysyłania testowego powiadomienia"
 msgid "Test notification sent successfully"
 msgstr "Testowe powiadomienie wysłane pomyślnie"
 
-#: shargain/offers/admin/__init__.py:42 shargain/offers/models.py:88
+#: shargain/offers/admin/__init__.py:42 shargain/offers/models.py:86
 msgid "Title"
 msgstr "Tytuł"
 
-#: shargain/offers/admin/__init__.py:48
+#: shargain/offers/admin/__init__.py:46
 msgid "Link to offer"
 msgstr "Link do oferty"
 
-#: shargain/offers/admin/__init__.py:50
+#: shargain/offers/admin/__init__.py:48
 msgid "Go to offer"
 msgstr "Przejdz do oferty"
 
-#: shargain/offers/admin/__init__.py:54 shargain/offers/models.py:102
+#: shargain/offers/admin/__init__.py:52 shargain/offers/models.py:94
 msgid "Closed at"
 msgstr "Zamknięto"
 
-#: shargain/offers/admin/__init__.py:67
+#: shargain/offers/admin/__init__.py:61
 msgid "Duration"
 msgstr "Czas trwania"
 
-#: shargain/offers/admin/__init__.py:109
+#: shargain/offers/admin/__init__.py:101
 msgid "Stats"
 msgstr "Statystyki"
 
-#: shargain/offers/admin/__init__.py:114
+#: shargain/offers/admin/__init__.py:106
 msgid "Urls to scrap"
 msgstr "Linki do sprawdzenia"
 
@@ -172,11 +101,11 @@ msgstr "Linki do sprawdzenia"
 msgid "Only telegram channel is supported for now"
 msgstr "Tylko telegram jest obecnie obsługiwany"
 
-#: shargain/offers/admin/forms.py:21
+#: shargain/offers/admin/forms.py:20
 msgid "You must first register a channel (or specify a chat_id manually)"
 msgstr "Musisz najpierw zarejestrować kanał (lub ręcznie określić chat_id)"
 
-#: shargain/offers/apps.py:7 shargain/offers/models.py:113
+#: shargain/offers/apps.py:7 shargain/offers/models.py:105
 msgid "Offers"
 msgstr "Oferty"
 
@@ -192,82 +121,266 @@ msgstr "Jest aktywny"
 msgid "Defines whether this target should be scrapped"
 msgstr "Określa czy ten cel powinien być skanowany"
 
-#: shargain/offers/models.py:35
+#: shargain/offers/models.py:32
 msgid "Scrapping target"
 msgstr "Cel do sprawdzenia"
 
-#: shargain/offers/models.py:36
+#: shargain/offers/models.py:33
 msgid "Scrapping targets"
 msgstr "Cele do sprawdzenia"
 
-#: shargain/offers/models.py:41
+#: shargain/offers/models.py:40
 msgid "Human readable name for the URL"
 msgstr "Czytelna nazwa dla linku"
 
-#: shargain/offers/models.py:44
+#: shargain/offers/models.py:42
 msgid "Target URL"
 msgstr "Link celu"
 
-#: shargain/offers/models.py:46
+#: shargain/offers/models.py:44
 msgid "Target URL to one of the supported sites"
 msgstr "Link celu jednej ze wspieranych stron"
 
-#: shargain/offers/models.py:51
+#: shargain/offers/models.py:49
 msgid "Scraping target"
 msgstr "Cel do sprawdzenia"
 
-#: shargain/offers/models.py:53
+#: shargain/offers/models.py:51
 msgid "Group of scraping URLs"
 msgstr "Grupa linków do śledzenia"
 
-#: shargain/offers/models.py:57
+#: shargain/offers/models.py:55
 msgid "Scraping URL"
 msgstr "Cel do sprawdzenia"
 
-#: shargain/offers/models.py:58
+#: shargain/offers/models.py:56
 msgid "Scraping URLs"
 msgstr "Linki do śledzenia"
 
-#: shargain/offers/models.py:89
+#: shargain/offers/models.py:87
 msgid "Price"
 msgstr "Cena"
 
-#: shargain/offers/models.py:90
+#: shargain/offers/models.py:88
 msgid "Main image's URL"
 msgstr "Link do głównego zdjęcia"
 
-#: shargain/offers/models.py:92
+#: shargain/offers/models.py:89
 msgid "Source HTML"
 msgstr "Żródłowy HTML"
 
-#: shargain/offers/models.py:96
+#: shargain/offers/models.py:91
 msgid "Target"
 msgstr "Cel"
 
-#: shargain/offers/models.py:100
+#: shargain/offers/models.py:93
 msgid "Published at"
 msgstr "Opublikowano"
 
-#: shargain/offers/models.py:104
+#: shargain/offers/models.py:96
 msgid "Last check at"
 msgstr "Ostatnie sprawdzenie"
 
-#: shargain/offers/models.py:105
+#: shargain/offers/models.py:97
 msgid "Time of last offer check"
 msgstr "Czas ostatniego sprawdzenia oferty"
 
-#: shargain/offers/models.py:112
+#: shargain/offers/models.py:104
 msgid "Offer"
 msgstr "Oferta"
 
-#: shargain/settings/base.py:121
+#: shargain/settings/base.py:125
 msgid "English"
 msgstr ""
 
-#: shargain/settings/base.py:122
+#: shargain/settings/base.py:126
 msgid "Polish"
 msgstr ""
 
-#: shargain/settings/base.py:168
+#: shargain/settings/conf/theme.py:7
 msgid "Snap bargain with Shargain"
 msgstr ""
+
+#: shargain/settings/conf/theme.py:16
+msgid "Groups"
+msgstr "Grupy"
+
+#: shargain/telegram/add_link_flow.py:33
+msgid "🔗 Please send me the URL you want to monitor:"
+msgstr "🔗 Wysyłaj mi link do monitorowania:"
+
+#: shargain/telegram/add_link_flow.py:45
+msgid "Invalid URL format. Please provide a valid URL."
+msgstr "Nieprawidłowy format URL. Podaj poprawny adres URL."
+
+#: shargain/telegram/add_link_flow.py:49
+#: shargain/telegram/detect_list_url.py:36
+msgid "✅ Yes"
+msgstr "✅ Tak"
+
+#: shargain/telegram/add_link_flow.py:51
+#: shargain/telegram/detect_list_url.py:37
+msgid "❌ No"
+msgstr "❌ Nie"
+
+#: shargain/telegram/add_link_flow.py:54
+msgid "📝 Would you like to provide a name for this link?"
+msgstr "📝 Czy chcesz podać nazwę dla tego linku?"
+
+#: shargain/telegram/add_link_flow.py:60
+msgid "❌ Invalid URL. Please send a valid URL:"
+msgstr "❌ Nieprawidłowy URL. Wyślij poprawny adres URL:"
+
+#: shargain/telegram/add_link_flow.py:76 shargain/telegram/add_link_flow.py:112
+msgid "❌ An error occurred. Please try again."
+msgstr "❌ Wystąpił błąd. Spróbuj ponownie."
+
+#: shargain/telegram/add_link_flow.py:93 shargain/telegram/add_link_flow.py:126
+msgid "❌ An error occurred while saving the link. Please try again."
+msgstr "❌ Wystąpił błąd podczas zapisywania linku. Spróbuj ponownie."
+
+#: shargain/telegram/add_link_flow.py:104
+msgid "📝 Please enter a name for this link:"
+msgstr "📝 Podaj nazwę dla tego linku:"
+
+#: shargain/telegram/add_link_flow.py:128
+msgid "Error skipping name"
+msgstr "Wystąpił błąd"
+
+#: shargain/telegram/application/delete_scraping_link_handler.py:20
+#: shargain/telegram/application/list_scraping_links_handler.py:39
+msgid "You need to configure notifications first. Use /configure command"
+msgstr "Musisz najpierw skonfigurować powiadomienia. Użyj polecenia /configure"
+
+#: shargain/telegram/application/delete_scraping_link_handler.py:24
+#: shargain/telegram/application/list_scraping_links_handler.py:43
+msgid ""
+"You haven't configured this chat yet (use /configure command or contact "
+"administrator)"
+msgstr ""
+"Ten czat nie został jeszcze skonfigurowany (użyj polecenia /configure lub "
+"skontaktuj się z administratorem)"
+
+#: shargain/telegram/application/delete_scraping_link_handler.py:33
+msgid "Scraping url with this index does not exist. Check /list command"
+msgstr "URL z tym indeksem nie istnieje. Sprawdź polecenie /list"
+
+#: shargain/telegram/application/delete_scraping_link_handler.py:40
+msgid "Link deleted. No more links to display."
+msgstr "Link usunięty. Brak kolejnych linków do wyświetlenia."
+
+#: shargain/telegram/application/delete_scraping_link_handler.py:42
+msgid ""
+"Link deleted. Remaining links:\n"
+"\n"
+msgstr ""
+"Link usunięty. Pozostałe linki:\n"
+"\n"
+
+#: shargain/telegram/application/list_scraping_links_handler.py:25
+#: shargain/telegram/application/list_scraping_links_handler.py:49
+msgid "You don't have any added links yet"
+msgstr "Nie posiadasz jeszcze żadnych dodanych obserwacji"
+
+#: shargain/telegram/bot.py:43 shargain/telegram/bot.py:46
+msgid "Show menu"
+msgstr "Pokaż menu"
+
+#: shargain/telegram/bot.py:115
+msgid "This token is invalid"
+msgstr "Ten token jest nieprawidłowy"
+
+#: shargain/telegram/bot.py:122
+msgid "Channel for this token is already registered"
+msgstr "Kanał dla tego tokenu jest już zarejestrowany"
+
+#: shargain/telegram/bot.py:127
+msgid "Channel registered successfully"
+msgstr "Kanał powiadomień został pomyślnie zarejestrowany"
+
+#: shargain/telegram/bot.py:156
+msgid ""
+"✅ Configuration successful!\n"
+"\n"
+"The bot is now ready to use. You can start adding links to monitor using "
+"the /add command."
+msgstr ""
+"✅ Konfiguracja zakończona powodzeniem!\n"
+"\n"
+"Bot jest teraz gotowy do użycia. Możesz teraz dodać linki do monitorowania "
+"za pomocą polecenia /add"
+
+#: shargain/telegram/bot.py:166
+msgid ""
+"Hello! I'm a Shargain bot. I can send you notifications about new offers. To "
+"start receiving notifications, please register your channel or this "
+"conversation using the following command: /configure <token>"
+msgstr ""
+
+#: shargain/telegram/bot.py:194
+msgid "Invalid format of message. Please use /add <url> [name] format."
+msgstr "Nieprawidłowy format wiadomości. Użyj formatu: /add <url> [nazwa]."
+
+#: shargain/telegram/bot.py:225
+msgid ""
+"Invalid format of message. Please use /delete <number> format. Where number "
+"is a number of link from /list command"
+msgstr ""
+"Nieprawidłowy format wiadomości. Użyj /delete <id>. <id> to numer z wyniku "
+"polecenia /list"
+
+#: shargain/telegram/bot.py:245
+msgid "➕ Add Link"
+msgstr "➕ Dodaj link"
+
+#: shargain/telegram/bot.py:248
+msgid "📋 List Links"
+msgstr "📋 Lista linków"
+
+#: shargain/telegram/bot.py:249
+msgid "🗑️ Delete Link"
+msgstr "🗑️ Usuń link"
+
+#: shargain/telegram/bot.py:253
+msgid "Select an action:"
+msgstr "Wybierz akcję:"
+
+#: shargain/telegram/bot.py:274
+msgid ""
+"To delete a link first list them with /list and then send: /delete <number>"
+msgstr ""
+"Aby usunąć link najpierw wyświetl listę linków za pomocą polecenia /list i "
+"następnie wpisz: /delete <number>"
+
+#: shargain/telegram/detect_list_url.py:42
+msgid "🔍 I noticed an OLX offer list. Would you like to add it to monitoring?"
+msgstr ""
+"🔍 Wykryłem link do listy ofert OLX. Czy chcesz dodać ją do monitorowania?"
+
+#: shargain/telegram/detect_list_url.py:77
+msgid "❌ An error occurred while processing your request. Please try again."
+msgstr ""
+"❌ Wystąpił błąd podczas przetwarzania Twojego żądania. Spróbuj ponownie."
+
+#: shargain/telegram/detect_list_url.py:80
+msgid "❌ An error occurred while processing the URL. Please try again."
+msgstr "❌ Wystąpił błąd podczas przetwarzania adresu URL. Spróbuj ponownie."
+
+#~ msgid ""
+#~ "This name is already taken or notifications are already configured for "
+#~ "this chat"
+#~ msgstr ""
+#~ "Ta nazwa jest już zajęta lub powiadomienia dla tego czatu są już "
+#~ "skonfigurowane"
+
+#~ msgid ""
+#~ "Invalid format of message. Please use /configure <token> <name> format"
+#~ msgstr ""
+#~ "Niepraawidłowy format wiadomości. Użyj formatu: /configure <token> <nazwa>"
+
+#~ msgid "Link added successfully. You will be notified about new offers soon"
+#~ msgstr ""
+#~ "Link dodany pomyślnie. Wkrótce otrzymasz powiadomienia o nowych ofertach"
+
+#~ msgid "Invalid format of message. Please use /list format"
+#~ msgstr "Nieprawidłowy format wiadomości. Użyj formatu: /list"
