@@ -107,19 +107,19 @@ def register_channel_handler(message: Message) -> None:
                 token,
                 message.chat.id,
             )
-            TelegramBot.get_bot().reply_to(message, "This token is invalid")
+            TelegramBot.get_bot().reply_to(message, _("This token is invalid"))
             return
         if notification_config.chatid:
             logger.info(
                 "NotificationConfig is already registered for [chatid=%s]",
                 notification_config.chatid,
             )
-            TelegramBot.get_bot().reply_to(message, "Channel for this token is already registered")
+            TelegramBot.get_bot().reply_to(message, _("Channel for this token is already registered"))
             return
         notification_config.chatid = message.chat.id
         notification_config.save()
         logger.info("Channel registered successfully: %s", notification_config)
-        TelegramBot.get_bot().reply_to(message, "Channel registered successfully")
+        TelegramBot.get_bot().reply_to(message, _("Channel registered successfully"))
 
 
 @TelegramBot.get_bot().message_handler(commands=["start"])
@@ -147,17 +147,21 @@ def start_handler(message: Message) -> None:
         if result.success:
             TelegramBot.get_bot().send_message(
                 message.chat.id,
-                "✅ Configuration successful!\n\n"
-                "The bot is now ready to use. You can start adding links to monitor using the /add command.",
+                _(
+                    "✅ Configuration successful!\n\n"
+                    "The bot is now ready to use. You can start adding links to monitor using the /add command."
+                ),
             )
         else:
             logger.info("Couldn't start configuration: %s, chat_id: %s", result.message, message.chat.id)
 
     TelegramBot.get_bot().send_message(
         message.chat.id,
-        "Hello! I'm a Shargain bot. I can send you notifications about new offers. "
-        "To start receiving notifications, please register your channel or this conversation using "
-        "the following command: /configure <token>",
+        _(
+            "Hello! I'm a Shargain bot. I can send you notifications about new offers. "
+            "To start receiving notifications, please register your channel or this conversation using "
+            "the following command: /configure <token>"
+        ),
     )
 
 
@@ -231,26 +235,17 @@ class MenuCallback(str, Enum):
 @TelegramBot.get_bot().message_handler(commands=["menu"])
 def menu_handler(message: Message) -> None:
     """Display the main menu with inline keyboard options."""
-    markup = InlineKeyboardMarkup(row_width=2)  # Changed to allow 2 buttons per row
-
-    markup.add(
-        InlineKeyboardButton(
-            text="Add new link",
-            callback_data=MenuCallback.ADD_LINK,
-        )
-    )
-    markup.row(
-        InlineKeyboardButton(
-            text="List all links",
-            callback_data=MenuCallback.LIST_LINKS,
-        ),
-        InlineKeyboardButton(
-            text="Delete a link",
-            callback_data=MenuCallback.DELETE_LINK,
-        ),
-    )
-
-    TelegramBot.get_bot().send_message(message.chat.id, "Select an action:", reply_markup=markup)
+    keyboard = [
+        [
+            InlineKeyboardButton(_("➕ Add Link"), callback_data=MenuCallback.ADD_LINK),
+        ],
+        [
+            InlineKeyboardButton(_("📋 List Links"), callback_data=MenuCallback.LIST_LINKS),
+            InlineKeyboardButton(_("🗑️ Delete Link"), callback_data=MenuCallback.DELETE_LINK),
+        ],
+    ]
+    markup = InlineKeyboardMarkup(keyboard)
+    TelegramBot.get_bot().send_message(message.chat.id, _("Select an action:"), reply_markup=markup)
 
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.LIST_LINKS)
