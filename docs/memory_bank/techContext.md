@@ -1,4 +1,4 @@
-# Tech Context
+# Tech Context: Application for following websites for new offers
 
 ## Technologies Used
 - Python 3.10+
@@ -10,5 +10,9 @@
 - Follows clean architecture principles
 - Modular, testable codebase
 
-## Constraints
+## Technical Constraints
 - Focus on maintainability and extensibility
+
+## Dependencies
+
+## Tool Usage Patterns
