@@ -967,12 +967,15 @@ wheels = [
 
 [[package]]
 name = "pytelegrambotapi"
-version = "3.7.6"
+version = "4.27.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3d/44/dda2c6a43306b27eb23c327f780eb48479dfeda15f764f47004ebe60205e/pyTelegramBotAPI-3.7.6.tar.gz", hash = "sha256:859136cbd50e99922e1ea495d4ebe8235b2cb10fe419a5421f28855249db4278", size = 81503 }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/f2/29ae3731db33f7e1e0efcf7055adc8a88d2dde97541ff549d27349e597a2/pytelegrambotapi-4.27.0.tar.gz", hash = "sha256:d89362a34eaaa87b0aff6b2f5445a3af082f04193dcaadb481562def84c59ee9", size = 1355340 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/ec/7dc84f817b692a6e1e673a0c335724a0926118541efff86446a20f0fa1f1/pytelegrambotapi-4.27.0-py3-none-any.whl", hash = "sha256:f555cecea9dcc48274c2592f8158e0c336654d3c5a4b86ce44342ffa5f76bd86", size = 287399 },
+]
 
 [[package]]
 name = "pytest"
