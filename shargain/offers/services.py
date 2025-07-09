@@ -36,7 +36,7 @@ class OfferBatchCreateService:
                 )
             except Offer.MultipleObjectsReturned:
                 offer, created = (
-                    Offer.objects.filter(url=offer_url, target=validated_data["target"]).first(),
+                    Offer.objects.filter(url=offer_url, target=validated_data["target"]).first(),  # type: ignore[assignment]
                     False,
                 )
             offers.append((offer, created))
