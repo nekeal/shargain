@@ -15,6 +15,7 @@ dependencies = [
     "celery",
     "psycopg2-binary",
     "requests",
+    "yarl>=1.9.2",
     "bs4",
     "ipython",
     "environs",
