@@ -214,7 +214,7 @@ def list_links_handler(message: Message) -> None:
     logger.info("Listing links")
     chat_id = message.chat.id
     result = ListScrapingLinksHandler().handle(chat_id=chat_id)
-    TelegramBot.get_bot().send_message(message.chat.id, result.message)
+    TelegramBot.get_bot().send_message(chat_id=message.chat.id, text=result.message, parse_mode="HTML")
 
 
 @TelegramBot.get_bot().message_handler(commands=["delete"])
@@ -273,7 +273,7 @@ def callback_list_links(call):
     logger.info("Listing links via inline keyboard [chat_id=%s]", chat_id)
     result = ListScrapingLinksHandler().handle(chat_id=chat_id)
     TelegramBot.get_bot().answer_callback_query(call.id)
-    TelegramBot.get_bot().send_message(chat_id, result.message)
+    TelegramBot.get_bot().send_message(chat_id, result.message, parse_mode="HTML")
 
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.DELETE_LINK)

@@ -16,13 +16,19 @@ class ListScrapingLinksHandler:
     def get_scraping_urls(scraping_target: ScrappingTarget) -> QuerySet[ScrapingUrl]:
         return scraping_target.scrapingurl_set.order_by("id")
 
-    @staticmethod
-    def format_output(scraping_urls: Iterable[ScrapingUrl]) -> str:
-        result = ""
+    @classmethod
+    def format_output(cls, scraping_urls: Iterable[ScrapingUrl]) -> str:
+        if not scraping_urls:
+            return _("📭 You don't have any added links yet")
+
+        result = "<b>{header}</b>\n\n".format(header=_("Your Tracked Links"))
+
         for i, scraping_url in enumerate(scraping_urls, 1):
-            name_segment = f" ({scraping_url.name}): " if scraping_url.name else ""
-            result += f"{i}. {name_segment}{scraping_url.url}\n"
-        return result or _("You don't have any added links yet")
+            name = scraping_url.name or _("Link {number}").format(number=i)
+            result += f"{i}. <b>{name}</b> - 🔗 <a href='{scraping_url.url}'>{scraping_url.url}</a>\n"
+
+        result += _("\n📝 Use /delete &lt;number&gt; to remove a link")
+        return result
 
     def handle(self, chat_id: int) -> HandlerResult:
         """

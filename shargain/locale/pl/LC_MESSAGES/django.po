@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-04 18:21+0200\n"
+"POT-Creation-Date: 2025-07-10 23:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -248,12 +248,12 @@ msgid "Error skipping name"
 msgstr "Wystąpił błąd"
 
 #: shargain/telegram/application/delete_scraping_link_handler.py:20
-#: shargain/telegram/application/list_scraping_links_handler.py:39
+#: shargain/telegram/application/list_scraping_links_handler.py:45
 msgid "You need to configure notifications first. Use /configure command"
 msgstr "Musisz najpierw skonfigurować powiadomienia. Użyj polecenia /configure"
 
 #: shargain/telegram/application/delete_scraping_link_handler.py:24
-#: shargain/telegram/application/list_scraping_links_handler.py:43
+#: shargain/telegram/application/list_scraping_links_handler.py:49
 msgid ""
 "You haven't configured this chat yet (use /configure command or contact "
 "administrator)"
@@ -277,28 +277,48 @@ msgstr ""
 "Link usunięty. Pozostałe linki:\n"
 "\n"
 
-#: shargain/telegram/application/list_scraping_links_handler.py:25
-#: shargain/telegram/application/list_scraping_links_handler.py:49
+#: shargain/telegram/application/list_scraping_links_handler.py:22
+msgid "📭 You don't have any added links yet"
+msgstr "Nie posiadasz jeszcze żadnych dodanych obserwacji"
+
+#: shargain/telegram/application/list_scraping_links_handler.py:24
+msgid "Your Tracked Links"
+msgstr "Twoje śledzone linki"
+
+#: shargain/telegram/application/list_scraping_links_handler.py:27
+#, python-brace-format
+msgid "Link {number}"
+msgstr "Link {number}"
+
+#: shargain/telegram/application/list_scraping_links_handler.py:30
+msgid ""
+"\n"
+"📝 Use /delete &lt;number&gt; to remove a link"
+msgstr ""
+"\n"
+"📝 Użyj /delete &lt;number&gt; aby usunąć link"
+
+#: shargain/telegram/application/list_scraping_links_handler.py:55
 msgid "You don't have any added links yet"
 msgstr "Nie posiadasz jeszcze żadnych dodanych obserwacji"
 
-#: shargain/telegram/bot.py:43 shargain/telegram/bot.py:46
+#: shargain/telegram/bot.py:59
 msgid "Show menu"
 msgstr "Pokaż menu"
 
-#: shargain/telegram/bot.py:115
+#: shargain/telegram/bot.py:128
 msgid "This token is invalid"
 msgstr "Ten token jest nieprawidłowy"
 
-#: shargain/telegram/bot.py:122
+#: shargain/telegram/bot.py:135
 msgid "Channel for this token is already registered"
 msgstr "Kanał dla tego tokenu jest już zarejestrowany"
 
-#: shargain/telegram/bot.py:127
+#: shargain/telegram/bot.py:140
 msgid "Channel registered successfully"
 msgstr "Kanał powiadomień został pomyślnie zarejestrowany"
 
-#: shargain/telegram/bot.py:156
+#: shargain/telegram/bot.py:169
 msgid ""
 "✅ Configuration successful!\n"
 "\n"
@@ -310,18 +330,18 @@ msgstr ""
 "Bot jest teraz gotowy do użycia. Możesz teraz dodać linki do monitorowania "
 "za pomocą polecenia /add"
 
-#: shargain/telegram/bot.py:166
+#: shargain/telegram/bot.py:179
 msgid ""
 "Hello! I'm a Shargain bot. I can send you notifications about new offers. To "
 "start receiving notifications, please register your channel or this "
 "conversation using the following command: /configure <token>"
 msgstr ""
 
-#: shargain/telegram/bot.py:194
+#: shargain/telegram/bot.py:207
 msgid "Invalid format of message. Please use /add <url> [name] format."
 msgstr "Nieprawidłowy format wiadomości. Użyj formatu: /add <url> [nazwa]."
 
-#: shargain/telegram/bot.py:225
+#: shargain/telegram/bot.py:238
 msgid ""
 "Invalid format of message. Please use /delete <number> format. Where number "
 "is a number of link from /list command"
@@ -329,23 +349,23 @@ msgstr ""
 "Nieprawidłowy format wiadomości. Użyj /delete <id>. <id> to numer z wyniku "
 "polecenia /list"
 
-#: shargain/telegram/bot.py:245
+#: shargain/telegram/bot.py:258
 msgid "➕ Add Link"
 msgstr "➕ Dodaj link"
 
-#: shargain/telegram/bot.py:248
+#: shargain/telegram/bot.py:261
 msgid "📋 List Links"
 msgstr "📋 Lista linków"
 
-#: shargain/telegram/bot.py:249
+#: shargain/telegram/bot.py:262
 msgid "🗑️ Delete Link"
 msgstr "🗑️ Usuń link"
 
-#: shargain/telegram/bot.py:253
+#: shargain/telegram/bot.py:266
 msgid "Select an action:"
 msgstr "Wybierz akcję:"
 
-#: shargain/telegram/bot.py:274
+#: shargain/telegram/bot.py:287
 msgid ""
 "To delete a link first list them with /list and then send: /delete <number>"
 msgstr ""
