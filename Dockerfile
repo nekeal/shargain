@@ -1,4 +1,4 @@
-FROM python:3.10.17-bookworm AS builder
+FROM python:3.13-bookworm AS builder
 
 ENV UV_COMPILE_BYTECODE=1 PYTHONUNBUFFERED=1 UV_LINK_MODE=copy PATH="/app/.venv/bin:$PATH"
 WORKDIR /app/
@@ -17,7 +17,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM development AS ci
 
-FROM python:3.10.17-slim-bookworm AS production
+FROM python:3.13-slim-bookworm AS production
 
 ARG VERSION
 ENV PYTHONUNBUFFERED=1 SENTRY_RELEASE=${VERSION} PATH="/app/.venv/bin:$PATH" VIRTUAL_ENV="/app/.venv"

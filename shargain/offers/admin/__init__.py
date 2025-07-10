@@ -39,17 +39,17 @@ class OfferAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         return qs.annotate(duration=F("closed_at") - F("created_at"))
 
-    @admin_display(short_description=gettext_lazy("Title"), admin_order_field="title")
+    @admin_display(short_description=gettext_lazy("Title"), admin_order_field="title")  # type: ignore[arg-type]
     def get_title(self, obj):
         return render_to_string("admin/fields/main_image_offer.html", context={"obj": obj})
 
-    @admin_display(short_description=gettext_lazy("Link to offer"))
+    @admin_display(short_description=gettext_lazy("Link to offer"))  # type: ignore[arg-type]
     def get_link(self, obj):
         button_text = _("Go to offer")
         return format_html('<a href="{}" target="_blank">{}</a>', obj.url, button_text)
 
     @admin_display(
-        short_description=gettext_lazy("Closed at"),
+        short_description=gettext_lazy("Closed at"),  # type: ignore[arg-type]
         admin_order_field="closed_at",
     )
     def get_closed_at(self, obj):
@@ -58,7 +58,7 @@ class OfferAdmin(admin.ModelAdmin):
             return mark_safe(f"<div class='{css_class}'>{obj.closed_at.strftime('%d-%m-%y %H:%M')}</div>")  # noqa: S308
 
     @admin_display(
-        short_description=gettext_lazy("Duration"),
+        short_description=gettext_lazy("Duration"),  # type: ignore[arg-type]
         admin_order_field="duration",
     )
     def get_duration(self, obj):
@@ -98,12 +98,12 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
         return readonly_fields
 
     @admin_display(
-        short_description=gettext_lazy("Stats"),
+        short_description=gettext_lazy("Stats"),  # type: ignore[arg-type]
     )
     def display_grafana_panel(self, obj):
         return render_to_string("admin/grafana_panels.html", context={"obj": obj})
 
-    @admin_display(short_description=_("Urls to scrap"))
+    @admin_display(short_description=_("Urls to scrap"))  # type: ignore[arg-type]
     def show_scraping_urls(self, obj: ScrappingTarget):
         return render_to_string(
             "admin/fields/read_only_urls_to_scrap.html",

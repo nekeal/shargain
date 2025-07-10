@@ -1,7 +1,7 @@
 [project]
 name = "shargain"
 version = "0.0.1"
-requires-python = ">=3.10,<3.11"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "django",
     "django-dbbackup",
@@ -15,6 +15,7 @@ dependencies = [
     "celery",
     "psycopg2-binary",
     "requests",
+    "yarl>=1.9.2",
     "bs4",
     "ipython",
     "environs",
@@ -41,24 +42,18 @@ dev = [
     "ruff>=0.11.10",
     "pre-commit>=4.2.0",
 ]
-deployment = [
-    "ansible>=10.7.0",
-    "mitogen>=0.3.23",
-]
+deployment = ["ansible>=10.7.0", "mitogen>=0.3.23"]
 
 [tool.uv]
 package = false
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py313"
 line-length = 120
-extend-exclude = [
-    "__pycache__",
-    "build",
-]
+extend-exclude = ["__pycache__", "build"]
 [tool.ruff.lint]
 select = [
-    "A", # flake8 builtins
+    "A",   # flake8 builtins
     "S",   # flake8-bandit
     "DJ",  # flake8-django
     "PT",  # flake8-pytest-style
@@ -67,51 +62,42 @@ select = [
     "PTH", # flake8-use-pathlib
     "T10", # flake8-debugger
     "ERA", # flake8-eradicate
-    "C4", # flake8-comprehensions
-    "B", # flake8-bugbear
-    "G", # flake8-logging-format
-    "E", # pycodestyle error
-    "W", # pycodestyle warning
-    "F", # pyflakes
-    "N", # pep8-naming
-    "UP", # pyupgrade
-    "I", # isort
-    "C9", # mccabe
-    "I", # isort
+    "C4",  # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "G",   # flake8-logging-format
+    "E",   # pycodestyle error
+    "W",   # pycodestyle warning
+    "F",   # pyflakes
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "I",   # isort
+    "C9",  # mccabe
+    "I",   # isort
 ]
 
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = [
-    "S101",     # "Use of `assert` detected"
-    "ARG",      # "Unused function argument". Fixtures can be unused.
-    "S105",     # "Possible hardcoded password".
+    "S101", # "Use of `assert` detected"
+    "ARG",  # "Unused function argument". Fixtures can be unused.
+    "S105", # "Possible hardcoded password".
 ]
 "**settings/**" = [
-    "F405",     # variable may be undefined due to * import
-    "F403",      # allow * imports
-    "TID252",   # Allow relative imports
+    "F405",   # variable may be undefined due to * import
+    "F403",   # allow * imports
+    "TID252", # Allow relative imports
 ]
-"**/settings/tests.py" = [
-    "S105",
-]
-"**/settings/local.py" = [
-    "S105",
-]
+"**/settings/tests.py" = ["S105"]
+"**/settings/local.py" = ["S105"]
 
 [tool.ruff.lint.pep8-naming]
-classmethod-decorators = [
-    "classmethod",
-]
+classmethod-decorators = ["classmethod"]
 
 [tool.coverage.run]
 branch = true
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if TYPE_CHECKING:"
-]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
 omit = [
     "manage.py",
     "**/wsgi.py",
@@ -123,7 +109,8 @@ omit = [
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "shargain.settings.tests"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-norecursedirs = [".git/*",
+norecursedirs = [
+    ".git/*",
     ".mypy_cache/*",
     ".pytest_cache/*",
     "migrations/*",
@@ -132,10 +119,7 @@ norecursedirs = [".git/*",
 addopts = "--nomigrations"
 
 [tool.mypy]
-plugins = [
-    "mypy_django_plugin.main",
-    "mypy_drf_plugin.main",
-]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 check_untyped_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
@@ -145,10 +129,7 @@ warn_unused_configs = true
 django_settings_module = "shargain.settings.local"
 
 [[tool.mypy.overrides]]
-module = [
-    "*.migrations.*",
-    "*.settings.*",
-]
+module = ["*.migrations.*", "*.settings.*"]
 ignore_errors = true
 
 [[tool.mypy.overrides]]
@@ -156,11 +137,7 @@ module = "factory.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = [
-    "django_extensions.*",
-    "factory.*",
-    "celery.*",
-]
+module = ["django_extensions.*", "factory.*", "celery.*"]
 ignore_missing_imports = true
 
 [tool.tox]
@@ -171,7 +148,7 @@ skipsdist = True
 
 [gh-actions]
 python =
-    3.10: py310
+    3.13: py313
 
 [testenv:ruff-format]
 deps = ruff
