@@ -8,9 +8,10 @@
 ## Recent Changes
 - Initiated memory bank documentation
 - Outlined clean architecture approach
+- Upgraded project to use latest Python version (3.13)
 
 ## Next Steps
-- Upgrade project to use latest Python version (3.13)
+- Allow deactivating scraping targets from within the Telegram interface
 - Implement UI for end users to add URLs and set preferences
 - Integrate new sources of offers 
 
