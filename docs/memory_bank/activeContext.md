@@ -9,6 +9,9 @@
 - Initiated memory bank documentation
 - Outlined clean architecture approach
 - Upgraded project to use latest Python version (3.13)
+- Refactored Telegram handlers to use pure application service layer and adapter pattern
+- Improved Telegram UI: HTML formatting, clickable links, emojis, prominent delete command
+- Added internationalization (i18n) for all user-facing messages
 
 ## Next Steps
 - Allow deactivating scraping targets from within the Telegram interface
@@ -20,4 +23,4 @@
 
 ## Important Patterns and Preferences
 
-## Learnings and Project Insights
+## Learnings and Project Ins

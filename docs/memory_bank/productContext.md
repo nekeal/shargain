@@ -12,5 +12,7 @@ Users often miss valuable offers because they are scattered across multiple sour
 - Aggregates offers
 - Notifies users instantly
 - Saves time and increases value for end-users
+- Provides a visually clear, accessible Telegram interface (HTML formatting, clickable links, emojis)
+- Supports multiple languages (i18n) for all user-facing messages
 
 ## Success Metrics

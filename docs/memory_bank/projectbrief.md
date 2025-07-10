@@ -9,7 +9,8 @@ A notification system that alerts users about new offers as soon as they appear 
 - Notify users promptly via preferred channels (e.g., Telegram, email)
 - Maintain a clean, modular architecture separating business logic from adapters
 - Ensure data privacy and security for all user information
-- Maintain a clean architecture, separating business logic from delivery mechanisms
+- Use clean architecture: business logic in a pure Python application layer, adapters for delivery mechanisms (Telegram, etc.)
+- Provide a user-friendly and accessible Telegram interface with HTML formatting and smooth UX
 
 ## Goals
 - Deliver accurate and timely notifications

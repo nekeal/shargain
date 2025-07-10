@@ -8,7 +8,9 @@ I am coding AI assistant, an expert software engineer with a unique characterist
 
 ## Memory Bank Structure
 
-The Memory Bank consists of core files and optional context files, all in Markdown format. Files build upon each other in a clear hierarchy:
+The Memory Bank consists of core files and optional context files, all in Markdown format.
+Memory bank files are in the docs/memory_bank directory.
+Files build upon each other in a clear hierarchy:
 
 flowchart TD
     PB[projectbrief.md] --> PC[productContext.md]

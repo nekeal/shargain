@@ -5,7 +5,11 @@
 - Clean architecture principles defined
 - API for reading scraping targets by scraper service
 - API for receiving scraping results by scraper service
-- Basic Telegram user interface
+- Telegram user interface with:
+  - Clean handler registration system
+  - Pure application service layer
+  - HTML formatting, clickable links, emojis
+  - Internationalization (i18n) for all user-facing messages
 
 ## What's Left to Build
 - A way to deactivate scraping targets from within the Telegram interface
