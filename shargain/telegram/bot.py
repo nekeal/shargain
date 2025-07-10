@@ -1,12 +1,14 @@
 import logging
 import re
 from enum import Enum
+from typing import Any
 
 from django.conf import settings
 from django.core.validators import URLValidator
 from django.db import transaction
+from django.utils.translation import activate, override
 from django.utils.translation import gettext as _
-from telebot import TeleBot
+from telebot import BaseMiddleware, TeleBot
 from telebot.types import (
     BotCommand,
     InlineKeyboardButton,
@@ -29,26 +31,42 @@ from shargain.telegram.application import (
 logger = logging.getLogger(__name__)
 
 
+class SetLanguageMiddleware(BaseMiddleware):
+    def __init__(self):
+        self.update_types = ["message", "callback_query"]
+
+    def pre_process(self, message: TelebotMessage, data: dict[str, Any]):
+        lang = message.from_user and message.from_user.language_code
+        if lang in ["pl", "en"]:
+            activate(lang)
+
+    def post_process(self, message: TelebotMessage, data: dict[str, Any], exception: Exception | None) -> None:
+        pass
+
+
 class TelegramBot:
     _bot: TeleBot = None
 
     @classmethod
     def get_bot(cls):
         if not cls._bot:
-            cls._bot = TeleBot(settings.TELEGRAM_BOT_TOKEN, threaded=False)
-            bot = TeleBot(settings.TELEGRAM_BOT_TOKEN)
-            cls._bot.set_my_commands(
-                [
-                    BotCommand("menu", "Show menu"),
-                ]
-            )
+            cls._bot = TeleBot(settings.TELEGRAM_BOT_TOKEN, threaded=False, use_class_middlewares=True)
+            cls._bot.setup_middleware(SetLanguageMiddleware())
+            for lang in ["en", "pl"]:
+                with override(lang):
+                    cls._bot.set_my_commands(
+                        [
+                            BotCommand("menu", _("Show menu")),
+                        ],
+                        language_code=lang,
+                    )
             if settings.TELEGRAM_WEBHOOK_URL:
                 logger.info("Setting webhook to %s", settings.TELEGRAM_WEBHOOK_URL)
-                bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL)
+                cls._bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL)
             else:
                 logger.info("Starting polling")
-                bot.polling(none_stop=True)
-            return bot
+                cls._bot.polling(none_stop=True)
+            return cls._bot
         return cls._bot
 
     @classmethod
