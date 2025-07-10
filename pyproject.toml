@@ -148,7 +148,7 @@ skipsdist = True
 
 [gh-actions]
 python =
-    3.10: py310
+    3.13: py313
 
 [testenv:ruff-format]
 deps = ruff

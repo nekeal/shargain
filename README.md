@@ -7,7 +7,7 @@ Django app which stores scrapped data.
 # Prerequisites
 
 ## Native way with virtualenv
-- [Python3.10](https://www.python.org/downloads/)
+- [Python3.13](https://www.python.org/downloads/)
 - [uv](https://docs.astral.sh/uv/)
 
 ## Docker way
