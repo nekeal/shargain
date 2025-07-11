@@ -30,6 +30,17 @@ class ListScrapingLinksHandler:
         result += _("\n📝 Use /delete &lt;number&gt; to remove a link")
         return result
 
+    def get_urls_by_chat_id(self, chat_id: int) -> Iterable[ScrapingUrl]:
+        notification_config = NotificationConfig.objects.filter(chatid=chat_id).first()
+        if not notification_config:
+            return []
+
+        scraping_target = ScrappingTarget.objects.filter(notification_config=notification_config).first()
+        if not scraping_target:
+            return []
+
+        return self.get_scraping_urls(scraping_target)
+
     def handle(self, chat_id: int) -> HandlerResult:
         """
         Handle the list command with given chat_id
@@ -40,16 +51,7 @@ class ListScrapingLinksHandler:
         Returns:
             HandlerResult: Success or failure with appropriate message
         """
-        if not (notification_config := NotificationConfig.objects.filter(chatid=chat_id).first()):
-            logger.info("Notification config does not exist [chat_id=%s]", chat_id)
-            return HandlerResult.as_failure(_("You need to configure notifications first. Use /configure command"))
-
-        if not (scraping_target := ScrappingTarget.objects.filter(notification_config=notification_config).first()):
-            return HandlerResult.as_failure(
-                _("You haven't configured this chat yet (use /configure command or contact administrator)")
-            )
-
-        scraping_urls = self.get_scraping_urls(scraping_target)
+        scraping_urls = self.get_urls_by_chat_id(chat_id)
 
         if not scraping_urls:
             return HandlerResult.as_success(_("You don't have any added links yet"))

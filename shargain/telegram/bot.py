@@ -14,6 +14,8 @@ from telebot.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
 )
 from telebot.types import (
     Message as TelebotMessage,
@@ -214,32 +216,76 @@ def list_links_handler(message: Message) -> None:
     logger.info("Listing links")
     chat_id = message.chat.id
     result = ListScrapingLinksHandler().handle(chat_id=chat_id)
-    TelegramBot.get_bot().send_message(chat_id=message.chat.id, text=result.message, parse_mode="HTML")
+    TelegramBot.get_bot().send_message(
+        message.chat.id,
+        result.message,
+        parse_mode="HTML",
+    )
+
+
+def _ask_for_link_to_delete(message: Message):
+    bot = TelegramBot.get_bot()
+    chat_id = message.chat.id
+    urls = ListScrapingLinksHandler().get_urls_by_chat_id(chat_id=chat_id)
+
+    if not urls:
+        bot.send_message(chat_id, _("You have no links to delete."))
+        return
+
+    markup = ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    for i, url_data in enumerate(urls):
+        button_text = f"{i + 1}: {url_data.name or url_data.url}"
+        markup.add(button_text)
+
+    bot.send_message(
+        chat_id,
+        ListScrapingLinksHandler().handle(chat_id=chat_id).message,
+        parse_mode="HTML",
+    )
+
+    bot.send_message(chat_id, text=_("Select a link to delete:"), reply_markup=markup)
+    bot.register_next_step_handler(message, handle_delete_selection)
+
+
+def handle_delete_selection(message: Message):
+    bot = TelegramBot.get_bot()
+    chat_id = message.chat.id
+
+    try:
+        index_str = message.text.split(":")[0]
+        index = int(index_str) - 1
+    except (ValueError, IndexError):
+        bot.send_message(
+            chat_id,
+            _("Invalid selection. Please use the buttons provided."),
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return
+
+    result = DeleteScrapingLinkHandler().handle(chat_id=chat_id, index=index)
+
+    bot.send_message(
+        chat_id,
+        result.message,
+        reply_markup=ReplyKeyboardRemove(),
+    )
 
 
 @TelegramBot.get_bot().message_handler(commands=["delete"])
 def delete_link_handler(message: Message) -> None:
-    logger.error("Deleting link")
+    logger.info("Deleting link")
     chat_id = message.chat.id
 
     command_regex = re.compile(r"^/delete (?P<index>\d+)$")
     match = command_regex.match(message.text)
 
     if match:
-        index = int(match.group("index")) - 1  # Index of scraping url to delete (convert to 0-based index)
-        response = DeleteScrapingLinkHandler.handle(chat_id, index).message
+        index = int(match.group("index")) - 1
+        result = DeleteScrapingLinkHandler().handle(chat_id=chat_id, index=index)
+        response = result.message
+        TelegramBot.get_bot().send_message(chat_id, response)
     else:
-        logger.info(
-            "Invalid format of message [chat_id=%s] [message=%s]",
-            chat_id,
-            message.text,
-        )
-        response = _(
-            "Invalid format of message. Please use /delete <number> format."
-            " Where number is a number of link from /list command"
-        )
-
-    TelegramBot.get_bot().send_message(message.chat.id, response)
+        _ask_for_link_to_delete(message)
 
 
 class MenuCallback(str, Enum):
@@ -278,14 +324,10 @@ def callback_list_links(call):
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data == MenuCallback.DELETE_LINK)
 def callback_delete_link(call):
-    """Prompt user how to delete a link when selected from a menu."""
-    chat_id = call.message.chat.id
-    logger.info("Prompting delete link via inline keyboard [chat_id=%s]", chat_id)
+    """Prompt user with an interactive menu to delete a link."""
+    logger.info("Initiating delete link via inline keyboard [chat_id=%s]", call.message.chat.id)
     TelegramBot.get_bot().answer_callback_query(call.id)
-    TelegramBot.get_bot().send_message(
-        chat_id,
-        _("To delete a link first list them with /list and then send: /delete <number>"),
-    )
+    _ask_for_link_to_delete(call.message)
 
 
 def get_token_for_webhook_url():
