@@ -10,6 +10,7 @@
 ## Development Setup
 - Follows clean architecture principles
 - Modular, testable codebase
+- `ruff` for code formatting and linting.
 
 ## Technical Constraints
 - Focus on maintainability and extensibility
@@ -17,3 +18,4 @@
 ## Dependencies
 
 ## Tool Usage Patterns
+- `make autoformatters` is used to format the code using `ruff`.
