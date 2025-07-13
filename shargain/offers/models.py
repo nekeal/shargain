@@ -87,6 +87,13 @@ class Offer(TimeStampedModel):
     price = models.IntegerField(verbose_name=_("Price"), blank=True, null=True)
     main_image_url = models.URLField(_("Main image's URL"), blank=True, max_length=1024)
     source_html = models.FileField(verbose_name=_("Source HTML"), upload_to=get_offer_source_html_path, blank=True)
+    list_url = models.URLField(
+        _("List URL"),
+        max_length=1024,
+        blank=True,
+        null=False,
+        help_text=_("URL of the page where this offer was found"),
+    )
 
     target = models.ForeignKey(verbose_name=_("Target"), to="ScrappingTarget", on_delete=models.PROTECT)
 
