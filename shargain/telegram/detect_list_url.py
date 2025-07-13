@@ -64,8 +64,8 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
             logger.warning("No URL found in reply message")
             return
 
-        message.text = url
-        process_url(bot, message)
+        message_with_url.text = url
+        process_url(bot, message_with_url)
 
         try:
             bot.delete_message(message.chat.id, message.message_id)
@@ -79,3 +79,4 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
         logger.error("Error processing URL from callback: %s", e)
         bot.send_message(message.chat.id, _("❌ An error occurred while processing the URL. Please try again."))
         return
+    print("HANDLED confirmation")

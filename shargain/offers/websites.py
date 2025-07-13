@@ -29,7 +29,7 @@ class OlxWebsiteValidator:
         """
         Validates whether url is url with list of offers
         """
-        return url.netloc == self.DOMAIN and "/d/oferta" not in url.path
+        return url.netloc.endswith(self.DOMAIN) and "/d/oferta" not in url.path
 
     def validate_list_url(self, url: str | ParseResult) -> bool:
         """

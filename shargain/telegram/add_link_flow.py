@@ -45,16 +45,19 @@ def process_url(bot: TeleBot, message: TelebotMessage) -> None:
             raise ValueError(_("Invalid URL format. Please provide a valid URL."))
 
         markup = types.InlineKeyboardMarkup()
-        yes_button = types.InlineKeyboardButton(
-            text=_("✅ Yes"), callback_data=f"{AddLinkCallback.PROMPT_NAME_YES}:{url}"
-        )
-        no_button = types.InlineKeyboardButton(text=_("❌ No"), callback_data=f"{AddLinkCallback.PROMPT_NAME_NO}:{url}")
+        yes_button = types.InlineKeyboardButton(text=_("✅ Yes"), callback_data=AddLinkCallback.PROMPT_NAME_YES)
+        no_button = types.InlineKeyboardButton(text=_("❌ No"), callback_data=AddLinkCallback.PROMPT_NAME_NO)
         markup.row(yes_button, no_button)
 
-        bot.send_message(chat_id, _("📝 Would you like to provide a name for this link?"), reply_markup=markup)
+        bot.send_message(
+            chat_id,
+            _("📝 Would you like to provide a name for this link?"),
+            reply_markup=markup,
+            reply_to_message_id=message.message_id,  # message with url
+        )
 
     except Exception:
-        logger.warning("Error in process_url")
+        logger.warning("Error in process_url url=%s", url, exc_info=True)
         msg = bot.send_message(
             chat_id,
             _("❌ Invalid URL. Please send a valid URL:"),
@@ -85,6 +88,7 @@ def save_and_confirm_link(bot: TeleBot, chat_id: int, url: str, name: str = "") 
         bot.send_message(
             chat_id,
             result.message,
+            parse_mode="HTML",
         )
     except Exception:
         logger.exception("Error saving link")
@@ -94,11 +98,11 @@ def save_and_confirm_link(bot: TeleBot, chat_id: int, url: str, name: str = "") 
         )
 
 
-def prompt_for_name(bot: TeleBot, call: types.CallbackQuery) -> None:
+def prompt_for_name(bot: TeleBot, message_with_url: TelebotMessage) -> None:
     """Prompt user to enter a name for the link."""
-    chat_id = call.message.chat.id
+    chat_id = message_with_url.chat.id
     try:
-        url = call.data.split(":", 1)[1]
+        url = message_with_url.text.strip()  # type: ignore[union-attr]
         msg = bot.send_message(
             chat_id,
             _("📝 Please enter a name for this link:"),
@@ -113,11 +117,11 @@ def prompt_for_name(bot: TeleBot, call: types.CallbackQuery) -> None:
         )
 
 
-def handle_skip_name(bot: TeleBot, call: types.CallbackQuery) -> None:
+def handle_skip_name(bot: TeleBot, message_with_url: TelebotMessage) -> None:
     """Handle skip name button click."""
-    chat_id = call.message.chat.id
+    chat_id = message_with_url.chat.id
     try:
-        url = call.data.split(":", 1)[1]
+        url = message_with_url.text.strip()  # type: ignore[union-attr]
         save_and_confirm_link(bot, chat_id, url, "")
     except Exception:
         logger.exception("Error handling skip name")
@@ -125,14 +129,13 @@ def handle_skip_name(bot: TeleBot, call: types.CallbackQuery) -> None:
             chat_id,
             _("❌ An error occurred while saving the link. Please try again."),
         )
-        bot.answer_callback_query(call.id, _("Error skipping name"))
 
 
 @TelegramBot.get_bot().callback_query_handler(func=lambda call: call.data.startswith(AddLinkCallback.PROMPT_NAME_YES))
 def handle_prompt_name_yes(call: CallbackQuery) -> None:
     """Handle the 'Yes' button click for providing a name."""
     try:
-        prompt_for_name(TelegramBot.get_bot(), call)
+        prompt_for_name(TelegramBot.get_bot(), call.message.reply_to_message)  # type: ignore[union-attr]
     finally:
         TelegramBot.get_bot().answer_callback_query(call.id)
 
@@ -141,7 +144,7 @@ def handle_prompt_name_yes(call: CallbackQuery) -> None:
 def handle_prompt_name_no(call: CallbackQuery) -> None:
     """Handle the 'No' button click for skipping name."""
     try:
-        handle_skip_name(TelegramBot.get_bot(), call)
+        handle_skip_name(TelegramBot.get_bot(), call.message.reply_to_message)  # type: ignore[union-attr]
     finally:
         TelegramBot.get_bot().answer_callback_query(call.id)
 
@@ -150,6 +153,6 @@ def handle_prompt_name_no(call: CallbackQuery) -> None:
 def handle_skip_name_callback(call: CallbackQuery) -> None:
     """Handle skip name button click from the add link flow."""
     try:
-        handle_skip_name(TelegramBot.get_bot(), call)
+        handle_skip_name(TelegramBot.get_bot(), call.message.reply_to_message)  # type: ignore[union-attr]
     finally:
         TelegramBot.get_bot().answer_callback_query(call.id)
