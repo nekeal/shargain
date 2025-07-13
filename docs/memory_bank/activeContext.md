@@ -13,6 +13,7 @@
 - Improved Telegram UI: HTML formatting, clickable links, emojis, prominent delete command
 - Added internationalization (i18n) for all user-facing messages
 - Improved the /delete command to be interactive
+- Streamlined the 'add link' flow in Telegram bot, removing an extra step and adding a 'Skip' button and 'x' command for skipping name input.
 
 ## Next Steps
 - Implement UI for end users to add URLs and set preferences

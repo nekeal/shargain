@@ -207,7 +207,7 @@ msgstr "Grupy"
 
 #: shargain/telegram/add_link_flow.py:33
 msgid "🔗 Please send me the URL you want to monitor:"
-msgstr "🔗 Wysyłaj mi link do monitorowania:"
+msgstr "🔗 Wyślij mi link do monitorowania:"
 
 #: shargain/telegram/add_link_flow.py:45
 msgid "Invalid URL format. Please provide a valid URL."
@@ -240,8 +240,8 @@ msgid "❌ An error occurred while saving the link. Please try again."
 msgstr "❌ Wystąpił błąd podczas zapisywania linku. Spróbuj ponownie."
 
 #: shargain/telegram/add_link_flow.py:104
-msgid "📝 Please enter a name for this link:"
-msgstr "📝 Podaj nazwę dla tego linku:"
+msgid "📝 Please enter a name for this link or type '%(skip_word)s' or 'x' to add without a name."
+msgstr "📝 Podaj nazwę dla tego linku lub wpisz '%(skip_word)s' lub 'x', aby dodać bez nazwy."
 
 #: shargain/telegram/add_link_flow.py:128
 msgid "Error skipping name"
@@ -404,3 +404,6 @@ msgstr "❌ Wystąpił błąd podczas przetwarzania adresu URL. Spróbuj ponowni
 
 #~ msgid "Invalid format of message. Please use /list format"
 #~ msgstr "Nieprawidłowy format wiadomości. Użyj formatu: /list"
+
+msgid "Skip"
+msgstr "Pomiń"

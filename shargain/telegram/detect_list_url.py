@@ -79,4 +79,3 @@ def handle_olx_confirmation(call: CallbackQuery) -> None:
         logger.error("Error processing URL from callback: %s", e)
         bot.send_message(message.chat.id, _("❌ An error occurred while processing the URL. Please try again."))
         return
-    print("HANDLED confirmation")
