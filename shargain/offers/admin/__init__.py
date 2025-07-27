@@ -81,6 +81,7 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
         "show_scraping_urls",
         "is_active",
         "notification_config",
+        "owner",
         "display_grafana_panel",
     )
     list_display = ("name", "enable_notifications", "is_active")

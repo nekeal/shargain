@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from django_better_admin_arrayfield.models.fields import ArrayField
 
+from shargain.accounts.models import CustomUser
 from shargain.commons.models import TimeStampedModel
 
 
@@ -26,6 +27,10 @@ class ScrappingTarget(models.Model):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
+    )
+
+    owner = models.ForeignKey(
+        CustomUser, verbose_name=_("Owner"), null=True, on_delete=models.CASCADE, related_name="scraping_targets"
     )
 
     class Meta:
