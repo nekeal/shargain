@@ -20,7 +20,7 @@ class NotificationConfig(models.Model):
     channel = models.CharField(
         verbose_name=_("Channel"),
         max_length=200,
-        choices=NotificationChannelChoices.choices,
+        choices=NotificationChannelChoices,
     )
     webhook_url = models.URLField(verbose_name=_("Webhook url"), blank=True)
     _token = models.CharField(verbose_name=_("Token"), max_length=100, blank=True)
@@ -34,6 +34,14 @@ class NotificationConfig(models.Model):
         help_text=_("Token used to register the channel (chat_id)"),
     )
     chatid = models.CharField(verbose_name=_("Chat ID"), max_length=100, blank=True)
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="notification_configs",
+        verbose_name=_("Owner"),
+    )
 
     class Meta:
         verbose_name = _("Notification channel")
