@@ -26,8 +26,8 @@ class ScrapingUrlDTO:
 def add_scraping_url(command: AddScrapingUrlCommand, actor: Actor) -> ScrapingUrlDTO:
     try:
         target = ScrappingTarget.objects.get(id=command.target_id, owner=actor.user_id)
-    except ScrappingTarget.DoesNotExist:
-        raise ValueError("Target does not exist")
+    except ScrappingTarget.DoesNotExist as e:
+        raise ValueError("Target does not exist") from e
 
     url = ScrapingUrl.objects.create(
         url=command.url,
