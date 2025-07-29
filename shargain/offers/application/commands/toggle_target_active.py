@@ -1,18 +1,6 @@
-from dataclasses import dataclass
-from typing import Self
-
 from shargain.offers.application.actor import Actor
+from shargain.offers.application.dto import TargetDTO
 from shargain.offers.models import ScrappingTarget
-
-
-@dataclass
-class TargetDTO:
-    id: int
-    is_active: bool
-
-    @classmethod
-    def from_orm(cls, target: ScrappingTarget) -> Self:
-        return cls(id=target.pk, is_active=target.is_active)
 
 
 def toggle_target_active(actor: Actor, target_id: int, is_active: bool) -> TargetDTO | None:
@@ -22,6 +10,6 @@ def toggle_target_active(actor: Actor, target_id: int, is_active: bool) -> Targe
         return None
 
     target.is_active = is_active
-    target.save(update_fields=["is_active", "updated_at"])
+    target.save(update_fields=["is_active"])
 
     return TargetDTO.from_orm(target)
