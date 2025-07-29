@@ -3,6 +3,7 @@ import pytest
 from shargain.offers.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.dto import ScrapingUrlDTO
+from shargain.offers.application.exceptions import TargetDoesNotExist
 from shargain.offers.application.queries.get_target import get_target
 
 
@@ -42,11 +43,11 @@ class TestAddScrapingUrl:
     def test_add_scraping_url_to_non_existent_target_raises_error(self):
         actor = Actor(user_id=1)
 
-        with pytest.raises(ValueError, match="Target does not exist"):
+        with pytest.raises(TargetDoesNotExist):
             add_scraping_url(actor=actor, target_id=999, url="https://example.com")
 
     def test_add_scraping_url_to_other_user_target_raises_error(self, scraping_target):
         actor = Actor(user_id=scraping_target.owner_id + 1)
 
-        with pytest.raises(ValueError, match="Target does not exist"):
+        with pytest.raises(TargetDoesNotExist):
             add_scraping_url(actor=actor, target_id=scraping_target.id, url="https://example.com")

@@ -7,6 +7,7 @@ from shargain.offers.application.actor import Actor
 from shargain.offers.application.commands.toggle_target_notifications import (
     toggle_target_notifications,
 )
+from shargain.offers.application.exceptions import TargetDoesNotExist
 from shargain.offers.models import ScrappingTarget
 from shargain.offers.tests.factories import ScrappingTargetFactory
 
@@ -61,14 +62,14 @@ class TestToggleTargetNotifications:
     def test_target_not_found_raises_error(self, user):
         """Test that a non-existent target raises an error."""
         actor = Actor(user_id=user.id)
-        with pytest.raises(ValueError, match="Target not found or access denied"):
+        with pytest.raises(TargetDoesNotExist):
             toggle_target_notifications(actor, 99999)
 
     def test_target_belongs_to_different_user_raises_error(self, target_with_notifications):
         """Test that a target belonging to a different user raises an error."""
         other_user = UserFactory()
         actor = Actor(user_id=other_user.id)
-        with pytest.raises(ValueError, match="Target not found or access denied"):
+        with pytest.raises(TargetDoesNotExist):
             toggle_target_notifications(actor, target_with_notifications.id)
 
     def test_updated_at_changes_on_toggle(self, target_with_notifications):

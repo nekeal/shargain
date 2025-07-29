@@ -1,6 +1,7 @@
 import pytest
 
 from shargain.offers.application.actor import Actor
+from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist
 from shargain.offers.application.queries.get_scraping_url import (
     get_scraping_url,
 )
@@ -23,14 +24,12 @@ class TestGetScrapingUrl:
     def test_get_scraping_url_not_found(self, db):
         actor = Actor(user_id=1)
 
-        result = get_scraping_url(actor, 123)
-
-        assert result is None
+        with pytest.raises(ScrapingUrlDoesNotExist):
+            get_scraping_url(actor, 123)
 
     def test_get_scraping_url_other_user(self, scraping_target):
         scraping_url = ScrapingUrlFactory(scraping_target=scraping_target)
         actor = Actor(user_id=scraping_target.owner_id + 1)
 
-        result = get_scraping_url(actor, scraping_url.id)
-
-        assert result is None
+        with pytest.raises(ScrapingUrlDoesNotExist):
+            get_scraping_url(actor, scraping_url.id)
