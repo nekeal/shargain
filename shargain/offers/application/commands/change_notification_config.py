@@ -7,6 +7,10 @@ This command updates the notification configuration for an existing scraping tar
 from shargain.notifications.models import NotificationConfig
 from shargain.offers.application.actor import Actor
 from shargain.offers.application.dto import TargetDTO
+from shargain.offers.application.exceptions import (
+    NotificationConfigDoesNotExist,
+    TargetDoesNotExist,
+)
 from shargain.offers.models import ScrappingTarget
 
 
@@ -27,20 +31,20 @@ def change_notification_config(
         TargetDTO: Updated target data.
 
     Raises:
-        ValueError: If the target doesn't exist or doesn't belong to the user.
-        ValueError: If the notification config doesn't exist.
+        TargetDoesNotExist: If the target doesn't exist or doesn't belong to the user.
+        NotificationConfigDoesNotExist: If the notification config doesn't exist.
     """
     try:
         target = ScrappingTarget.objects.get(id=target_id, owner=actor.user_id)
     except ScrappingTarget.DoesNotExist as exc:
-        raise ValueError("Target not found or access denied") from exc
+        raise TargetDoesNotExist() from exc
 
     # If a new notification config ID is provided, verify it exists
     if notification_config_id is not None:
         try:
             NotificationConfig.objects.get(id=notification_config_id, owner_id=actor.user_id)
         except NotificationConfig.DoesNotExist as exc:
-            raise ValueError("Notification config not found or access denied") from exc
+            raise NotificationConfigDoesNotExist() from exc
 
     # Update the target's notification configuration
     target.notification_config_id = notification_config_id
