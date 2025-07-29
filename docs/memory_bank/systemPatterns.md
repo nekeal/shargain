@@ -11,6 +11,11 @@
 - Strict separation of concerns between application logic and delivery mechanisms.
 - Use of dependency inversion to decouple components.
 
+## Error Handling
+- **Structured Exceptions:** The application layer uses a set of custom, structured exceptions that inherit from a base `ApplicationException`.
+- **Declarative Exceptions:** Each exception is a simple class with `code` and `message` defined as class attributes. This makes them easy to manage and consistent.
+- **Instantiation:** Exceptions are raised without arguments (e.g., `raise TargetDoesNotExist()`), making the code cleaner.
+
 ## Design Patterns in Use
 
 ## Component Relationships
