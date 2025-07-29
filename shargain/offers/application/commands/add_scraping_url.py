@@ -1,37 +1,18 @@
 from __future__ import annotations
 
-import dataclasses
-
 from shargain.offers.application.actor import Actor
+from shargain.offers.application.dto import ScrapingUrlDTO
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
 
 
-@dataclasses.dataclass
-class AddScrapingUrlCommand:
-    url: str
-    target_id: int
-
-
-@dataclasses.dataclass
-class ScrapingUrlDTO:
-    id: int
-    url: str
-    target_id: int
-
-    @classmethod
-    def from_orm(cls, url: ScrapingUrl) -> ScrapingUrlDTO:
-        return cls(id=url.id, url=url.url, target_id=url.scraping_target_id)
-
-
-def add_scraping_url(command: AddScrapingUrlCommand, actor: Actor) -> ScrapingUrlDTO:
+def add_scraping_url(actor: Actor, url: str, target_id: int, name: str | None = None) -> ScrapingUrlDTO:
+    """
+    Adds a new scraping URL to the specified target.
+    """
     try:
-        target = ScrappingTarget.objects.get(id=command.target_id, owner=actor.user_id)
+        target = ScrappingTarget.objects.get(id=target_id, owner=actor.user_id)
     except ScrappingTarget.DoesNotExist as e:
         raise ValueError("Target does not exist") from e
 
-    url = ScrapingUrl.objects.create(
-        url=command.url,
-        scraping_target=target,
-        name=command.url,  # Use url as name for now
-    )
-    return ScrapingUrlDTO.from_orm(url)
+    scraping_url = ScrapingUrl.objects.create(url=url, scraping_target=target, name=name or "")
+    return ScrapingUrlDTO.from_orm(scraping_url)

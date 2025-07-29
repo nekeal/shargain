@@ -4,34 +4,10 @@ Change the notification configuration for a ScrapingTarget.
 This command updates the notification configuration for an existing scraping target.
 """
 
-from dataclasses import dataclass
-from typing import Self
-
 from shargain.notifications.models import NotificationConfig
 from shargain.offers.application.actor import Actor
+from shargain.offers.application.dto import TargetDTO
 from shargain.offers.models import ScrappingTarget
-
-
-@dataclass
-class TargetDTO:
-    """Data Transfer Object for ScrappingTarget with notification configuration."""
-
-    id: int
-    name: str
-    is_active: bool
-    enable_notifications: bool
-    notification_config_id: int | None
-
-    @classmethod
-    def from_orm(cls, target: ScrappingTarget) -> Self:
-        """Create a DTO from a ScrappingTarget model instance."""
-        return cls(
-            id=target.id,
-            name=target.name,
-            is_active=target.is_active,
-            enable_notifications=target.enable_notifications,
-            notification_config_id=target.notification_config_id,
-        )
 
 
 def change_notification_config(
@@ -62,7 +38,7 @@ def change_notification_config(
     # If a new notification config ID is provided, verify it exists
     if notification_config_id is not None:
         try:
-            NotificationConfig.objects.get(id=notification_config_id, owner=actor.user_id)
+            NotificationConfig.objects.get(id=notification_config_id, owner_id=actor.user_id)
         except NotificationConfig.DoesNotExist as exc:
             raise ValueError("Notification config not found or access denied") from exc
 

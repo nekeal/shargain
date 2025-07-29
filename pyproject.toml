@@ -42,6 +42,7 @@ dev = [
     "ruff>=0.11.10",
     "pre-commit>=4.2.0",
     "factory-boy>=3.3.3",
+    "pytest-cov",
 ]
 deployment = ["ansible>=10.7.0", "mitogen>=0.3.23"]
 
