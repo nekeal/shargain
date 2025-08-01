@@ -20,7 +20,7 @@ class NotificationConfig(models.Model):
     channel = models.CharField(
         verbose_name=_("Channel"),
         max_length=200,
-        choices=NotificationChannelChoices,
+        choices=NotificationChannelChoices.choices,
     )
     webhook_url = models.URLField(verbose_name=_("Webhook url"), blank=True)
     _token = models.CharField(verbose_name=_("Token"), max_length=100, blank=True)

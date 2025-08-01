@@ -5,8 +5,6 @@ These DTOs are used for transferring data between the application service layer
 and the presentation layer (e.g., API views).
 """
 
-from __future__ import annotations
-
 import dataclasses
 from typing import Self
 
@@ -22,7 +20,7 @@ class ScrapingUrlDTO:
     name: str
 
     @classmethod
-    def from_orm(cls, url: ScrapingUrl) -> ScrapingUrlDTO:
+    def from_orm(cls, url: ScrapingUrl) -> Self:
         """Create a DTO from a ScrapingUrl model instance."""
         return cls(id=url.id, url=url.url, name=url.name)
 
