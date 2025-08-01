@@ -12,3 +12,14 @@ def get_target(actor: Actor, target_id: int) -> TargetDTO:
     except ScrappingTarget.DoesNotExist as e:
         raise TargetDoesNotExist() from e
     return TargetDTO.from_orm(target)
+
+
+def get_target_by_user(actor: Actor) -> TargetDTO:
+    if not (
+        target := ScrappingTarget.objects.prefetch_related("scrapingurl_set")
+        .filter(owner=actor.user_id)
+        .order_by("-id")
+        .first()
+    ):
+        raise TargetDoesNotExist()
+    return TargetDTO.from_orm(target)
