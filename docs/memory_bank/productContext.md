@@ -16,3 +16,18 @@ Users often miss valuable offers because they are scattered across multiple sour
 - Supports multiple languages (i18n) for all user-facing messages
 
 ## Success Metrics
+- High user retention rate
+- Positive user feedback and reviews
+- Growth in the number of active users
+- High notification open and click-through rates
+
+## Subscription Model
+
+The subscription model will be based on two main factors: the number of scraping URLs a user can have and the number of notifications they can receive per month.
+
+## User Activity Tracking
+
+To track user engagement, we will implement the following methods:
+
+1.  **Offer URL Clicks:** Track when a user clicks on an offer URL in a notification.
+2.  **"Seen" Offers:** Track when a user has seen an offer.

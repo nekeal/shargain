@@ -13,7 +13,7 @@ from shargain.notifications.senders import TelegramNotificationSender
 @method_decorator(staff_member_required, name="dispatch")
 class SendTestNotificationView(View):
     def get_redirect_url(self):
-        return self.request.META.get("HTTP_REFERER", "admin:index")
+        return self.request.headers.get("referer", "admin:index")
 
     @staticmethod
     def send_notification(config: NotificationConfig):

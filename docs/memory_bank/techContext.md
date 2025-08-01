@@ -6,6 +6,7 @@
 - PostgreSQL for persistence
 - Django and its built-in internationalization (i18n) for multi-language support
 - Scrapers as microservices reading scraping targets from the backend via API and sending the results to the backend via API
+- Django Rest Framework for building APIs.
 
 ## Development Setup
 - Follows clean architecture principles
