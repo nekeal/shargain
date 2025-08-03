@@ -27,5 +27,4 @@ def create_target(
     Raises:
         ValueError: If the target name is invalid or already exists.
     """
-    # Implementation will be added in the service layer
     raise NotImplementedError("Implementation pending")
