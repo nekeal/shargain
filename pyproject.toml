@@ -76,6 +76,7 @@ select = [
     "C9",  # mccabe
     "I",   # isort
 ]
+extend-ignore = ["N818"]
 
 
 [tool.ruff.lint.per-file-ignores]
