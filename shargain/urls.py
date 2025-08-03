@@ -9,6 +9,7 @@ from rest_framework.routers import DefaultRouter
 
 from shargain.notifications.urls import router as notifications_router
 from shargain.offers.urls import router as offers_router
+from shargain.public_api.api import router as ninja_router
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -28,6 +29,7 @@ router.registry.extend(notifications_router.registry)
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
+    path("api/public/", ninja_router.urls),
     path("api/doc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     path(
         "api/swagger/",
