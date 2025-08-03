@@ -41,6 +41,8 @@ dev = [
     "types-requests",
     "ruff>=0.11.10",
     "pre-commit>=4.2.0",
+    "factory-boy>=3.3.3",
+    "pytest-cov",
 ]
 deployment = ["ansible>=10.7.0", "mitogen>=0.3.23"]
 
@@ -74,6 +76,7 @@ select = [
     "C9",  # mccabe
     "I",   # isort
 ]
+extend-ignore = ["N818"]
 
 
 [tool.ruff.lint.per-file-ignores]
@@ -166,3 +169,6 @@ commands = mypy shargain
 setenv = PYTHONPATH = {toxinidir}
 commands = pytest shargain
 """
+
+[tool.poetry.group.dev.dependencies]
+factory-boy = "^3.3.3"
