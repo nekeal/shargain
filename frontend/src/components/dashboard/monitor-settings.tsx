@@ -1,9 +1,9 @@
+import { Mail, MessageCircle, Settings } from "lucide-react"
+import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Settings, MessageCircle, Mail } from "lucide-react"
-import type { OfferMonitor } from "@/types/dashboard"
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor

@@ -1,10 +1,10 @@
 import { useState } from "react"
 import { Link } from "@tanstack/react-router"
+import { Bell, Monitor, Save } from "lucide-react"
+import type { OfferMonitor } from "@/types/dashboard"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { UserMenu } from "@/components/auth/user-menu"
-import { Bell, Monitor, Save } from "lucide-react"
-import type { OfferMonitor } from "@/types/dashboard"
 
 interface DashboardHeaderProps {
   offerMonitor: OfferMonitor

@@ -10,7 +10,7 @@ export interface MonitoredUrl {
 export interface OfferMonitor {
   id?: number
   name: string
-  urls: MonitoredUrl[]
+  urls: Array<MonitoredUrl>
   enable_notifications: boolean
   notification_config: {
     telegram: boolean

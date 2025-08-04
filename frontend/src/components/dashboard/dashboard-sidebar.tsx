@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router"
+import { AlertCircle, Bell, Globe } from "lucide-react"
+import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle, Bell, Globe } from "lucide-react"
-import type { OfferMonitor } from "@/types/dashboard"
 
 interface DashboardSidebarProps {
   offerMonitor: OfferMonitor

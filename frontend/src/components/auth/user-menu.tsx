@@ -1,4 +1,5 @@
 import { useRouter } from "@tanstack/react-router"
+import { LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Settings, LogOut } from "lucide-react"
 
 interface UserMenuProps {
   user: {
