@@ -1,7 +1,5 @@
-"use client"
-
 import { useState } from "react"
-import Link from "next/link"
+import { Link } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { UserMenu } from "@/components/auth/user-menu"
@@ -24,7 +22,7 @@ export function DashboardHeader({ offerMonitor }: DashboardHeaderProps) {
   return (
     <header className="border-b border-white/20 bg-white/10 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-3">
+        <Link to="/" className="flex items-center space-x-3">
           <Bell className="h-8 w-8 text-violet-600" />
           <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
             OfferAlert
@@ -53,7 +51,7 @@ export function DashboardHeader({ offerMonitor }: DashboardHeaderProps) {
               </>
             )}
           </Button>
-          <UserMenu />
+          {/* <UserMenu /> */}
         </div>
       </div>
     </header>

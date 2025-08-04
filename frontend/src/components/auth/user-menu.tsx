@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation"
+import { useRouter } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -20,13 +20,13 @@ interface UserMenuProps {
   } | null
 }
 
-const UserMenu = ({ user }: UserMenuProps) => {
+export const UserMenu = ({ user }: UserMenuProps) => {
   const router = useRouter()
 
   const handleSignOut = () => {
     localStorage.removeItem("auth_token")
     localStorage.removeItem("user")
-    router.push("/")
+    router.navigate({ to: "/" })
   }
 
   if (!user) return null

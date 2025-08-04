@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "@tanstack/react-router"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -73,7 +73,7 @@ export function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarPr
             <Globe className="w-4 h-4 mr-2" />
             Check All URLs
           </Button>
-          <Link href="/">
+          <Link to="/">
             <Button
               variant="outline"
               className="w-full justify-start border-gray-200 text-gray-600 hover:bg-gray-50 transition-all duration-300 hover:scale-105 bg-transparent"

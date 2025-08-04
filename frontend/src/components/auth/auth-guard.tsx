@@ -1,9 +1,7 @@
-"use client"
-
 import type React from "react"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@tanstack/react-router"
 import { Card, CardContent } from "@/components/ui/card"
 import { Bell } from "lucide-react"
 
@@ -24,7 +22,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
         setIsAuthenticated(true)
       } else {
         setIsAuthenticated(false)
-        router.push("/auth")
+        router.navigate({ to: "/auth" })
       }
     }
 
