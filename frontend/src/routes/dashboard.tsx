@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import type {OfferMonitor} from "types/dashboard.ts";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header.tsx";
 import { MonitorSettings } from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { AlertCircle, Bell, Globe } from "lucide-react"
-import type { OfferMonitor } from "@/types/dashboard"
+import type { OfferMonitor } from "types/dashboard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,9 +15,8 @@ export function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarPr
     <div className="space-y-6">
       {/* Status Card */}
       <Card
-        className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-600 ${
-          isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-        }`}
+        className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-600 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+          }`}
       >
         <CardHeader>
           <CardTitle className="flex items-center text-lg">
@@ -39,9 +38,8 @@ export function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarPr
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Notifications</span>
             <Badge
-              className={`border-0 ${
-                offerMonitor.enable_notifications ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-              }`}
+              className={`border-0 ${offerMonitor.enable_notifications ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                }`}
             >
               {offerMonitor.enable_notifications ? "Enabled" : "Disabled"}
             </Badge>
@@ -51,9 +49,8 @@ export function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarPr
 
       {/* Quick Actions */}
       <Card
-        className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-800 ${
-          isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-        }`}
+        className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-800 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+          }`}
       >
         <CardHeader>
           <CardTitle className="text-lg">Quick Actions</CardTitle>
@@ -86,9 +83,8 @@ export function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarPr
 
       {/* Tips Card */}
       <Card
-        className={`border-0 bg-gradient-to-br from-violet-50 to-purple-50 transition-all duration-700 delay-1000 ${
-          isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-        }`}
+        className={`border-0 bg-gradient-to-br from-violet-50 to-purple-50 transition-all duration-700 delay-1000 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+          }`}
       >
         <CardHeader>
           <CardTitle className="text-lg text-violet-800">💡 Pro Tips</CardTitle>

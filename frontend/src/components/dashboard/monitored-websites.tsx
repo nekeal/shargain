@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Bell, CheckCircle2, Edit3, ExternalLink, Eye, EyeOff, Globe, Plus, Trash2 } from "lucide-react"
-import type { MonitoredUrl, OfferMonitor } from "@/types/dashboard"
+import type { MonitoredUrl, OfferMonitor } from "types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,30 +36,29 @@ export function MonitoredWebsites({ offerMonitor, setOfferMonitor, isVisible }: 
   const removeUrl = (id: string) => {
     setOfferMonitor((prev) => ({
       ...prev,
-      urls: prev.urls.filter((url) => url.id !== id),
+      urls: prev.urls.filter((url: MonitoredUrl) => url.id !== id),
     }))
   }
 
   const toggleUrlActive = (id: string) => {
     setOfferMonitor((prev) => ({
       ...prev,
-      urls: prev.urls.map((url) => (url.id === id ? { ...url, isActive: !url.isActive } : url)),
+      urls: prev.urls.map((url: MonitoredUrl) => (url.id === id ? { ...url, isActive: !url.isActive } : url)),
     }))
   }
 
   const updateUrl = (id: string, updates: Partial<MonitoredUrl>) => {
     setOfferMonitor((prev) => ({
       ...prev,
-      urls: prev.urls.map((url) => (url.id === id ? { ...url, ...updates } : url)),
+      urls: prev.urls.map((url: MonitoredUrl) => (url.id === id ? { ...url, ...updates } : url)),
     }))
     setEditingUrl(null)
   }
 
   return (
     <Card
-      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-400 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-      }`}
+      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-400 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+        }`}
     >
       <CardHeader>
         <CardTitle className="flex items-center text-2xl">
@@ -106,7 +105,7 @@ export function MonitoredWebsites({ offerMonitor, setOfferMonitor, isVisible }: 
 
         {/* URL List */}
         <div className="space-y-4">
-          {offerMonitor.urls.map((url) => (
+          {offerMonitor.urls.map((url: MonitoredUrl) => (
             <div
               key={url.id}
               className="p-4 bg-white/50 rounded-lg border border-gray-200 hover:border-violet-300 transition-all duration-300 group"
@@ -146,9 +145,8 @@ export function MonitoredWebsites({ offerMonitor, setOfferMonitor, isVisible }: 
                       <div className="flex items-center space-x-3 mb-2">
                         <h4 className="font-medium text-gray-900">{url.name}</h4>
                         <Badge
-                          className={`${
-                            url.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-                          } border-0`}
+                          className={`${url.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                            } border-0`}
                         >
                           {url.isActive ? "Active" : "Paused"}
                         </Badge>
@@ -194,9 +192,8 @@ export function MonitoredWebsites({ offerMonitor, setOfferMonitor, isVisible }: 
                       size="sm"
                       variant="outline"
                       onClick={() => toggleUrlActive(url.id)}
-                      className={`border-gray-300 ${
-                        url.isActive ? "text-gray-600 hover:bg-gray-50" : "text-green-600 hover:bg-green-50"
-                      }`}
+                      className={`border-gray-300 ${url.isActive ? "text-gray-600 hover:bg-gray-50" : "text-green-600 hover:bg-green-50"
+                        }`}
                     >
                       {url.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
