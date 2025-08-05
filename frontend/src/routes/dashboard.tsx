@@ -1,45 +1,54 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query';
 import type { OfferMonitor } from "types/dashboard.ts";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header.tsx";
 import { MonitorSettings } from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
+import { DefaultService } from '@/lib/api';
 
 export const Route = createFileRoute('/dashboard')({
     component: DashboardContent,
 })
 
 function DashboardContent() {
+    const { data: targetResponse, isLoading, error } = useQuery({
+        queryKey: ['myTarget'],
+        queryFn: () => DefaultService.shargainPublicApiApiGetMyTarget(),
+    });
+
     const [isVisible, setIsVisible] = useState(false)
-    const [offerMonitor, setOfferMonitor] = useState<OfferMonitor>({
-        id: 1,
-        name: "My Offer Monitor",
-        isActive: true,
-        enableNotifications: true,
-        urls: [
-            {
-                id: 1,
-                name: "Amazon Deals",
-                url: "https://amazon.com/deals",
-                isActive: true,
-            },
-            {
-                id: 2,
-                name: "Best Buy Sales",
-                url: "https://bestbuy.com/site/sales",
-                isActive: true,
-            },
-        ],
-        notificationConfig: { // This is a custom field in OfferMonitor
-            telegram: true,
-            email: false,
-        },
-    })
+    const [offerMonitor, setOfferMonitor] = useState<OfferMonitor | undefined>()
+
+    useEffect(() => {
+        if (targetResponse) {
+            setOfferMonitor({
+                ...targetResponse,
+                notification_config: {
+                    telegram: true,
+                    email: false,
+                }
+            })
+        }
+    }, [targetResponse])
+
 
     useEffect(() => {
         setIsVisible(true)
     }, [])
+
+    if (isLoading) {
+        return <div>Loading...</div>
+    }
+
+    if (error) {
+        return <div>Error fetching data</div>
+    }
+
+    if (!offerMonitor) {
+        return <div>No data</div>
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
@@ -63,13 +72,5 @@ function DashboardContent() {
                 </div>
             </div>
         </div>
-    )
-}
-
-export default function Dashboard() {
-    return (
-        // <AuthGuard>
-        <DashboardContent />
-        // </AuthGuard>
     )
 }
