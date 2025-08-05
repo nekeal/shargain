@@ -6,8 +6,13 @@ from shargain.offers.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.commands.change_notification_config import change_notification_config
 from shargain.offers.application.commands.delete_scraping_url import delete_scraping_url
+from shargain.offers.application.commands.set_scraping_url_active_status import set_scraping_url_active_status
 from shargain.offers.application.commands.toggle_target_notifications import toggle_target_notifications
-from shargain.offers.application.exceptions import NotificationConfigDoesNotExist, TargetDoesNotExist
+from shargain.offers.application.exceptions import (
+    NotificationConfigDoesNotExist,
+    ScrapingUrlDoesNotExist,
+    TargetDoesNotExist,
+)
 from shargain.offers.application.queries.get_target import get_target, get_target_by_user
 
 router = NinjaAPI()
@@ -104,6 +109,24 @@ def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
     delete_scraping_url(actor, url_id)
     return 204, None
+
+
+@router.post("/targets/{target_id}/urls/{url_id}/activate", response={200: ScrapingUrlResponse, 404: ErrorSchema})
+def activate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
+    actor = get_actor(request)
+    try:
+        return set_scraping_url_active_status(actor, url_id, target_id, is_active=True)
+    except ScrapingUrlDoesNotExist as e:
+        raise HttpError(404, "Scraping url not found") from e
+
+
+@router.post("/targets/{target_id}/urls/{url_id}/deactivate", response={200: ScrapingUrlResponse, 404: ErrorSchema})
+def deactivate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
+    actor = get_actor(request)
+    try:
+        return set_scraping_url_active_status(actor, url_id, target_id, is_active=False)
+    except ScrapingUrlDoesNotExist as e:
+        raise HttpError(404, "Scraping url not found") from e
 
 
 @router.post("/targets/{target_id}/toggle-notifications", response={200: ToggleNotificationsResponse, 404: ErrorSchema})
