@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
+from pydantic.alias_generators import to_camel
 
 from shargain.offers.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
@@ -22,11 +23,17 @@ class ErrorSchema(Schema):
     detail: str
 
 
-class NotificationConfigRequest(Schema):
+class BaseSchema(Schema):
+    class Config(Schema.Config):
+        alias_generator = to_camel
+        allow_population_by_field_name = True
+
+
+class NotificationConfigRequest(BaseSchema):
     notification_config_id: int | None = None
 
 
-class TargetWithConfigResponse(Schema):
+class TargetWithConfigResponse(BaseSchema):
     id: int
     name: str
     is_active: bool
@@ -34,17 +41,17 @@ class TargetWithConfigResponse(Schema):
     notification_config_id: int | None
 
 
-class AddUrlRequest(Schema):
+class AddUrlRequest(BaseSchema):
     url: str
 
 
-class ScrapingUrlResponse(Schema):
+class ScrapingUrlResponse(BaseSchema):
     id: int
     url: str
     name: str
 
 
-class TargetResponse(Schema):
+class TargetResponse(BaseSchema):
     id: int
     name: str
     enable_notifications: bool
@@ -52,11 +59,11 @@ class TargetResponse(Schema):
     urls: list[ScrapingUrlResponse]
 
 
-class ToggleNotificationsRequest(Schema):
+class ToggleNotificationsRequest(BaseSchema):
     enable: bool | None = None
 
 
-class ToggleNotificationsResponse(Schema):
+class ToggleNotificationsResponse(BaseSchema):
     enable_notifications: bool
 
 
@@ -66,7 +73,7 @@ def get_actor(request: HttpRequest) -> Actor:
     return Actor(user_id=request.user.id)
 
 
-@router.get("/targets/my-target", response={200: TargetResponse, 404: ErrorSchema})
+@router.get("/targets/my-target", by_alias=True, response={200: TargetResponse, 404: ErrorSchema})
 def get_my_target(request: HttpRequest):
     actor = get_actor(request)
     try:
@@ -75,7 +82,7 @@ def get_my_target(request: HttpRequest):
         raise HttpError(404, "Target not found") from e
 
 
-@router.get("/targets/{target_id}", response={200: TargetResponse, 404: ErrorSchema})
+@router.get("/targets/{target_id}", by_alias=True, response={200: TargetResponse, 404: ErrorSchema})
 def get_single_target(request: HttpRequest, target_id: int):
     actor = get_actor(request)
     try:
@@ -84,7 +91,11 @@ def get_single_target(request: HttpRequest, target_id: int):
         raise HttpError(404, "Target not found") from e
 
 
-@router.post("/targets/{target_id}/notification-config", response={200: TargetWithConfigResponse, 404: ErrorSchema})
+@router.post(
+    "/targets/{target_id}/notification-config",
+    by_alias=True,
+    response={200: TargetWithConfigResponse, 404: ErrorSchema},
+)
 def update_notification_config(request: HttpRequest, target_id: int, payload: NotificationConfigRequest):
     actor = get_actor(request)
     try:
@@ -95,7 +106,7 @@ def update_notification_config(request: HttpRequest, target_id: int, payload: No
         raise HttpError(404, "Notification config not found") from e
 
 
-@router.post("/targets/{target_id}/add-url", response={200: ScrapingUrlResponse, 404: ErrorSchema})
+@router.post("/targets/{target_id}/add-url", by_alias=True, response={200: ScrapingUrlResponse, 404: ErrorSchema})
 def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlRequest):
     actor = get_actor(request)
     try:
@@ -104,14 +115,16 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
         raise HttpError(404, "Target not found") from e
 
 
-@router.delete("/targets/{target_id}/urls/{url_id}", response={204: None, 404: ErrorSchema})
+@router.delete("/targets/{target_id}/urls/{url_id}", by_alias=True, response={204: None, 404: ErrorSchema})
 def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
     delete_scraping_url(actor, url_id)
     return 204, None
 
 
-@router.post("/targets/{target_id}/urls/{url_id}/activate", response={200: ScrapingUrlResponse, 404: ErrorSchema})
+@router.post(
+    "/targets/{target_id}/urls/{url_id}/activate", by_alias=True, response={200: ScrapingUrlResponse, 404: ErrorSchema}
+)
 def activate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
     try:
@@ -120,7 +133,11 @@ def activate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
         raise HttpError(404, "Scraping url not found") from e
 
 
-@router.post("/targets/{target_id}/urls/{url_id}/deactivate", response={200: ScrapingUrlResponse, 404: ErrorSchema})
+@router.post(
+    "/targets/{target_id}/urls/{url_id}/deactivate",
+    by_alias=True,
+    response={200: ScrapingUrlResponse, 404: ErrorSchema},
+)
 def deactivate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
     try:
@@ -129,7 +146,11 @@ def deactivate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
         raise HttpError(404, "Scraping url not found") from e
 
 
-@router.post("/targets/{target_id}/toggle-notifications", response={200: ToggleNotificationsResponse, 404: ErrorSchema})
+@router.post(
+    "/targets/{target_id}/toggle-notifications",
+    by_alias=True,
+    response={200: ToggleNotificationsResponse, 404: ErrorSchema},
+)
 def toggle_notifications(request: HttpRequest, target_id: int, payload: ToggleNotificationsRequest):
     actor = get_actor(request)
     try:
