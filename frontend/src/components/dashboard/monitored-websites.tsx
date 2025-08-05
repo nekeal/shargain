@@ -15,15 +15,15 @@ interface MonitoredWebsitesProps {
 
 export function MonitoredWebsites({ offerMonitor, setOfferMonitor, isVisible }: MonitoredWebsitesProps) {
   const [newUrl, setNewUrl] = useState({ name: "", url: "" })
-  const [editingUrl, setEditingUrl] = useState<string | null>(null)
+  const [editingUrl, setEditingUrl] = useState<number | null>(null)
 
   const addUrl = () => {
     if (newUrl.name && newUrl.url) {
       const newMonitoredUrl: MonitoredUrl = {
-        id: Date.now().toString(),
+        id: Date.now(),
         name: newUrl.name,
         url: newUrl.url,
-        isActive: true,
+        isActive: true
       }
       setOfferMonitor((prev) => ({
         ...prev,
@@ -33,21 +33,21 @@ export function MonitoredWebsites({ offerMonitor, setOfferMonitor, isVisible }: 
     }
   }
 
-  const removeUrl = (id: string) => {
+  const removeUrl = (id: number) => {
     setOfferMonitor((prev) => ({
       ...prev,
       urls: prev.urls.filter((url: MonitoredUrl) => url.id !== id),
     }))
   }
 
-  const toggleUrlActive = (id: string) => {
+  const toggleUrlActive = (id: number) => {
     setOfferMonitor((prev) => ({
       ...prev,
       urls: prev.urls.map((url: MonitoredUrl) => (url.id === id ? { ...url, isActive: !url.isActive } : url)),
     }))
   }
 
-  const updateUrl = (id: string, updates: Partial<MonitoredUrl>) => {
+  const updateUrl = (id: number, updates: Partial<MonitoredUrl>) => {
     setOfferMonitor((prev) => ({
       ...prev,
       urls: prev.urls.map((url: MonitoredUrl) => (url.id === id ? { ...url, ...updates } : url)),

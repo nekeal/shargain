@@ -38,10 +38,10 @@ export function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarPr
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Notifications</span>
             <Badge
-              className={`border-0 ${offerMonitor.enable_notifications ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+              className={`border-0 ${offerMonitor.enableNotifications ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
                 }`}
             >
-              {offerMonitor.enable_notifications ? "Enabled" : "Disabled"}
+              {offerMonitor.enableNotifications ? "Enabled" : "Disabled"}
             </Badge>
           </div>
         </CardContent>

@@ -1,5 +1,5 @@
 export interface MonitoredUrl {
-  id: string
+  id: number
   name: string
   url: string
   isActive: boolean
@@ -8,12 +8,9 @@ export interface MonitoredUrl {
 }
 
 export interface OfferMonitor {
-  id?: number
+  id: number
   name: string
   urls: Array<MonitoredUrl>
-  enable_notifications: boolean
-  notification_config: {
-    telegram: boolean
-    email: boolean
-  }
+  enableNotifications: boolean
+  isActive: boolean
 }

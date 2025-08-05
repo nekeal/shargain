@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import type {OfferMonitor} from "types/dashboard.ts";
+import type { OfferMonitor } from "types/dashboard.ts";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header.tsx";
 import { MonitorSettings } from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
@@ -13,27 +13,25 @@ export const Route = createFileRoute('/dashboard')({
 function DashboardContent() {
     const [isVisible, setIsVisible] = useState(false)
     const [offerMonitor, setOfferMonitor] = useState<OfferMonitor>({
+        id: 1,
         name: "My Offer Monitor",
+        isActive: true,
+        enableNotifications: true,
         urls: [
             {
-                id: "1",
+                id: 1,
                 name: "Amazon Deals",
                 url: "https://amazon.com/deals",
                 isActive: true,
-                lastChecked: "2 minutes ago",
-                offersFound: 12,
             },
             {
-                id: "2",
+                id: 2,
                 name: "Best Buy Sales",
                 url: "https://bestbuy.com/site/sales",
                 isActive: true,
-                lastChecked: "5 minutes ago",
-                offersFound: 8,
             },
         ],
-        enable_notifications: true,
-        notification_config: {
+        notificationConfig: { // This is a custom field in OfferMonitor
             telegram: true,
             email: false,
         },
