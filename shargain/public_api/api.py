@@ -24,9 +24,9 @@ class ErrorSchema(Schema):
 
 
 class BaseSchema(Schema):
-    class Config(Schema.Config):
+    class Config:
         alias_generator = to_camel
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class NotificationConfigRequest(BaseSchema):
@@ -49,6 +49,7 @@ class ScrapingUrlResponse(BaseSchema):
     id: int
     url: str
     name: str
+    is_active: bool
 
 
 class TargetResponse(BaseSchema):
