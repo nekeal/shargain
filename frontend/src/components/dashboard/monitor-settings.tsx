@@ -1,17 +1,26 @@
-import { Mail, MessageCircle, Settings } from "lucide-react"
+import { Settings } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { DefaultService } from "@/lib/api"
+import { NotificationConfigSelector } from "./NotificationConfigSelector"
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor
-  setOfferMonitor: (updater: (prev: OfferMonitor) => OfferMonitor) => void
   isVisible: boolean
 }
 
-export function MonitorSettings({ offerMonitor, setOfferMonitor, isVisible }: MonitorSettingsProps) {
+export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProps) {
+  const queryClient = useQueryClient()
+
+  const toggleNotificationsMutation = useMutation({
+    mutationFn: (enable: boolean) => DefaultService.shargainPublicApiApiToggleNotifications({ target_id: offerMonitor.id, requestBody: { enable } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myTarget'] })
+    },
+  })
+
   return (
     <Card
       className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-200 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
@@ -25,17 +34,6 @@ export function MonitorSettings({ offerMonitor, setOfferMonitor, isVisible }: Mo
         <CardDescription>Configure your offer monitoring preferences</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="monitor-name">Monitor Name</Label>
-          <Input
-            id="monitor-name"
-            value={offerMonitor.name}
-            onChange={(e) => setOfferMonitor((prev) => ({ ...prev, name: e.target.value }))}
-            className="bg-white/50 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
-            placeholder="Enter a name for your monitor"
-          />
-        </div>
-
         <div className="flex items-center justify-between p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg">
           <div>
             <h3 className="font-medium text-gray-900">Enable Notifications</h3>
@@ -43,56 +41,17 @@ export function MonitorSettings({ offerMonitor, setOfferMonitor, isVisible }: Mo
           </div>
           <Switch
             checked={offerMonitor.enableNotifications}
-            onCheckedChange={(checked: boolean) => setOfferMonitor((prev) => ({ ...prev, enableNotifications: checked }))}
+            onCheckedChange={(checked: boolean) => toggleNotificationsMutation.mutate(checked)}
             className="data-[state=checked]:bg-violet-600"
           />
         </div>
-
-        {offerMonitor.enableNotifications && (
-          <div className="space-y-4 p-4 bg-white/50 rounded-lg border border-violet-100">
-            <h4 className="font-medium text-gray-900">Notification Channels</h4>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <MessageCircle className="w-5 h-5 text-violet-600" />
-                <div>
-                  <p className="font-medium text-gray-900">Telegram</p>
-                  <p className="text-sm text-gray-600">Instant notifications via Telegram bot</p>
-                </div>
-              </div>
-              <Switch
-                checked={offerMonitor.notification_config.telegram}
-                onCheckedChange={(checked: boolean) =>
-                  setOfferMonitor((prev) => ({
-                    ...prev,
-                    notification_config: { ...prev.notification_config, telegram: checked },
-                  }))
-                }
-                className="data-[state=checked]:bg-violet-600"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-violet-600" />
-                <div>
-                  <p className="font-medium text-gray-900">Email</p>
-                  <p className="text-sm text-gray-600">Detailed summaries via email</p>
-                </div>
-              </div>
-              <Switch
-                checked={offerMonitor.notification_config.email}
-                onCheckedChange={(checked: boolean) =>
-                  setOfferMonitor((prev) => ({
-                    ...prev,
-                    notification_config: { ...prev.notification_config, email: checked },
-                  }))
-                }
-                className="data-[state=checked]:bg-violet-600"
-              />
-            </div>
+        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg">
+          <div>
+            <h3 className="font-medium text-gray-900">Notification Configuration</h3>
+            <p className="text-sm text-gray-600">Choose how you want to receive notifications</p>
           </div>
-        )}
+          <NotificationConfigSelector offerMonitor={offerMonitor} />
+        </div>
       </CardContent>
     </Card>
   )
