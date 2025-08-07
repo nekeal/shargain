@@ -1,16 +1,11 @@
 import { useState } from "react"
 import { Link } from "@tanstack/react-router"
 import { Bell, Monitor, Save } from "lucide-react"
-import type { OfferMonitor } from "@/types/dashboard"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { UserMenu } from "@/components/auth/user-menu"
 
-interface DashboardHeaderProps {
-  offerMonitor: OfferMonitor
-}
 
-export function DashboardHeader({ offerMonitor }: DashboardHeaderProps) {
+export function DashboardHeader() {
   const [isSaving, setIsSaving] = useState(false)
 
   const saveMonitor = async () => {
@@ -51,7 +46,6 @@ export function DashboardHeader({ offerMonitor }: DashboardHeaderProps) {
               </>
             )}
           </Button>
-          {/* <UserMenu /> */}
         </div>
       </div>
     </header>

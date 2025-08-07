@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { AlertCircle, Bell, Globe } from "lucide-react"
-import type { OfferMonitor } from "types/dashboard"
+import type { MonitoredUrl, OfferMonitor } from "@/types/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -28,7 +28,7 @@ export function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarPr
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Active Websites</span>
             <Badge className="bg-green-100 text-green-800 border-0">
-              {offerMonitor.urls.filter((url) => url.isActive).length}
+              {offerMonitor.urls.filter((url: MonitoredUrl) => url.isActive).length}
             </Badge>
           </div>
           <div className="flex items-center justify-between">

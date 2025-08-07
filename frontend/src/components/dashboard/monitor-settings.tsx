@@ -61,11 +61,11 @@ export function MonitorSettings({ offerMonitor, setOfferMonitor, isVisible }: Mo
                 </div>
               </div>
               <Switch
-                checked={offerMonitor.notificationConfig.telegram}
+                checked={offerMonitor.notification_config.telegram}
                 onCheckedChange={(checked: boolean) =>
                   setOfferMonitor((prev) => ({
                     ...prev,
-                    notificationConfig: { ...prev.notificationConfig, telegram: checked },
+                    notification_config: { ...prev.notification_config, telegram: checked },
                   }))
                 }
                 className="data-[state=checked]:bg-violet-600"
@@ -81,11 +81,11 @@ export function MonitorSettings({ offerMonitor, setOfferMonitor, isVisible }: Mo
                 </div>
               </div>
               <Switch
-                checked={offerMonitor.notificationConfig.email}
+                checked={offerMonitor.notification_config.email}
                 onCheckedChange={(checked: boolean) =>
                   setOfferMonitor((prev) => ({
                     ...prev,
-                    notificationConfig: { ...prev.notificationConfig, email: checked },
+                    notification_config: { ...prev.notification_config, email: checked },
                   }))
                 }
                 className="data-[state=checked]:bg-violet-600"

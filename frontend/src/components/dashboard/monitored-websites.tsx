@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Bell, CheckCircle2, Edit3, ExternalLink, Eye, EyeOff, Globe, Plus, Trash2 } from "lucide-react"
-import type { MonitoredUrl, OfferMonitor } from "types/dashboard"
+import type { MonitoredUrl, OfferMonitor } from "@/types/dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

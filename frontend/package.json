@@ -8,7 +8,7 @@
     "build": "vite build && tsc",
     "serve": "vite preview",
     "test": "vitest run",
-    "lint": "eslint .",
+    "lint": "tsc --noEmit; eslint .",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
@@ -26,6 +26,7 @@
     "@tanstack/router-plugin": "^1.121.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "form-data": "^4.0.4",
     "lucide-react": "^0.476.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -38,6 +39,7 @@
     "@tanstack/eslint-plugin-router": "^1.130.12",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
+    "@types/node": "^24.2.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
