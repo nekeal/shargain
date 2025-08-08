@@ -43,6 +43,6 @@ export default [
 
     // 4) Global ignores (optional)
     {
-        ignores: ['dist', 'node_modules', '*.config.{js,ts}']
+        ignores: ['dist', 'node_modules', '*.config.{js,ts}', 'src/lib/api/**/*.ts']
     }
 ]

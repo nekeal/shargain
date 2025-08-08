@@ -1,15 +1,17 @@
 import { createFileRoute, useLoaderData } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import type { OfferMonitor } from '@/types/dashboard';
 import { DashboardHeader } from "@/components/dashboard/dashboard-header.tsx";
 import { MonitorSettings } from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
-import { DefaultService } from '@/lib/api';
+import { shargainPublicApiApiGetMyTarget } from '@/lib/api';
 
 export const Route = createFileRoute('/dashboard')({
     component: DashboardContent,
     loader: async () => {
-        return await DefaultService.shargainPublicApiApiGetMyTarget();
+        const response = await shargainPublicApiApiGetMyTarget();
+        return response.data as OfferMonitor;
     }
 })
 

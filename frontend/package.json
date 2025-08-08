@@ -10,7 +10,7 @@
     "test": "vitest run",
     "lint": "tsc --noEmit; eslint .",
     "lint:fix": "eslint . --fix",
-    "generate:api-client": "openapi --input openapi.json --output src/lib/api --name ApiClient --exportSchemas true --useOptions true --client fetch --request src/lib/api/core/request.ts"
+        "generate:api-client": "openapi-ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -36,6 +36,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.80.5",
     "@tanstack/eslint-config": "^0.3.0",
     "@tanstack/eslint-plugin-router": "^1.130.12",
     "@testing-library/dom": "^10.4.0",
@@ -48,7 +49,6 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "jsdom": "^26.0.0",
-    "openapi-typescript-codegen": "^0.29.0",
     "typescript": "<5.9.0",
     "vite": "^6.3.5",
     "vitest": "^3.0.5",

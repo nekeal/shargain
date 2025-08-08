@@ -1,10 +1,10 @@
 import { Settings } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { NotificationConfigSelector } from "./NotificationConfigSelector"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { DefaultService } from "@/lib/api"
-import { NotificationConfigSelector } from "./NotificationConfigSelector"
+import { shargainPublicApiApiToggleNotifications } from "@/lib/api";
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor
@@ -15,7 +15,7 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
   const queryClient = useQueryClient()
 
   const toggleNotificationsMutation = useMutation({
-    mutationFn: (enable: boolean) => DefaultService.shargainPublicApiApiToggleNotifications({ target_id: offerMonitor.id, requestBody: { enable } }),
+    mutationFn: (enable: boolean) => shargainPublicApiApiToggleNotifications({ path: { target_id: offerMonitor.id }, body: { enable } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myTarget'] })
     },

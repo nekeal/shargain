@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { DefaultService } from "@/lib/api"
+import { shargainPublicApiApiActivateScrapingUrl, shargainPublicApiApiAddUrlToTarget, shargainPublicApiApiDeactivateScrapingUrl, shargainPublicApiApiDeleteTargetUrl } from "@/lib/api";
 
 interface MonitoredWebsitesProps {
   offerMonitor: OfferMonitor
@@ -19,7 +19,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   const queryClient = useQueryClient()
 
   const addUrlMutation = useMutation({
-    mutationFn: (url: string) => DefaultService.shargainPublicApiApiAddUrlToTarget({ target_id: offerMonitor.id, requestBody: { url } }),
+    mutationFn: (url: string) => shargainPublicApiApiAddUrlToTarget({ path: { target_id: offerMonitor.id }, body: { url } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myTarget'] })
       setNewUrl("")
@@ -27,7 +27,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   })
 
   const removeUrlMutation = useMutation({
-    mutationFn: (urlId: number) => DefaultService.shargainPublicApiApiDeleteTargetUrl({ target_id: offerMonitor.id, url_id: urlId }),
+    mutationFn: (urlId: number) => shargainPublicApiApiDeleteTargetUrl({ path: { target_id: offerMonitor.id, url_id: urlId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myTarget'] })
     },
@@ -36,9 +36,9 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   const toggleUrlActiveMutation = useMutation({
     mutationFn: ({ urlId, isActive }: { urlId: number, isActive: boolean }) => {
       if (isActive) {
-        return DefaultService.shargainPublicApiApiDeactivateScrapingUrl({ target_id: offerMonitor.id, url_id: urlId })
+        return shargainPublicApiApiDeactivateScrapingUrl({ path: { target_id: offerMonitor.id, url_id: urlId } })
       }
-      return DefaultService.shargainPublicApiApiActivateScrapingUrl({ target_id: offerMonitor.id, url_id: urlId })
+      return shargainPublicApiApiActivateScrapingUrl({ path: { target_id: offerMonitor.id, url_id: urlId } })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myTarget'] })
