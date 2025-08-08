@@ -1,6 +1,6 @@
 import { Settings } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { NotificationConfigSelector } from "./NotificationConfigSelector"
+// import { NotificationConfigSelector } from "./NotificationConfigSelector"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -15,11 +15,24 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
   const queryClient = useQueryClient()
 
   const toggleNotificationsMutation = useMutation({
-    mutationFn: (enable: boolean) => shargainPublicApiApiToggleNotifications({ path: { target_id: offerMonitor.id }, body: { enable } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myTarget'] })
+    mutationFn: (enable: boolean) =>
+      shargainPublicApiApiToggleNotifications({
+        path: { target_id: offerMonitor.id },
+        body: { enable }
+      }),
+    onSuccess: (_, checked) => {
+      queryClient.setQueryData(['myTarget'], (old: OfferMonitor | undefined) => {
+        if (!old) return old;
+        return { ...old, enableNotifications: checked };
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+      queryClient.refetchQueries({ queryKey: ['myTarget'] });
+      console.log('Cache updated. New enableNotifications in cache:', checked);
     },
   })
+
+  console.log('MonitorSettings re-rendered. enableNotifications:', offerMonitor.enableNotifications);
 
   return (
     <Card
@@ -43,6 +56,7 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
             checked={offerMonitor.enableNotifications}
             onCheckedChange={(checked: boolean) => toggleNotificationsMutation.mutate(checked)}
             className="data-[state=checked]:bg-violet-600"
+            disabled={toggleNotificationsMutation.isPending}
           />
         </div>
         <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg">
@@ -50,7 +64,7 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
             <h3 className="font-medium text-gray-900">Notification Configuration</h3>
             <p className="text-sm text-gray-600">Choose how you want to receive notifications</p>
           </div>
-          <NotificationConfigSelector offerMonitor={offerMonitor} />
+          {/* <NotificationConfigSelector offerMonitor={offerMonitor} /> */}
         </div>
       </CardContent>
     </Card>

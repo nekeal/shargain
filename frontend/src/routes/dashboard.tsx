@@ -24,7 +24,7 @@ function DashboardContent() {
     }, [])
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
+        <div key={offerMonitor.id} className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
             <DashboardHeader />
 
             <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -38,7 +38,7 @@ function DashboardContent() {
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        <MonitorSettings offerMonitor={offerMonitor} isVisible={isVisible} />
+                        <MonitorSettings key={offerMonitor.enableNotifications.toString()} offerMonitor={offerMonitor} isVisible={isVisible} />
                         <MonitoredWebsites offerMonitor={offerMonitor} isVisible={isVisible} />
                     </div>
                     <DashboardSidebar offerMonitor={offerMonitor} isVisible={isVisible} />
