@@ -18,13 +18,21 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
     mutationFn: (enable: boolean) =>
       shargainPublicApiApiToggleNotifications({
         path: { target_id: offerMonitor.id },
-        body: { enable }
+        body: { enable },
+        throwOnError: true
       }),
-    onSuccess: (_, checked) => {
+    onMutate: async (newEnableStatus: boolean) => {
+      const previousOfferMonitor = queryClient.getQueryData(['myTarget']);
+
       queryClient.setQueryData(['myTarget'], (old: OfferMonitor | undefined) => {
         if (!old) return old;
-        return { ...old, enableNotifications: checked };
+        return { ...old, enableNotifications: newEnableStatus };
       });
+
+      return { prev: previousOfferMonitor };
+    },
+    onError: (_err, _newEnableStatus, context) => {
+      queryClient.setQueryData(['myTarget'], context?.prev);
     },
   })
 
