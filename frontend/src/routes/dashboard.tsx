@@ -1,5 +1,6 @@
-import { createFileRoute, useLoaderData } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type { OfferMonitor } from '@/types/dashboard';
 import { DashboardHeader } from "@/components/dashboard/dashboard-header.tsx";
 import { MonitorSettings } from '@/components/dashboard/monitor-settings';
@@ -9,19 +10,39 @@ import { shargainPublicApiApiGetMyTarget } from '@/lib/api';
 
 export const Route = createFileRoute('/dashboard')({
     component: DashboardContent,
-    loader: async () => {
-        const response = await shargainPublicApiApiGetMyTarget();
-        return response.data as OfferMonitor;
-    }
+    loader: ({ context: { queryClient } }) => {
+        queryClient.ensureQueryData({
+            queryKey: ['myTarget'],
+            queryFn: async () => {
+                const response = await shargainPublicApiApiGetMyTarget();
+                return response.data as OfferMonitor;
+            },
+        });
+    },
 })
 
 function DashboardContent() {
-    const offerMonitor = useLoaderData({ from: Route.fullPath });
+    const { data: offerMonitor, isLoading, isError } = useQuery<OfferMonitor>({
+        queryKey: ['myTarget'],
+    });
+
     const [isVisible, setIsVisible] = useState(false)
 
     useEffect(() => {
         setIsVisible(true)
     }, [])
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (isError) {
+        return <div>Error loading dashboard data.</div>;
+    }
+
+    if (!offerMonitor) {
+        return <div>No monitor data available.</div>;
+    }
 
     return (
         <div key={offerMonitor.id} className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
@@ -38,7 +59,7 @@ function DashboardContent() {
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        <MonitorSettings key={offerMonitor.enableNotifications.toString()} offerMonitor={offerMonitor} isVisible={isVisible} />
+                        <MonitorSettings offerMonitor={offerMonitor} isVisible={isVisible} />
                         <MonitoredWebsites offerMonitor={offerMonitor} isVisible={isVisible} />
                     </div>
                     <DashboardSidebar offerMonitor={offerMonitor} isVisible={isVisible} />
@@ -47,4 +68,3 @@ function DashboardContent() {
         </div>
     )
 }
-''

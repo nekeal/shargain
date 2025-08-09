@@ -25,19 +25,14 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
         if (!old) return old;
         return { ...old, enableNotifications: checked };
       });
-
-      queryClient.invalidateQueries({ queryKey: ['myTarget'] });
-      queryClient.refetchQueries({ queryKey: ['myTarget'] });
-      console.log('Cache updated. New enableNotifications in cache:', checked);
     },
   })
 
-  console.log('MonitorSettings re-rendered. enableNotifications:', offerMonitor.enableNotifications);
-
   return (
     <Card
-      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-200 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-        }`}
+      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-200 ${
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+      }`}
     >
       <CardHeader>
         <CardTitle className="flex items-center text-2xl">
