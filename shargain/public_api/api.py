@@ -2,6 +2,7 @@ from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
 from pydantic.alias_generators import to_camel
+from pydantic.networks import HttpUrl
 
 from shargain.offers.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
@@ -39,10 +40,6 @@ class TargetWithConfigResponse(BaseSchema):
     is_active: bool
     enable_notifications: bool
     notification_config_id: int | None
-
-
-class AddUrlRequest(BaseSchema):
-    url: str
 
 
 class ScrapingUrlResponse(BaseSchema):
@@ -107,11 +104,16 @@ def update_notification_config(request: HttpRequest, target_id: int, payload: No
         raise HttpError(404, "Notification config not found") from e
 
 
+class AddUrlRequest(BaseSchema):
+    url: HttpUrl
+    name: str | None = None
+
+
 @router.post("/targets/{target_id}/add-url", by_alias=True, response={200: ScrapingUrlResponse, 404: ErrorSchema})
 def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlRequest):
     actor = get_actor(request)
     try:
-        return add_scraping_url(actor, payload.url, target_id)
+        return add_scraping_url(actor, str(payload.url), target_id, name=payload.name)
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
 
