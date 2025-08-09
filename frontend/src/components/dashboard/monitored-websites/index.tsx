@@ -17,14 +17,17 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   const [newUrl, setNewUrl] = useState("")
   const [newName, setNewName] = useState("")
 
-  const addUrlMutation = useAddUrlMutation(offerMonitor.id)
+  const addUrlMutation = useAddUrlMutation(offerMonitor.id);
   const removeUrlMutation = useRemoveUrlMutation(offerMonitor.id)
   const toggleUrlActiveMutation = useToggleUrlActiveMutation(offerMonitor.id)
 
   const handleAddUrl = () => {
-    addUrlMutation.mutate({ url: newUrl, name: newName })
-    setNewUrl("")
-    setNewName("")
+    addUrlMutation.mutate({ url: newUrl, name: newName }, {
+      onSuccess: () => {
+        setNewUrl("")
+        setNewName("")
+      }
+    })
   }
 
   return (
@@ -48,7 +51,10 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             <Input
               id="url-address"
               value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
+              onChange={(e) => {
+                setNewUrl(e.target.value);
+                addUrlMutation.reset();
+              }}
               className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
               placeholder="https://example.com/deals"
             />
@@ -57,11 +63,22 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             <Input
               id="url-name"
               value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              onChange={(e) => {
+                setNewName(e.target.value);
+              }}
               className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
               placeholder="e.g. Amazon Deals"
             />
           </div>
+
+          {addUrlMutation.isError && (
+            <div className="text-red-500 text-sm mt-2">
+              {(addUrlMutation.error as any).detail[0].msg}
+            </div>
+          )}
+          {addUrlMutation.isSuccess && (
+            <div className="text-green-500 text-sm mt-2">URL added successfully!</div>
+          )}
 
           <Button
             onClick={handleAddUrl}

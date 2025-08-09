@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { MonitoredUrl, OfferMonitor } from "@/types/dashboard";
+import type { OfferMonitor } from "@/types/dashboard";
 import { shargainPublicApiApiActivateScrapingUrl, shargainPublicApiApiAddUrlToTarget, shargainPublicApiApiDeactivateScrapingUrl, shargainPublicApiApiDeleteTargetUrl, shargainPublicApiApiGetMyTarget } from "@/lib/api";
 
 export const useGetMyTarget = () => {
@@ -9,28 +9,23 @@ export const useGetMyTarget = () => {
     });
 };
 
-export const useAddUrlMutation = (targetId: number) => {
+export const useAddUrlMutation = (
+    targetId: number,
+) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newUrl: { url: string, name?: string }) => shargainPublicApiApiAddUrlToTarget({ path: { target_id: targetId }, body: { url: newUrl.url, name: newUrl.name} }),
-        onMutate: async (newUrl) => {
-            await queryClient.cancelQueries({ queryKey: ['myTarget'] });
-            const previousTarget = queryClient.getQueryData<OfferMonitor>(['myTarget']);
-            if (previousTarget) {
-                const newUrls: Array<MonitoredUrl> = [...previousTarget.urls, { ...newUrl, id: -1, isActive: true, name: newUrl.name || newUrl.url }];
-                queryClient.setQueryData<OfferMonitor>(['myTarget'], { ...previousTarget, urls: newUrls });
+        mutationFn: (newUrl: { url: string, name?: string }) => shargainPublicApiApiAddUrlToTarget({ path: { target_id: targetId }, body: { url: newUrl.url, name: newUrl.name } }).then(response => {
+            if (response.error) {
+                console.error("Error adding URL:", response.error);
+                return Promise.reject(response.error);
             }
-            return { previousTarget };
-        },
-        onError: (err, _, context) => {
-            if (context?.previousTarget) {
-                queryClient.setQueryData<OfferMonitor>(['myTarget'], context.previousTarget);
-            }
-            // Here you can add your error handling logic, e.g., show a toast notification
-            console.error("Error adding URL:", err);
-        },
-        onSettled: () => {
+            return response.data;
+        }),
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+        },
+        onError(error) {
+            console.error("Error adding URL:", error);
         },
     });
 };
