@@ -30,9 +30,8 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
 
   return (
     <Card
-      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-200 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-      }`}
+      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-200 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+        }`}
     >
       <CardHeader>
         <CardTitle className="flex items-center text-2xl">
@@ -54,13 +53,13 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
             disabled={toggleNotificationsMutation.isPending}
           />
         </div>
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg">
-          <div>
+        {/* <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg"> */}
+        {/* <div>
             <h3 className="font-medium text-gray-900">Notification Configuration</h3>
             <p className="text-sm text-gray-600">Choose how you want to receive notifications</p>
-          </div>
-          {/* <NotificationConfigSelector offerMonitor={offerMonitor} /> */}
-        </div>
+          </div> */}
+        {/* <NotificationConfigSelector offerMonitor={offerMonitor} /> */}
+        {/* </div> */}
       </CardContent>
     </Card>
   )
