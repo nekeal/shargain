@@ -21,7 +21,7 @@ export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProp
         body: { enable },
         throwOnError: true
       }),
-    onMutate: async (newEnableStatus: boolean) => {
+    onMutate: (newEnableStatus: boolean) => {
       const previousOfferMonitor = queryClient.getQueryData(['myTarget']);
 
       queryClient.setQueryData(['myTarget'], (old: OfferMonitor | undefined) => {

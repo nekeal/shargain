@@ -10,7 +10,7 @@
     "test": "vitest run",
     "lint": "tsc --noEmit; eslint .",
     "lint:fix": "eslint . --fix",
-        "generate:api-client": "openapi-ts"
+        "generate:api-client": "openapi-ts --input openapi.json --output src/lib/api"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

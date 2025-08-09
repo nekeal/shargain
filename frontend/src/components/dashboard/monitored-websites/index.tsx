@@ -1,13 +1,12 @@
 import { useState } from "react"
 import { Bell, CheckCircle2, ExternalLink, Eye, EyeOff, Globe, Plus, Trash2 } from "lucide-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors";
 import type { MonitoredUrl, OfferMonitor } from "@/types/dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { shargainPublicApiApiActivateScrapingUrl, shargainPublicApiApiAddUrlToTarget, shargainPublicApiApiDeactivateScrapingUrl, shargainPublicApiApiDeleteTargetUrl } from "@/lib/api";
 
 interface MonitoredWebsitesProps {
   offerMonitor: OfferMonitor
@@ -16,34 +15,17 @@ interface MonitoredWebsitesProps {
 
 export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsitesProps) {
   const [newUrl, setNewUrl] = useState("")
-  const queryClient = useQueryClient()
+  const [newName, setNewName] = useState("")
 
-  const addUrlMutation = useMutation({
-    mutationFn: (url: string) => shargainPublicApiApiAddUrlToTarget({ path: { target_id: offerMonitor.id }, body: { url } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myTarget'] })
-      setNewUrl("")
-    },
-  })
+  const addUrlMutation = useAddUrlMutation(offerMonitor.id)
+  const removeUrlMutation = useRemoveUrlMutation(offerMonitor.id)
+  const toggleUrlActiveMutation = useToggleUrlActiveMutation(offerMonitor.id)
 
-  const removeUrlMutation = useMutation({
-    mutationFn: (urlId: number) => shargainPublicApiApiDeleteTargetUrl({ path: { target_id: offerMonitor.id, url_id: urlId } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myTarget'] })
-    },
-  })
-
-  const toggleUrlActiveMutation = useMutation({
-    mutationFn: ({ urlId, isActive }: { urlId: number, isActive: boolean }) => {
-      if (isActive) {
-        return shargainPublicApiApiDeactivateScrapingUrl({ path: { target_id: offerMonitor.id, url_id: urlId } })
-      }
-      return shargainPublicApiApiActivateScrapingUrl({ path: { target_id: offerMonitor.id, url_id: urlId } })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myTarget'] })
-    },
-  })
+  const handleAddUrl = () => {
+    addUrlMutation.mutate({ url: newUrl, name: newName })
+    setNewUrl("")
+    setNewName("")
+  }
 
   return (
     <Card
@@ -70,9 +52,19 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
               className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
               placeholder="https://example.com/deals"
             />
+          </div><div className="space-y-2 mt-4">
+            <Label htmlFor="url-name">Name</Label>
+            <Input
+              id="url-name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
+              placeholder="e.g. Amazon Deals"
+            />
           </div>
+
           <Button
-            onClick={() => addUrlMutation.mutate(newUrl)}
+            onClick={handleAddUrl}
             disabled={!newUrl || addUrlMutation.isPending}
             className="mt-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
           >

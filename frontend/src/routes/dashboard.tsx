@@ -1,36 +1,23 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import type { OfferMonitor } from '@/types/dashboard';
-import { DashboardHeader } from "@/components/dashboard/dashboard-header.tsx";
+import { createFileRoute } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header.tsx';
 import { MonitorSettings } from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
-import { shargainPublicApiApiGetMyTarget } from '@/lib/api';
+import { useGetMyTarget } from '@/components/dashboard/monitored-websites/useMonitors';
 
 export const Route = createFileRoute('/dashboard')({
     component: DashboardContent,
-    loader: ({ context: { queryClient } }) => {
-        queryClient.ensureQueryData({
-            queryKey: ['myTarget'],
-            queryFn: () => {
-                return shargainPublicApiApiGetMyTarget().then(response => response.data as OfferMonitor);
-            },
-        });
-    },
-})
+});
 
 function DashboardContent() {
-    const { data: offerMonitor, isLoading, isError } = useQuery<OfferMonitor>({
-        queryKey: ['myTarget'],
-        queryFn: () => shargainPublicApiApiGetMyTarget().then(response => response.data as OfferMonitor),
-    });
+    const { data: offerMonitor, isLoading, isError } = useGetMyTarget();
 
-    const [isVisible, setIsVisible] = useState(false)
+    const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        setIsVisible(true)
-    }, [])
+        setIsVisible(true);
+    }, []);
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -50,9 +37,7 @@ function DashboardContent() {
 
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 <div
-                    className={`mb-8 transition-all duration-1000 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-                        }`}
-                >
+                    className={`mb-8 transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     <h1 className="text-4xl font-bold text-gray-900 mb-2">Offer Monitor Dashboard</h1>
                     <p className="text-gray-600">Manage your watched websites and notification preferences</p>
                 </div>
@@ -66,5 +51,5 @@ function DashboardContent() {
                 </div>
             </div>
         </div>
-    )
+    );
 }
