@@ -13,9 +13,8 @@ export const Route = createFileRoute('/dashboard')({
     loader: ({ context: { queryClient } }) => {
         queryClient.ensureQueryData({
             queryKey: ['myTarget'],
-            queryFn: async () => {
-                const response = await shargainPublicApiApiGetMyTarget();
-                return response.data as OfferMonitor;
+            queryFn: () => {
+                return shargainPublicApiApiGetMyTarget().then(response => response.data as OfferMonitor);
             },
         });
     },
@@ -24,6 +23,7 @@ export const Route = createFileRoute('/dashboard')({
 function DashboardContent() {
     const { data: offerMonitor, isLoading, isError } = useQuery<OfferMonitor>({
         queryKey: ['myTarget'],
+        queryFn: () => shargainPublicApiApiGetMyTarget().then(response => response.data as OfferMonitor),
     });
 
     const [isVisible, setIsVisible] = useState(false)
