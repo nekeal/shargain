@@ -1,0 +1,11 @@
+
+- **Framework:** React
+- **Router:** TanStack Router
+- **Styling:** Tailwind CSS
+- **UI Components:** Radix UI, lucide-react, shadcn
+- **Build Tool:** Vite
+- **Testing:** Vitest, React Testing Library
+- **Linting:** ESLint
+- **API Client Generation:** openapi-ts
+- **Data Fetching:** TanStack Query
+- **State Management:** TanStack Store
