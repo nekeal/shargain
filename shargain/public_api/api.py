@@ -8,6 +8,7 @@ from shargain.offers.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.commands.change_notification_config import change_notification_config
 from shargain.offers.application.commands.delete_scraping_url import delete_scraping_url
+from shargain.offers.application.commands.send_test_notification import send_test_notification
 from shargain.offers.application.commands.set_scraping_url_active_status import set_scraping_url_active_status
 from shargain.offers.application.commands.toggle_target_notifications import toggle_target_notifications
 from shargain.offers.application.exceptions import (
@@ -161,3 +162,19 @@ def toggle_notifications(request: HttpRequest, target_id: int, payload: ToggleNo
         return ToggleNotificationsResponse(enable_notifications=result.enable_notifications)
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
+
+
+@router.post(
+    "/targets/{target_id}/send-test-notification",
+    by_alias=True,
+    response={204: None, 404: ErrorSchema, 400: ErrorSchema},
+)
+def send_test_notification_endpoint(request: HttpRequest, target_id: int):
+    actor = get_actor(request)
+    try:
+        send_test_notification(actor, target_id)
+        return 204, None
+    except TargetDoesNotExist as e:
+        raise HttpError(404, "Target not found") from e
+    except NotificationConfigDoesNotExist as e:
+        raise HttpError(400, "Notification config not found") from e
