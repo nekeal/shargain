@@ -72,7 +72,9 @@ def get_actor(request: HttpRequest) -> Actor:
     return Actor(user_id=request.user.id)
 
 
-@router.get("/targets/my-target", by_alias=True, response={200: TargetResponse, 404: ErrorSchema})
+@router.get(
+    "/targets/my-target", operation_id="get_my_target", by_alias=True, response={200: TargetResponse, 404: ErrorSchema}
+)
 def get_my_target(request: HttpRequest):
     actor = get_actor(request)
     try:
@@ -81,7 +83,12 @@ def get_my_target(request: HttpRequest):
         raise HttpError(404, "Target not found") from e
 
 
-@router.get("/targets/{target_id}", by_alias=True, response={200: TargetResponse, 404: ErrorSchema})
+@router.get(
+    "/targets/{target_id}",
+    operation_id="get_single_target",
+    by_alias=True,
+    response={200: TargetResponse, 404: ErrorSchema},
+)
 def get_single_target(request: HttpRequest, target_id: int):
     actor = get_actor(request)
     try:
@@ -92,6 +99,7 @@ def get_single_target(request: HttpRequest, target_id: int):
 
 @router.post(
     "/targets/{target_id}/notification-config",
+    operation_id="update_target_notification_config",
     by_alias=True,
     response={200: TargetWithConfigResponse, 404: ErrorSchema},
 )
@@ -110,7 +118,12 @@ class AddUrlRequest(BaseSchema):
     name: str | None = None
 
 
-@router.post("/targets/{target_id}/add-url", by_alias=True, response={200: ScrapingUrlResponse, 404: ErrorSchema})
+@router.post(
+    "/targets/{target_id}/add-url",
+    operation_id="add_url_to_target",
+    by_alias=True,
+    response={200: ScrapingUrlResponse, 404: ErrorSchema},
+)
 def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlRequest):
     actor = get_actor(request)
     try:
@@ -119,7 +132,12 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
         raise HttpError(404, "Target not found") from e
 
 
-@router.delete("/targets/{target_id}/urls/{url_id}", by_alias=True, response={204: None, 404: ErrorSchema})
+@router.delete(
+    "/targets/{target_id}/urls/{url_id}",
+    operation_id="delete_target_url",
+    by_alias=True,
+    response={204: None, 404: ErrorSchema},
+)
 def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
     delete_scraping_url(actor, url_id)
@@ -127,7 +145,10 @@ def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
 
 
 @router.post(
-    "/targets/{target_id}/urls/{url_id}/activate", by_alias=True, response={200: ScrapingUrlResponse, 404: ErrorSchema}
+    "/targets/{target_id}/urls/{url_id}/activate",
+    operation_id="activate_scraping_url",
+    by_alias=True,
+    response={200: ScrapingUrlResponse, 404: ErrorSchema},
 )
 def activate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
@@ -139,6 +160,7 @@ def activate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
 
 @router.post(
     "/targets/{target_id}/urls/{url_id}/deactivate",
+    operation_id="deactivate_scraping_url",
     by_alias=True,
     response={200: ScrapingUrlResponse, 404: ErrorSchema},
 )
@@ -152,6 +174,7 @@ def deactivate_scraping_url(request: HttpRequest, target_id: int, url_id: int):
 
 @router.post(
     "/targets/{target_id}/toggle-notifications",
+    operation_id="toggle_target_notifications",
     by_alias=True,
     response={200: ToggleNotificationsResponse, 404: ErrorSchema},
 )
@@ -166,6 +189,7 @@ def toggle_notifications(request: HttpRequest, target_id: int, payload: ToggleNo
 
 @router.post(
     "/targets/{target_id}/send-test-notification",
+    operation_id="send_target_test_notification",
     by_alias=True,
     response={204: None, 404: ErrorSchema, 400: ErrorSchema},
 )
