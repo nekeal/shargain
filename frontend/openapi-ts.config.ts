@@ -1,12 +1,13 @@
-export default {
-    client: '@hey-api/client-fetch', // or '@hey-api/client-axios'
+import { defaultPlugins, defineConfig } from '@hey-api/openapi-ts';
+
+export default defineConfig({
     input: './openapi.json',
-    output: './src/lib/api',
-    services: {
-        // …
-    },
-    // 👇 the important part
-    clientOptions: {
-        throwOnError: true,
-    },
-};
+    output: 'src/lib/api',
+    plugins: [
+        ...defaultPlugins,
+        {
+            name: '@hey-api/client-fetch',
+            throwOnError: true,
+        },
+    ],
+});
