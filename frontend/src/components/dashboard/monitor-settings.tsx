@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { shargainPublicApiApiToggleNotifications } from "@/lib/api";
+import { toggleTargetNotifications } from "@/lib/api/sdk.gen"
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor
@@ -16,7 +16,7 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
 
   const toggleNotificationsMutation = useMutation({
     mutationFn: (enable: boolean) =>
-      shargainPublicApiApiToggleNotifications({
+      toggleTargetNotifications({
         path: { target_id: offerMonitor.id },
         body: { enable },
         throwOnError: true
