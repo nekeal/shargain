@@ -24,6 +24,7 @@ class TestUpdateScrapingUrl:
         assert target_dto.urls[0] == ScrapingUrlDTO(
             id=scraping_url.id,
             url=scraping_url.url,
+            is_active=scraping_url.is_active,
             name=new_name,
         )
 

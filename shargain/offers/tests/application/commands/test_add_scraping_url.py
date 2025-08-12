@@ -22,6 +22,7 @@ class TestAddScrapingUrl:
         assert target_dto.urls[0] == ScrapingUrlDTO(
             id=result_dto.id,
             url=url,
+            is_active=True,
             name=name,
         )
 
@@ -37,6 +38,7 @@ class TestAddScrapingUrl:
         assert target_dto.urls[0] == ScrapingUrlDTO(
             id=result_dto.id,
             url=url,
+            is_active=True,
             name="",
         )
 
