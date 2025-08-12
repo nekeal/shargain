@@ -1,10 +1,12 @@
 import { Settings } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
 // import { NotificationConfigSelector } from "./NotificationConfigSelector"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { toggleTargetNotifications } from "@/lib/api/sdk.gen"
+import { Button } from "@/components/ui/button"
+import { generateTelegramToken, toggleTargetNotifications } from "@/lib/api/sdk.gen"
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor
@@ -13,6 +15,7 @@ interface MonitorSettingsProps {
 
 export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProps) {
   const queryClient = useQueryClient()
+  const [telegramBotUrl, setTelegramBotUrl] = useState<string | null>(null)
 
   const toggleNotificationsMutation = useMutation({
     mutationFn: (enable: boolean) =>
@@ -37,6 +40,16 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['myTarget'] });
     }
+  })
+
+  const generateTokenMutation = useMutation({
+    mutationFn: () =>
+      generateTelegramToken({
+        throwOnError: true,
+      }),
+    onSuccess: (data) => {
+      setTelegramBotUrl(data.data.telegramBotUrl)
+    },
   })
 
   return (
@@ -64,13 +77,35 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
             disabled={toggleNotificationsMutation.isPending}
           />
         </div>
-        {/* <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg"> */}
-        {/* <div>
-            <h3 className="font-medium text-gray-900">Notification Configuration</h3>
-            <p className="text-sm text-gray-600">Choose how you want to receive notifications</p>
-          </div> */}
-        {/* <NotificationConfigSelector offerMonitor={offerMonitor} /> */}
-        {/* </div> */}
+        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+          <div>
+            <h3 className="font-medium text-gray-900">Telegram Notifications</h3>
+            <p className="text-sm text-gray-600">
+              {offerMonitor.notificationConfigId
+                ? "Telegram notifications are configured."
+                : "Enable notifications on telegram."}
+            </p>
+          </div>
+          {!offerMonitor.notificationConfigId && (
+            <Button
+              onClick={() => generateTokenMutation.mutate()}
+              disabled={generateTokenMutation.isPending}
+            >
+              Configure
+            </Button>
+          )}
+        </div>
+        {telegramBotUrl && (
+          <div className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
+            <p className="text-sm text-gray-700 truncate">{telegramBotUrl}</p>
+            <Button
+              onClick={() => navigator.clipboard.writeText(telegramBotUrl)}
+              variant="outline"
+            >
+              Copy
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
