@@ -155,7 +155,6 @@ def start_handler(message: Message) -> None:
     """
     logger.info("Start command received: %s", message.text)
 
-    # Split the message text to check for parameters
     command_parts = message.text.split()
 
     if len(command_parts) > 1:
@@ -163,11 +162,9 @@ def start_handler(message: Message) -> None:
         token = command_parts[1]
         logger.warning("Start command with token: %s", token)
 
-        # Use the SetupScrapingTargetHandler to process the token
         handler = SetupScrapingTargetHandler()
         result = handler.handle(message.chat.id, token)
 
-        # Send appropriate response based on handler result
         if result.success:
             TelegramBot.get_bot().send_message(
                 message.chat.id,
@@ -177,16 +174,17 @@ def start_handler(message: Message) -> None:
                 ),
             )
         else:
+            TelegramBot.get_bot().reply_to(message, result.message)
             logger.info("Couldn't start configuration: %s, chat_id: %s", result.message, message.chat.id)
-
-    TelegramBot.get_bot().send_message(
-        message.chat.id,
-        _(
-            "Hello! I'm a Shargain bot. I can send you notifications about new offers. "
-            "To start receiving notifications, please register your channel or this conversation using "
-            "the following command: /configure <token>"
-        ),
-    )
+    else:
+        TelegramBot.get_bot().send_message(
+            message.chat.id,
+            _(
+                "Hello! I'm a Shargain bot. I can send you notifications about new offers. "
+                "To start receiving notifications, please register your channel or this conversation using "
+                "the following command: /configure <token>"
+            ),
+        )
 
 
 @TelegramBot.get_bot().message_handler(commands=["configure"])
