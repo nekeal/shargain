@@ -84,6 +84,7 @@ extend-ignore = ["N818"]
     "S101", # "Use of `assert` detected"
     "ARG",  # "Unused function argument". Fixtures can be unused.
     "S105", # "Possible hardcoded password".
+    "S106", # "Possible hardcoded secret password".
 ]
 "**settings/**" = [
     "F405",   # variable may be undefined due to * import
