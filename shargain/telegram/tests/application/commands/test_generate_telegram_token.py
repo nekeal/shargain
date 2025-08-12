@@ -1,5 +1,3 @@
-from unittest import mock
-
 import pytest
 from django.conf import settings
 
@@ -22,12 +20,6 @@ class TestGenerateTelegramToken:
     @pytest.fixture
     def user(self) -> CustomUser:
         return UserFactory.create()
-
-    @pytest.fixture
-    def m_telegram_bot(self) -> TelegramBot:
-        m_telegram_bot = mock.Mock(spec=TelegramBot)
-        m_telegram_bot.get_username.return_value = "shargain_bot"
-        return m_telegram_bot
 
     def test_generate_telegram_token_creates_new_token(self, user: CustomUser, m_telegram_bot: TelegramBot):
         """Test that a new token is created when none exists for the user."""

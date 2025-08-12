@@ -4,6 +4,8 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
+import shargain.telegram.models
+
 
 class Migration(migrations.Migration):
     initial = True
@@ -25,7 +27,12 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("register_token", models.CharField(max_length=100, unique=True)),
+                (
+                    "register_token",
+                    models.CharField(
+                        max_length=100, unique=True, default=shargain.telegram.models.get_default_register_token
+                    ),
+                ),
                 ("is_used", models.BooleanField(default=False)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (

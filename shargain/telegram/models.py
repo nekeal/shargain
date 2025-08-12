@@ -45,7 +45,7 @@ class TelegramRegisterToken(models.Model):
     Each token is used to link a Telegram account to a user account.
     """
 
-    register_token = models.CharField(max_length=100, unique=True)
+    register_token = models.CharField(max_length=100, unique=True, default=get_default_register_token)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="telegram_tokens")
     is_used = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
