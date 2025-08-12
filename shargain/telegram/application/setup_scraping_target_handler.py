@@ -4,6 +4,7 @@ from functools import cached_property
 
 from django.db import transaction
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 from shargain.notifications.models import NotificationChannelChoices, NotificationConfig
 from shargain.offers.models import ScrappingTarget
@@ -31,13 +32,32 @@ class SetupScrapingTargetHandler:
 
     def create_objects(
         self, chat_id: str, register_token: TelegramRegisterToken
-    ) -> tuple[NotificationConfig, ScrappingTarget]:
-        notification_config = NotificationConfig.objects.create(
+    ) -> tuple[NotificationConfig, ScrappingTarget | None]:
+        """Create notification config and a new scraping target.
+
+        Returns:
+            Tuple of (notification_config, scraping_target)
+        """
+        notification_config, _ = NotificationConfig.objects.get_or_create(
             channel=NotificationChannelChoices.TELEGRAM,
             chatid=chat_id,
             owner=register_token.user,
+            defaults={
+                "name": f"Telegram-{chat_id}",
+            },
         )
+
+        # Link to the notification config
+        if len(existing_scraping_targets := ScrappingTarget.objects.filter(owner=register_token.user)) == 1:
+            existing_scraping_targets[0].notification_config = (
+                existing_scraping_targets[0].notification_config or notification_config
+            )
+            existing_scraping_targets[0].save(update_fields=["notification_config"])
+            return notification_config, existing_scraping_targets[0]
+
+        # if user have no scraping targets, or multiple scraping targets, create a new one
         scraping_target = ScrappingTarget.objects.create(
+            name=f"Target-{chat_id}",
             notification_config=notification_config,
             owner=register_token.user,
         )
@@ -45,40 +65,34 @@ class SetupScrapingTargetHandler:
 
     def handle(self, chat_id: str, token_str: str) -> HandlerResult:
         with transaction.atomic():
-            token_qs = TelegramRegisterToken.objects.filter(is_used=False, register_token=token_str)
+            # Get the token if it exists and is not used
+            token_qs = TelegramRegisterToken.objects.select_for_update().filter(is_used=False, register_token=token_str)
             if not (token := token_qs.first()):
                 logger.info("Token is invalid or already used [token=%s]", token_str)
                 return HandlerResult.as_failure("This token is invalid or already used")
+
+            # Mark token as used
             token_qs.update(is_used=True)
 
+            # Create or update Telegram user
             TelegramUser.objects.get_or_create(
                 user=token.user,
                 telegram_id=chat_id,
                 defaults={"is_active": True},
             )
 
-            if (
-                NotificationConfig.objects.filter(owner=token.user, chatid=chat_id).exists()
-                or ScrappingTarget.objects.filter(owner=token.user).exists()
-            ):
-                logger.info(
-                    "Target already exists [target_name=%s] [chat_id=%s]",
-                    self.get_scraping_target_name(token),
-                    chat_id,
-                )
-                return HandlerResult.as_failure(
-                    "This name is already taken or notifications are already configured for this chat"
-                )
+            # Create the notification config and a new scraping target
+            notification_config, scraping_target = self.create_objects(chat_id, token)
 
-            self.create_objects(chat_id, token)
             logger.info(
-                "Target created [target_name=%s] [chat_id=%s]",
-                self.get_scraping_target_name(token),
+                "New target and notification config created [target_id=%s] [chat_id=%s] [config_id=%s]",
+                scraping_target.id if scraping_target else "N/A",
                 chat_id,
+                notification_config.id,
             )
-        return HandlerResult.as_success(
-            "Notifications configured successfully. Now you can add links to track using /add command"
-        )
+            message = _("Notifications configured successfully. Now you can use Shargain. See /menu for more info")
+
+        return HandlerResult.as_success(str(message))
 
     def handle_invalid_format(self, chat_id: str) -> HandlerResult:
         logger.info(
