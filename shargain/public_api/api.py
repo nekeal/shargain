@@ -12,11 +12,14 @@ from shargain.offers.application.commands.send_test_notification import send_tes
 from shargain.offers.application.commands.set_scraping_url_active_status import set_scraping_url_active_status
 from shargain.offers.application.commands.toggle_target_notifications import toggle_target_notifications
 from shargain.offers.application.exceptions import (
+    ApplicationException,
     NotificationConfigDoesNotExist,
     ScrapingUrlDoesNotExist,
     TargetDoesNotExist,
 )
 from shargain.offers.application.queries.get_target import get_target, get_target_by_user
+from shargain.telegram.application.commands.generate_telegram_token import UserDoesNotExist, generate_telegram_token
+from shargain.telegram.bot import TelegramBot
 
 router = NinjaAPI()
 
@@ -54,6 +57,7 @@ class TargetResponse(BaseSchema):
     id: int
     name: str
     enable_notifications: bool
+    notification_config_id: int | None
     is_active: bool
     urls: list[ScrapingUrlResponse]
 
@@ -64,6 +68,19 @@ class ToggleNotificationsRequest(BaseSchema):
 
 class ToggleNotificationsResponse(BaseSchema):
     enable_notifications: bool
+
+
+class GenerateTokenResponse(BaseSchema):
+    telegram_bot_url: str
+
+
+class VerifyTokenRequest(BaseSchema):
+    token: str
+    chat_id: int
+
+
+class VerifyTokenResponse(BaseSchema):
+    success: bool
 
 
 def get_actor(request: HttpRequest) -> Actor:
@@ -202,3 +219,23 @@ def send_test_notification_endpoint(request: HttpRequest, target_id: int):
         raise HttpError(404, "Target not found") from e
     except NotificationConfigDoesNotExist as e:
         raise HttpError(400, "Notification config not found") from e
+
+
+@router.post(
+    "/notifications/telegram/generate-token",
+    operation_id="generate_telegram_token",
+    by_alias=True,
+    response={
+        200: GenerateTokenResponse,
+        404: ErrorSchema,
+    },
+)
+def generate_telegram_token_endpoint(request: HttpRequest):
+    try:
+        actor = get_actor(request)
+        result = generate_telegram_token(TelegramBot(), actor=actor)
+        return GenerateTokenResponse(telegram_bot_url=result.telegram_bot_url)
+    except UserDoesNotExist:
+        raise HttpError(404, "User not found") from None
+    except ApplicationException as e:
+        raise HttpError(400, str(e)) from e
