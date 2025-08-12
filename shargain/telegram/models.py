@@ -1,7 +1,3 @@
-"""Models for Telegram integration."""
-
-from __future__ import annotations
-
 import uuid
 
 from django.conf import settings
@@ -44,32 +40,15 @@ def get_default_register_token():
 
 
 class TelegramRegisterToken(models.Model):
-    """Stores registration tokens used to link Telegram accounts."""
+    """
+    Model for storing Telegram registration tokens.
+    Each token is used to link a Telegram account to a user account.
+    """
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="telegram_register_tokens",
-        verbose_name=_("User"),
-    )
-    register_token = models.CharField(
-        max_length=100,
-        unique=True,
-        default=get_default_register_token,
-        verbose_name=_("Register token"),
-    )
-    is_used = models.BooleanField(
-        default=False,
-        verbose_name=_("Is used"),
-    )
+    register_token = models.CharField(max_length=100, unique=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="telegram_tokens")
+    is_used = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    used_at = models.DateTimeField(null=True, blank=True)
 
-    class Meta:
-        verbose_name = _("Telegram register token")
-        verbose_name_plural = _("Telegram register tokens")
-        ordering = ["-created_at"]
-
-    def __str__(self) -> str:
-        status = "used" if self.is_used else "unused"
-        return f"{self.register_token} ({status})"
+    def __str__(self):
+        return f"Token for {self.user} - {'Used' if self.is_used else 'Active'}"
