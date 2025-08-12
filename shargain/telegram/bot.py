@@ -86,6 +86,10 @@ class TelegramBot:
             cls._set_logging_level(logging.DEBUG)
         cls.get_bot().polling()
 
+    @classmethod
+    def get_username(cls) -> str:
+        return cls.get_bot().get_me().username  # type: ignore[union-attr]
+
 
 class TelebotMessageAdapter(MessageProtocol):
     """Adapts telebot's Message to our MessageProtocol."""
