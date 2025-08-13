@@ -29,7 +29,7 @@ class TestSetupScrapingTargetHandlerForNewScrapingTarget:
     @pytest.fixture
     def register_token(self, user) -> TelegramRegisterToken:
         return TelegramRegisterToken.objects.create(
-            user=user, register_token="test-token-123", name="Test Target", is_used=False
+            user=user, register_token="test-token-123", name="Test Config", is_used=False
         )
 
     def test_creates_new_scraping_target_and_notification_config(self, user, register_token, handler):

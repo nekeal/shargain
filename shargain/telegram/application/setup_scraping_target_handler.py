@@ -43,7 +43,7 @@ class SetupScrapingTargetHandler:
             chatid=chat_id,
             owner=register_token.user,
             defaults={
-                "name": f"Telegram-{chat_id}",
+                "name": register_token.name or f"Telegram-{chat_id}",
             },
         )
 
