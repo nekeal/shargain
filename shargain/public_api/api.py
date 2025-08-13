@@ -11,6 +11,7 @@ from shargain.offers.application.commands.delete_scraping_url import delete_scra
 from shargain.offers.application.commands.send_test_notification import send_test_notification
 from shargain.offers.application.commands.set_scraping_url_active_status import set_scraping_url_active_status
 from shargain.offers.application.commands.toggle_target_notifications import toggle_target_notifications
+from shargain.offers.application.commands.update_scraping_target_name import update_scraping_target_name
 from shargain.offers.application.exceptions import (
     ApplicationException,
     NotificationConfigDoesNotExist,
@@ -219,6 +220,27 @@ def send_test_notification_endpoint(request: HttpRequest, target_id: int):
         raise HttpError(404, "Target not found") from e
     except NotificationConfigDoesNotExist as e:
         raise HttpError(400, "Notification config not found") from e
+
+
+class UpdateTargetNameRequest(BaseSchema):
+    name: str
+
+
+@router.patch(
+    "/targets/{target_id}/update-name",
+    operation_id="update_target_name",
+    by_alias=True,
+    response={204: None, 404: ErrorSchema, 400: ErrorSchema},
+)
+def update_target_name(request: HttpRequest, target_id: int, payload: UpdateTargetNameRequest):
+    actor = get_actor(request)
+    try:
+        update_scraping_target_name(actor=actor, target_id=target_id, name=payload.name)
+        return 204, None
+    except TargetDoesNotExist as e:
+        raise HttpError(404, "Target not found") from e
+    except ValueError as e:
+        raise HttpError(400, str(e)) from e
 
 
 @router.post(
