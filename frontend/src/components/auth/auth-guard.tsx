@@ -1,8 +1,6 @@
-
 import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { Bell } from "lucide-react"
-import type React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 
 interface AuthGuardProps {
