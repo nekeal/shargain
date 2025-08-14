@@ -1,7 +1,7 @@
 import type { ScrapingUrlResponse, TargetResponse } from "@/lib/api";
 
 export interface OfferMonitor extends TargetResponse {
-    notificationConfigId: string | null;
+    notificationConfigId: number | null;
     notification_config: {
         telegram: boolean;
         email: boolean;
