@@ -11,7 +11,7 @@ interface MonitorSettingsProps {
   isVisible: boolean
 }
 
-export function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProps) {
+export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProps) {
   const queryClient = useQueryClient()
 
   const toggleNotificationsMutation = useMutation({

@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header.tsx';
-import { MonitorSettings } from '@/components/dashboard/monitor-settings';
+import DashboardHeader from '@/components/dashboard/dashboard-header.tsx';
+import MonitorSettings from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
-import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
+import DashboardSidebar from '@/components/dashboard/dashboard-sidebar';
 import { useGetMyTarget } from '@/components/dashboard/monitored-websites/useMonitors';
 
 export const Route = createFileRoute('/dashboard')({

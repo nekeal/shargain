@@ -10,7 +10,7 @@ interface DashboardSidebarProps {
   isVisible: boolean
 }
 
-export function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarProps) {
+export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarProps) {
   return (
     <div className="space-y-6">
       {/* Status Card */}

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
 
-export function DashboardHeader() {
+export default function DashboardHeader() {
   const [isSaving, setIsSaving] = useState(false)
 
   const saveMonitor = async () => {
