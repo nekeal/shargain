@@ -49,5 +49,5 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return null // Will redirect to auth page
   }
 
-  return <>{children}</>
+  return children
 }
