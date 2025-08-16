@@ -25,7 +25,6 @@ class TestListNotificationConfigs:
     @pytest.mark.django_db
     def test_list_notification_configs_with_data(self, actor: Actor, user: CustomUser):
         """Test listing notification configs when some exist."""
-        # Given
         config1 = NotificationConfig.objects.create(
             name="Test Config 1",
             channel=NotificationChannelChoices.TELEGRAM,
@@ -47,11 +46,7 @@ class TestListNotificationConfigs:
             owner=other_user,
         )
 
-        # When
         result = list_notification_configs(actor)
-
-        # Then
-        assert len(result.configs) == 2
 
         # Check that we got the right configs (order may vary)
         config_dto1 = NotificationConfigDTO(
@@ -67,5 +62,6 @@ class TestListNotificationConfigs:
             chat_id="",
         )
 
+        assert len(result.configs) == 2
         assert config_dto1 in result.configs
         assert config_dto2 in result.configs
