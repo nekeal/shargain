@@ -4,7 +4,7 @@ Create a new ScrapingTarget for a user.
 This command handles the creation of a new scraping target with the given name and configuration.
 """
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 
 
 def create_target(

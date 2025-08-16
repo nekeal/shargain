@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.dto import ScrapingUrlDTO
 from shargain.offers.application.exceptions import TargetDoesNotExist

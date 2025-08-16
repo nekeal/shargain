@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings
 
 from shargain.accounts.models import CustomUser
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
     generate_telegram_token,

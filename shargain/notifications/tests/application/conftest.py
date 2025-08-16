@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 
-from shargain.notifications.application.actor import Actor
+from shargain.commons.application.actor import Actor
 
 User = get_user_model()
 

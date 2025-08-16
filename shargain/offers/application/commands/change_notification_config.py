@@ -4,8 +4,8 @@ Change the notification configuration for a ScrapingTarget.
 This command updates the notification configuration for an existing scraping target.
 """
 
+from shargain.commons.application.actor import Actor
 from shargain.notifications.models import NotificationConfig
-from shargain.offers.application.actor import Actor
 from shargain.offers.application.dto import TargetDTO
 from shargain.offers.application.exceptions import (
     NotificationConfigDoesNotExist,

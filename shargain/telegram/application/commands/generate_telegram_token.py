@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from django.contrib.auth import get_user_model
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.exceptions import ApplicationException
 from shargain.telegram.bot import TelegramBot
 from shargain.telegram.models import TelegramRegisterToken

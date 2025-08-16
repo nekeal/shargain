@@ -2,7 +2,7 @@ import pytest
 
 from shargain.accounts.models import CustomUser
 from shargain.accounts.tests.factories import UserFactory
-from shargain.notifications.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.notifications.application.commands.update_notification_config import (
     update_notification_config,
 )
