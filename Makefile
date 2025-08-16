@@ -58,7 +58,7 @@ coverage: ## check code coverage quickly with the default Python
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
-quality-check: ## check quality of code
+quality-check: autoformatters ## check quality of code
 	uv run ruff check shargain
 	uv run ruff format --check shargain
 	uv run mypy shargain
