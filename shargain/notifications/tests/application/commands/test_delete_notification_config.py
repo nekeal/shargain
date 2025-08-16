@@ -7,6 +7,9 @@ from shargain.notifications.application.commands.delete_notification_config impo
     delete_notification_config,
 )
 from shargain.notifications.application.exceptions import NotificationConfigDoesNotExist
+from shargain.notifications.application.queries.get_notification_config import (
+    get_notification_config,
+)
 from shargain.notifications.models import NotificationChannelChoices, NotificationConfig
 
 
@@ -15,19 +18,17 @@ class TestDeleteNotificationConfig:
 
     def test_delete_notification_config_success(self, actor: Actor, user: CustomUser):
         """Test successfully deleting a notification config."""
-        # Given
         config = NotificationConfig.objects.create(
             name="Test Config",
             channel=NotificationChannelChoices.TELEGRAM,
             chatid="12345",
             owner=user,
         )
-        # When
+
         delete_notification_config(actor, config.id)
 
-        # Then
-        with pytest.raises(NotificationConfig.DoesNotExist):
-            NotificationConfig.objects.get(id=config.id)
+        with pytest.raises(NotificationConfigDoesNotExist):
+            get_notification_config(actor, config.id)
 
     @pytest.mark.django_db
     def test_delete_notification_config_not_found(self, actor: Actor):
@@ -39,7 +40,6 @@ class TestDeleteNotificationConfig:
     @pytest.mark.django_db
     def test_delete_notification_config_wrong_owner(self, actor: Actor, user: CustomUser):
         """Test deleting a notification config that belongs to another user."""
-        # Given
         other_user = UserFactory.create(username="otheruser", password="testpass")
         config = NotificationConfig.objects.create(
             name="Other User Config",
@@ -48,9 +48,9 @@ class TestDeleteNotificationConfig:
             owner=other_user,
         )
 
-        # When / Then
         with pytest.raises(NotificationConfigDoesNotExist):
             delete_notification_config(actor, config.id)
 
-        # Verify it still exists in the database
-        assert NotificationConfig.objects.filter(id=config.id).exists()
+        other_actor = Actor(user_id=other_user.id)
+        fetched_config = get_notification_config(other_actor, config.id)
+        assert fetched_config.id == config.id

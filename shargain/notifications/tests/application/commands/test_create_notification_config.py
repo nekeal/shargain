@@ -8,7 +8,7 @@ from shargain.notifications.application.dto import NotificationConfigDTO
 from shargain.notifications.application.queries.get_notification_config import (
     get_notification_config,
 )
-from shargain.notifications.models import NotificationChannelChoices, NotificationConfig
+from shargain.notifications.models import NotificationChannelChoices
 
 
 class TestCreateNotificationConfig:
@@ -17,14 +17,11 @@ class TestCreateNotificationConfig:
     @pytest.mark.django_db
     def test_create_notification_config_success(self, actor: Actor):
         """Test successfully creating a notification config."""
-        # Given
         name = "Test Config"
         chat_id = "12345"
 
-        # When
         result = create_notification_config(actor, name, chat_id)
 
-        # Then
         expected = NotificationConfigDTO(
             id=result.id,  # We need to use the actual ID from the result
             name=name,
@@ -33,12 +30,8 @@ class TestCreateNotificationConfig:
         )
         assert result == expected
 
-        # Verify it was saved to the database
-        config = NotificationConfig.objects.get(id=result.id)
-        assert config.name == name
-        assert config.channel == NotificationChannelChoices.TELEGRAM
-        assert config.chatid == chat_id
-        assert config.owner_id == actor.user_id
+        fetched_config = get_notification_config(actor, config_id=result.id)
+        assert fetched_config == expected
 
     @pytest.mark.django_db
     def test_create_notification_config_with_none_name_is_converted_to_empty_string(self, actor: Actor):
