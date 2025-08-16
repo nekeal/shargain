@@ -5,21 +5,53 @@ from pydantic.alias_generators import to_camel
 from pydantic.networks import HttpUrl
 
 from shargain.commons.application.actor import Actor
+from shargain.notifications.application.commands.create_notification_config import (
+    create_notification_config,
+)
+from shargain.notifications.application.commands.delete_notification_config import (
+    delete_notification_config,
+)
+from shargain.notifications.application.commands.update_notification_config import (
+    update_notification_config,
+)
+from shargain.notifications.application.exceptions import NotificationConfigDoesNotExist
+from shargain.notifications.application.queries.get_notification_config import (
+    get_notification_config,
+)
+from shargain.notifications.application.queries.list_notification_configs import (
+    list_notification_configs,
+)
+from shargain.notifications.models import NotificationChannelChoices
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
-from shargain.offers.application.commands.change_notification_config import change_notification_config
+from shargain.offers.application.commands.change_notification_config import (
+    change_notification_config,
+)
 from shargain.offers.application.commands.delete_scraping_url import delete_scraping_url
-from shargain.offers.application.commands.send_test_notification import send_test_notification
-from shargain.offers.application.commands.set_scraping_url_active_status import set_scraping_url_active_status
-from shargain.offers.application.commands.toggle_target_notifications import toggle_target_notifications
-from shargain.offers.application.commands.update_scraping_target_name import update_scraping_target_name
+from shargain.offers.application.commands.send_test_notification import (
+    send_test_notification,
+)
+from shargain.offers.application.commands.set_scraping_url_active_status import (
+    set_scraping_url_active_status,
+)
+from shargain.offers.application.commands.toggle_target_notifications import (
+    toggle_target_notifications,
+)
+from shargain.offers.application.commands.update_scraping_target_name import (
+    update_scraping_target_name,
+)
 from shargain.offers.application.exceptions import (
     ApplicationException,
-    NotificationConfigDoesNotExist,
     ScrapingUrlDoesNotExist,
     TargetDoesNotExist,
 )
-from shargain.offers.application.queries.get_target import get_target, get_target_by_user
-from shargain.telegram.application.commands.generate_telegram_token import UserDoesNotExist, generate_telegram_token
+from shargain.offers.application.queries.get_target import (
+    get_target,
+    get_target_by_user,
+)
+from shargain.telegram.application.commands.generate_telegram_token import (
+    UserDoesNotExist,
+    generate_telegram_token,
+)
 from shargain.telegram.bot import TelegramBot
 
 router = NinjaAPI()
@@ -37,6 +69,27 @@ class BaseSchema(Schema):
 
 class NotificationConfigRequest(BaseSchema):
     notification_config_id: int | None = None
+
+
+class NotificationConfigResponse(BaseSchema):
+    id: int
+    name: str | None
+    channel: str
+    chat_id: str
+
+
+class NotificationConfigListResponse(BaseSchema):
+    configs: list[NotificationConfigResponse]
+
+
+class CreateNotificationConfigRequest(BaseSchema):
+    name: str | None = None
+    chat_id: str
+    channel: NotificationChannelChoices = NotificationChannelChoices.TELEGRAM
+
+
+class UpdateNotificationConfigRequest(BaseSchema):
+    name: str | None
 
 
 class TargetWithConfigResponse(BaseSchema):
@@ -91,7 +144,10 @@ def get_actor(request: HttpRequest) -> Actor:
 
 
 @router.get(
-    "/targets/my-target", operation_id="get_my_target", by_alias=True, response={200: TargetResponse, 404: ErrorSchema}
+    "/targets/my-target",
+    operation_id="get_my_target",
+    by_alias=True,
+    response={200: TargetResponse, 404: ErrorSchema},
 )
 def get_my_target(request: HttpRequest):
     actor = get_actor(request)
@@ -121,7 +177,9 @@ def get_single_target(request: HttpRequest, target_id: int):
     by_alias=True,
     response={200: TargetWithConfigResponse, 404: ErrorSchema},
 )
-def update_notification_config(request: HttpRequest, target_id: int, payload: NotificationConfigRequest):
+def update_scraping_target_notification_config(
+    request: HttpRequest, target_id: int, payload: NotificationConfigRequest
+):
     actor = get_actor(request)
     try:
         return change_notification_config(actor, target_id, payload.notification_config_id)
@@ -261,3 +319,84 @@ def generate_telegram_token_endpoint(request: HttpRequest):
         raise HttpError(404, "User not found") from None
     except ApplicationException as e:
         raise HttpError(400, str(e)) from e
+
+
+@router.post(
+    "/notifications",
+    operation_id="create_notification_config",
+    by_alias=True,
+    response={200: NotificationConfigResponse, 400: ErrorSchema},
+)
+def create_notification_config_endpoint(request: HttpRequest, payload: CreateNotificationConfigRequest):
+    actor = get_actor(request)
+    try:
+        result = create_notification_config(
+            actor=actor,
+            name=payload.name,
+            chat_id=payload.chat_id,
+            channel=payload.channel,
+        )
+        return result
+    except ValueError as e:
+        raise HttpError(400, str(e)) from e
+
+
+@router.put(
+    "/notifications/{config_id}",
+    operation_id="update_notification_config",
+    by_alias=True,
+    response={200: NotificationConfigResponse, 404: ErrorSchema},
+)
+def update_notification_config_endpoint(request: HttpRequest, config_id: int, payload: UpdateNotificationConfigRequest):
+    actor = get_actor(request)
+    try:
+        result = update_notification_config(
+            actor=actor,
+            config_id=config_id,
+            name=payload.name,
+        )
+        return result
+    except NotificationConfigDoesNotExist as e:
+        raise HttpError(404, "Notification config not found") from e
+
+
+@router.delete(
+    "/notifications/{config_id}",
+    operation_id="delete_notification_config",
+    by_alias=True,
+    response={204: None, 404: ErrorSchema},
+)
+def delete_notification_config_endpoint(request: HttpRequest, config_id: int):
+    actor = get_actor(request)
+    try:
+        delete_notification_config(actor=actor, config_id=config_id)
+        return 204, None
+    except NotificationConfigDoesNotExist as e:
+        raise HttpError(404, "Notification config not found") from e
+
+
+@router.get(
+    "/notifications/{config_id}",
+    operation_id="get_notification_config",
+    by_alias=True,
+    response={200: NotificationConfigResponse, 404: ErrorSchema},
+)
+def get_notification_config_endpoint(request: HttpRequest, config_id: int):
+    actor = get_actor(request)
+    try:
+        result = get_notification_config(actor=actor, config_id=config_id)
+        return result
+    except NotificationConfigDoesNotExist as e:
+        raise HttpError(404, "Notification config not found") from e
+
+
+@router.get(
+    "/notifications",
+    operation_id="list_notification_configs",
+    by_alias=True,
+    response={200: NotificationConfigListResponse},
+)
+def list_notification_configs_endpoint(request: HttpRequest):
+    actor = get_actor(request)
+    result = list_notification_configs(actor=actor)
+    return result

@@ -6,4 +6,4 @@ class NotificationConfigDTO:
     id: int
     name: str | None
     channel: str
-    chat_id: str | None
+    chat_id: str
