@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
+from shargain.commons.application.actor import Actor
 from shargain.notifications.tests.factories import NotificationConfigFactory
-from shargain.offers.application.actor import Actor
 from shargain.offers.application.commands.send_test_notification import send_test_notification
 from shargain.offers.application.exceptions import (
     NotificationConfigDoesNotExist,

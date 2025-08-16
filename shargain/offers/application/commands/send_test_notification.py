@@ -2,8 +2,8 @@
 Send a test notification to the configured channel for a ScrapingTarget.
 """
 
+from shargain.commons.application.actor import Actor
 from shargain.notifications.senders import TelegramNotificationSender
-from shargain.offers.application.actor import Actor
 from shargain.offers.application.exceptions import (
     NotificationConfigDoesNotExist,
     TargetDoesNotExist,

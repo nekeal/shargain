@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.dto import ScrapingUrlDTO, TargetDTO
 from shargain.offers.application.exceptions import TargetDoesNotExist
 from shargain.offers.application.queries.get_target import get_target

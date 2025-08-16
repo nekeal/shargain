@@ -4,7 +4,7 @@ from ninja.errors import HttpError
 from pydantic.alias_generators import to_camel
 from pydantic.networks import HttpUrl
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.commands.change_notification_config import change_notification_config
 from shargain.offers.application.commands.delete_scraping_url import delete_scraping_url

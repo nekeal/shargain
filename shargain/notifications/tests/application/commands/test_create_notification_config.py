@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.notifications.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.notifications.application.commands.create_notification_config import (
     create_notification_config,
 )

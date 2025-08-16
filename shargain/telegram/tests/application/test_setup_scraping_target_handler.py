@@ -2,8 +2,8 @@ import pytest
 
 from shargain.accounts.models import CustomUser
 from shargain.accounts.tests.factories import UserFactory
+from shargain.commons.application.actor import Actor
 from shargain.notifications.models import NotificationChannelChoices, NotificationConfig
-from shargain.offers.application.actor import Actor
 from shargain.offers.application.queries.get_target import get_target_by_user
 from shargain.offers.models import ScrappingTarget
 from shargain.telegram.application.setup_scraping_target_handler import SetupScrapingTargetHandler

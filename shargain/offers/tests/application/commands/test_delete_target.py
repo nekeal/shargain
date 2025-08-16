@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.delete_target import delete_target
 from shargain.offers.models import ScrappingTarget
 

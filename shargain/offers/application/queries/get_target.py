@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.dto import TargetDTO
 from shargain.offers.application.exceptions import TargetDoesNotExist
 from shargain.offers.models import ScrappingTarget

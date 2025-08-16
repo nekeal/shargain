@@ -1,4 +1,4 @@
-from shargain.notifications.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.notifications.application.dto import NotificationConfigDTO
 from shargain.notifications.models import NotificationChannelChoices, NotificationConfig
 

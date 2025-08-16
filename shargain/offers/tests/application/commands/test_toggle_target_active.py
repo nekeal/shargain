@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.toggle_target_active import (
     toggle_target_active,
 )

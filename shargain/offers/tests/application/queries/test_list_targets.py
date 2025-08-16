@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.queries.list_targets import list_targets
 from shargain.offers.tests.factories import ScrappingTargetFactory
 

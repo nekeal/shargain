@@ -3,7 +3,7 @@
 import pytest
 
 from shargain.accounts.tests.factories import UserFactory
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.toggle_target_notifications import (
     toggle_target_notifications,
 )
