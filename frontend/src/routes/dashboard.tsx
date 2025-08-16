@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import DashboardHeader from '@/components/dashboard/dashboard-header.tsx';
+import { AppHeader } from '@/components/app-header';
 import MonitorSettings from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
 import DashboardSidebar from '@/components/dashboard/dashboard-sidebar';
@@ -33,7 +33,7 @@ function DashboardContent() {
 
     return (
         <div key={offerMonitor.id} className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
-            <DashboardHeader />
+            <AppHeader />
 
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 <div
