@@ -1,5 +1,6 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { AppHeader } from '@/components/app-header'
+import {NotificationListPage} from "@/components/notifications";
 
 export const Route = createFileRoute('/notifications')({
   component: NotificationsPage,
@@ -19,7 +20,7 @@ function NotificationsPage() {
           </p>
         </div>
         <div className="rounded-2xl shadow-xl p-6 backdrop-blur-sm bg-white/80">
-          <Outlet />
+          <NotificationListPage />
         </div>
       </main>
     </div>
