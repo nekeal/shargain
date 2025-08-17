@@ -34,6 +34,9 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
     onError: (_err, _newEnableStatus, context) => {
       queryClient.setQueryData(['myTarget'], context?.prev);
     },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+    }
   })
 
   return (
