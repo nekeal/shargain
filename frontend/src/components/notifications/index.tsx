@@ -1,17 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listNotificationConfigs, deleteNotificationConfig } from '@/lib/api/sdk.gen'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Edit, Plus, Trash2 } from 'lucide-react'
+import { deleteNotificationConfig, listNotificationConfigs } from '@/lib/api/sdk.gen'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from '@/components/ui/dialog'
-import { Trash2, Edit, Plus } from 'lucide-react'
 import { ConfigFormModal } from '@/components/notifications/config-form-modal'
 
 export function NotificationListPage() {
@@ -71,13 +71,13 @@ export function NotificationListPage() {
     )
   }
 
-  const configs = data?.data?.configs || []
+  const configs = data?.data.configs || []
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-900">Notification Configurations</h2>
-        <Button 
+        <Button
           onClick={handleCreateClick}
           className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
         >
@@ -135,7 +135,7 @@ export function NotificationListPage() {
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
             Get started by creating your first notification configuration to receive alerts when new offers are found.
           </p>
-          <Button 
+          <Button
             onClick={handleCreateClick}
             className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
           >
@@ -156,8 +156,8 @@ export function NotificationListPage() {
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleConfirmDelete}
               disabled={deleteMutation.isPending}
             >

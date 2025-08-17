@@ -10,7 +10,7 @@ export function Breadcrumb() {
   const location = useLocation()
   
   // Define breadcrumbs based on the current path
-  const breadcrumbs: BreadcrumbItem[] = [
+  const breadcrumbs: Array<BreadcrumbItem> = [
     { label: 'Home', href: '/dashboard' }
   ]
   
