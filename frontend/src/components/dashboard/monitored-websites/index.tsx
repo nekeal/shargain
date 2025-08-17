@@ -48,9 +48,8 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
 
   return (
     <Card
-      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-400 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-      }`}
+      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-400 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+        }`}
     >
       <CardHeader>
         <CardTitle className="flex items-center text-2xl">
@@ -76,9 +75,8 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                 addUrlMutation.reset()
                 setUrlError(null) // Clear error when user types
               }}
-              className={`bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500 ${
-                urlError ? "border-red-500" : ""
-              }`}
+              className={`bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500 ${urlError ? "border-red-500" : ""
+                }`}
               placeholder="https://example.com/deals"
             />
             {urlError && <div className="text-red-500 text-sm mt-1">{urlError}</div>}
@@ -113,7 +111,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
 
         {/* URL List */}
         <div className="space-y-4">
-          {offerMonitor.urls.map((url: MonitoredUrl) => (
+          {offerMonitor.urls.map((url) => (
             <div
               key={url.id}
               className="p-4 bg-white/50 rounded-lg border border-gray-200 hover:border-violet-300 transition-all duration-300 group"
@@ -124,9 +122,8 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                     <div className="flex items-center space-x-3 mb-2">
                       <h4 className="font-medium text-gray-900">{url.name}</h4>
                       <Badge
-                        className={`${
-                          url.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-                        } border-0`}
+                        className={`${url.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                          } border-0`}
                       >
                         {url.isActive ? "Active" : "Paused"}
                       </Badge>
@@ -162,9 +159,8 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                     size="sm"
                     variant="outline"
                     onClick={() => toggleUrlActiveMutation.mutate({ urlId: url.id, isActive: url.isActive })}
-                    className={`border-gray-300 ${
-                      url.isActive ? "text-gray-600 hover:bg-gray-50" : "text-green-600 hover:bg-green-50"
-                    }`}
+                    className={`border-gray-300 ${url.isActive ? "text-gray-600 hover:bg-gray-50" : "text-green-600 hover:bg-green-50"
+                      }`}
                   >
                     {url.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>

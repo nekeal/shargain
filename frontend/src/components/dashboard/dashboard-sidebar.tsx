@@ -28,7 +28,7 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Active Websites</span>
             <Badge className="bg-green-100 text-green-800 border-0">
-              {offerMonitor.urls.filter((url: MonitoredUrl) => url.isActive).length}
+              {offerMonitor.urls.filter((url) => url.isActive).length}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
