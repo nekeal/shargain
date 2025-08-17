@@ -25,14 +25,14 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
   const queryClient = useQueryClient()
   const [telegramBotUrl, setTelegramBotUrl] = useState<string | null>(null)
   const [targetName, setTargetName] = useState(offerMonitor.name)
-  const [selectedNotificationConfig, setSelectedNotificationConfig] = useState<number | null>(offerMonitor.notificationConfigId)
   const [updateSuccess, setUpdateSuccess] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null)
 
+  const selectedNotificationConfig = offerMonitor.notificationConfigId
+
   useEffect(() => {
     setTargetName(offerMonitor.name)
-    setSelectedNotificationConfig(offerMonitor.notificationConfigId)
-  }, [offerMonitor.name, offerMonitor.notificationConfigId])
+  }, [offerMonitor.name])
 
   const toggleNotificationsMutation = useMutation({
     mutationFn: (enable: boolean) =>
@@ -177,66 +177,71 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
             disabled={toggleNotificationsMutation.isPending}
           />
         </div>
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
-          <div>
-            <h3 className="font-medium text-gray-900">Notification Configuration</h3>
-            <p className="text-sm text-gray-600">
-              Select a notification configuration for this target
-            </p>
-          </div>
-          <div className="w-64">
-            <Label htmlFor="notification-config" className="sr-only">
-              Notification Configuration
-            </Label>
-            <Select
-              value={selectedNotificationConfig?.toString() || ""}
-              onValueChange={(value) => {
-                const configId = value === "none" ? null : parseInt(value);
-                setSelectedNotificationConfig(configId);
-                updateNotificationConfigMutation.mutate(configId);
-              }}
-            >
-              <SelectTrigger id="notification-config">
-                <SelectValue placeholder="Select configuration" />
-              </SelectTrigger>
-              <SelectContent>
-                {notificationConfigs?.data?.configs?.map((config) => (
-                  <SelectItem key={config.id} value={config.id.toString()}>
-                    {config.name || `Config ${config.id}`} ({config.channel})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-          <div>
-            <h3 className="font-medium text-gray-900">Telegram Notifications</h3>
-            <p className="text-sm text-gray-600">
-              {offerMonitor.notificationConfigId
-                ? "Telegram notifications are configured."
-                : "Enable notifications on telegram."}
-            </p>
-          </div>
-          {!offerMonitor.notificationConfigId && (
-            <Button
-              onClick={() => generateTokenMutation.mutate()}
-              disabled={generateTokenMutation.isPending}
-            >
-              Configure
-            </Button>
-          )}
-        </div>
-        {telegramBotUrl && (
-          <div className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
-            <p className="text-sm text-gray-700 truncate">{telegramBotUrl}</p>
-            <Button
-              onClick={() => navigator.clipboard.writeText(telegramBotUrl)}
-              variant="outline"
-            >
-              Copy
-            </Button>
-          </div>
+        {offerMonitor.enableNotifications && (
+          <>
+            {(notificationConfigs?.data.configs ?? []).length > 0 && (
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-gray-900">Notification Configuration</h3>
+                  <p className="text-sm text-gray-600">
+                    Select a notification configuration for this target
+                  </p>
+                </div>
+                <div className="w-64">
+                  <Label htmlFor="notification-config" className="sr-only">
+                    Notification Configuration
+                  </Label>
+                  <Select
+                    value={selectedNotificationConfig?.toString() || ""}
+                    onValueChange={(value) => {
+                      const configId = parseInt(value);
+                      updateNotificationConfigMutation.mutate(configId);
+                    }}
+                  >
+                    <SelectTrigger id="notification-config">
+                      <SelectValue placeholder="Select configuration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {notificationConfigs?.data?.configs?.map((config) => (
+                        <SelectItem key={config.id} value={config.id.toString()}>
+                          {config.name || `Config ${config.id}`} ({config.channel})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+              <div>
+                <h3 className="font-medium text-gray-900">Telegram Notifications</h3>
+                <p className="text-sm text-gray-600">
+                  {offerMonitor.notificationConfigId
+                    ? "Telegram notifications are configured."
+                    : "Enable notifications on telegram."}
+                </p>
+              </div>
+              {!offerMonitor.notificationConfigId && (
+                <Button
+                  onClick={() => generateTokenMutation.mutate()}
+                  disabled={generateTokenMutation.isPending}
+                >
+                  Configure
+                </Button>
+              )}
+            </div>
+            {telegramBotUrl && (
+              <div className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
+                <p className="text-sm text-gray-700 truncate">{telegramBotUrl}</p>
+                <Button
+                  onClick={() => navigator.clipboard.writeText(telegramBotUrl)}
+                  variant="outline"
+                >
+                  Copy
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
