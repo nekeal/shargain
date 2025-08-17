@@ -46,6 +46,16 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
     }
   }
 
+  const handleChangeUrlAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewUrl(e.target.value)
+    addUrlMutation.reset()
+    setUrlError(null)
+  }
+
+  const handleChangeUrlName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewName(e.target.value)
+  }
+
   return (
     <Card
       className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-400 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
@@ -70,11 +80,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             <Input
               id="url-address"
               value={newUrl}
-              onChange={e => {
-                setNewUrl(e.target.value)
-                addUrlMutation.reset()
-                setUrlError(null) // Clear error when user types
-              }}
+              onChange={handleChangeUrlAddress}
               className={`bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500 ${urlError ? "border-red-500" : ""
                 }`}
               placeholder="https://example.com/deals"
@@ -86,9 +92,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             <Input
               id="url-name"
               value={newName}
-              onChange={e => {
-                setNewName(e.target.value)
-              }}
+              onChange={handleChangeUrlName}
               className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
               placeholder="e.g. Amazon Deals"
             />
