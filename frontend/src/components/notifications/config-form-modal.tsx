@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { NotificationChannelChoices } from '@/lib/api'
 import { createNotificationConfig, updateNotificationConfig } from '@/lib/api/sdk.gen'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,12 +8,11 @@ import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
+  DialogDescription,
   DialogFooter,
-  DialogDescription
+  DialogHeader,
+  DialogTitle
 } from '@/components/ui/dialog'
-import type { NotificationChannelChoices } from '@/lib/api'
 
 interface ConfigFormModalProps {
   isOpen: boolean
@@ -71,7 +71,7 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit }: ConfigFormMod
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-      setErrors({})
+    setErrors({})
 
     const newErrors: { name?: string; chatId?: string; general?: string } = {}
     if (!chatId.trim()) {
@@ -119,69 +119,62 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit }: ConfigFormMod
               <div className="text-red-500 text-sm">{errors.general}</div>
             )}
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+            <div className="space-y-2">
+              <Label htmlFor="name">
                 Display Name
               </Label>
-              <div className="col-span-3">
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter display name (optional)"
-                  className="col-span-3"
-                />
-              </div>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter display name (optional)"
+              />
             </div>
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="chatId" className="text-right">
+            <div className="space-y-2">
+              <Label htmlFor="chatId">
                 Chat ID *
               </Label>
-              <div className="col-span-3">
-                <Input
-                  id="chatId"
-                  value={chatId}
-                  onChange={(e) => {
-                    setChatId(e.target.value)
-                    if (errors.chatId) {
-                      setErrors(prev => ({ ...prev, chatId: undefined }))
-                    }
-                  }}
-                  placeholder="Enter Telegram chat ID"
-                  className={`col-span-3 ${errors.chatId ? 'border-red-500' : ''}`}
-                  disabled={!!configToEdit} // Chat ID can't be edited after creation
-                />
-                {errors.chatId && (
-                  <p className="text-red-500 text-xs mt-1">{errors.chatId}</p>
-                )}
-                {!configToEdit && (
-                  <p className="text-gray-500 text-xs mt-1">
-                    The Telegram chat ID where notifications will be sent
-                  </p>
-                )}
-              </div>
+              <Input
+                id="chatId"
+                value={chatId}
+                onChange={(e) => {
+                  setChatId(e.target.value)
+                  if (errors.chatId) {
+                    setErrors(prev => ({ ...prev, chatId: undefined }))
+                  }
+                }}
+                placeholder="Enter Telegram chat ID"
+                className={errors.chatId ? 'border-red-500' : ''}
+                disabled={!!configToEdit} // Chat ID can't be edited after creation
+              />
+              {errors.chatId && (
+                <p className="text-red-500 text-xs">{errors.chatId}</p>
+              )}
+              {!configToEdit && (
+                <p className="text-gray-500 text-xs">
+                  The Telegram chat ID where notifications will be sent
+                </p>
+              )}
             </div>
-
-            {configToEdit && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="channel" className="text-right">
-                  Channel
-                </Label>
-                <div className="col-span-3">
-                  <Input
-                    id="channel"
-                    value="telegram"
-                    disabled
-                    className="col-span-3 bg-gray-100"
-                  />
-                  <p className="text-gray-500 text-xs mt-1">
-                    Channel cannot be changed after creation
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
+
+          {configToEdit && (
+            <div className="space-y-2">
+              <Label htmlFor="channel">
+                Channel
+              </Label>
+              <Input
+                id="channel"
+                value="telegram"
+                disabled
+                className="bg-gray-100"
+              />
+              <p className="text-gray-500 text-xs">
+                Channel cannot be changed after creation
+              </p>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
@@ -201,7 +194,7 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit }: ConfigFormMod
             </Button>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </DialogContent >
+    </Dialog >
   )
 }
