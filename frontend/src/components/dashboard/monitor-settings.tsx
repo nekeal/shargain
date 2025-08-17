@@ -212,24 +212,26 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                 </div>
               </div>
             )}
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-              <div>
-                <h3 className="font-medium text-gray-900">Telegram Notifications</h3>
-                <p className="text-sm text-gray-600">
-                  {offerMonitor.notificationConfigId
-                    ? "Telegram notifications are configured."
-                    : "Enable notifications on telegram."}
-                </p>
+            {!selectedNotificationConfig && (
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-gray-900">Telegram Notifications</h3>
+                  <p className="text-sm text-gray-600">
+                    {offerMonitor.notificationConfigId
+                      ? "Telegram notifications are configured."
+                      : "Enable notifications on telegram."}
+                  </p>
+                </div>
+                {!offerMonitor.notificationConfigId && (
+                  <Button
+                    onClick={() => generateTokenMutation.mutate()}
+                    disabled={generateTokenMutation.isPending}
+                  >
+                    Configure
+                  </Button>
+                )}
               </div>
-              {!offerMonitor.notificationConfigId && (
-                <Button
-                  onClick={() => generateTokenMutation.mutate()}
-                  disabled={generateTokenMutation.isPending}
-                >
-                  Configure
-                </Button>
-              )}
-            </div>
+            )}
             {telegramBotUrl && (
               <div className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
                 <p className="text-sm text-gray-700 truncate">{telegramBotUrl}</p>
