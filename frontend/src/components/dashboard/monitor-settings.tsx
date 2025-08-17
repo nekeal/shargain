@@ -1,6 +1,6 @@
-import { Settings, CheckCircle, AlertCircle, Save } from "lucide-react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState, useEffect } from "react"
+import { AlertCircle, CheckCircle, Save, Settings } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useState } from "react"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import { generateTelegramToken, toggleTargetNotifications, updateTargetName, updateTargetNotificationConfig, listNotificationConfigs } from "@/lib/api/sdk.gen"
+import { generateTelegramToken, listNotificationConfigs, toggleTargetNotifications, updateTargetName, updateTargetNotificationConfig } from "@/lib/api/sdk.gen"
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor
@@ -202,7 +202,7 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                       <SelectValue placeholder="Select configuration" />
                     </SelectTrigger>
                     <SelectContent>
-                      {notificationConfigs?.data?.configs?.map((config) => (
+                      {notificationConfigs?.data.configs.map((config) => (
                         <SelectItem key={config.id} value={config.id.toString()}>
                           {config.name || `Config ${config.id}`} ({config.channel})
                         </SelectItem>

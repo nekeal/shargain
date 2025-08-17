@@ -32,7 +32,7 @@ export function NotificationList() {
         </button>
       </div>
 
-      {data?.data?.configs && data.data.configs.length > 0 ? (
+      {data?.data.configs && data.data.configs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {data.data.configs.map((config) => (
             <div key={config.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
