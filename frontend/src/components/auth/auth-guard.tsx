@@ -12,19 +12,17 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem("auth_token")
-      const user = localStorage.getItem("user")
 
-      if (token && user) {
-        setIsAuthenticated(true)
-      } else {
-        setIsAuthenticated(false)
-        router.navigate({ to: "/auth" })
-      }
+    const token = localStorage.getItem("auth_token")
+    const user = localStorage.getItem("user")
+
+    if (token && user) {
+      setIsAuthenticated(true)
+    } else {
+      setIsAuthenticated(false)
+      router.navigate({ to: "/auth" })
     }
 
-    checkAuth()
   }, [router])
 
   if (isAuthenticated === null) {
