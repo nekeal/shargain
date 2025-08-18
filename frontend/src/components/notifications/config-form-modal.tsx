@@ -18,9 +18,10 @@ interface ConfigFormModalProps {
   isOpen: boolean
   onClose: () => void
   configToEdit: any | null
+  onSuccess?: (configId: number) => void
 }
 
-export function ConfigFormModal({ isOpen, onClose, configToEdit }: ConfigFormModalProps) {
+export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: ConfigFormModalProps) {
   const queryClient = useQueryClient()
   const [name, setName] = useState('')
   const [chatId, setChatId] = useState('')
@@ -40,8 +41,11 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit }: ConfigFormMod
   const createMutation = useMutation({
     mutationFn: (data: { name: string | null; chatId: string; channel: NotificationChannelChoices }) =>
       createNotificationConfig({ body: { name: data.name, chatId: data.chatId, channel: data.channel } }),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['notificationConfigs'] })
+      if (onSuccess) {
+        onSuccess(data.data.id)
+      }
       onClose()
     },
     onError: (error: any) => {

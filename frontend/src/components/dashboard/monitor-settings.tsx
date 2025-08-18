@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle, Save, Settings } from "lucide-react"
+import { AlertCircle, CheckCircle, Plus, Save, Settings } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import type { OfferMonitor } from "@/types/dashboard"
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
+import { ConfigFormModal } from "@/components/notifications/config-form-modal"
 import { generateTelegramToken, listNotificationConfigs, toggleTargetNotifications, updateTargetName, updateTargetNotificationConfig } from "@/lib/api/sdk.gen"
 
 interface MonitorSettingsProps {
@@ -27,6 +28,7 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
   const [targetName, setTargetName] = useState(offerMonitor.name)
   const [updateSuccess, setUpdateSuccess] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const selectedNotificationConfig = offerMonitor.notificationConfigId
 
@@ -180,36 +182,51 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
         {offerMonitor.enableNotifications && (
           <>
             {(notificationConfigs?.data.configs ?? []).length > 0 && (
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
-                <div>
-                  <h3 className="font-medium text-gray-900">Notification Configuration</h3>
-                  <p className="text-sm text-gray-600">
-                    Select a notification configuration for this target
-                  </p>
+              <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-medium text-gray-900">Notification Configuration</h3>
+                    <p className="text-sm text-gray-600 sm:hidden">
+                      Select a notification configuration for this target
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2 w-full sm:w-auto">
+                    <div className="flex-1 min-w-0">
+                      <Label htmlFor="notification-config" className="sr-only">
+                        Notification Configuration
+                      </Label>
+                      <Select
+                        value={selectedNotificationConfig?.toString() || ""}
+                        onValueChange={(value) => {
+                          const configId = parseInt(value);
+                          updateNotificationConfigMutation.mutate(configId);
+                        }}
+                      >
+                        <SelectTrigger id="notification-config">
+                          <SelectValue placeholder="Select configuration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {notificationConfigs?.data.configs.map((config) => (
+                            <SelectItem key={config.id} value={config.id.toString()}>
+                              {config.name || `Config ${config.id}`} ({config.channel})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setIsModalOpen(true)}
+                      className="h-10 w-10 p-0 flex-shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="w-64">
-                  <Label htmlFor="notification-config" className="sr-only">
-                    Notification Configuration
-                  </Label>
-                  <Select
-                    value={selectedNotificationConfig?.toString() || ""}
-                    onValueChange={(value) => {
-                      const configId = parseInt(value);
-                      updateNotificationConfigMutation.mutate(configId);
-                    }}
-                  >
-                    <SelectTrigger id="notification-config">
-                      <SelectValue placeholder="Select configuration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {notificationConfigs?.data.configs.map((config) => (
-                        <SelectItem key={config.id} value={config.id.toString()}>
-                          {config.name || `Config ${config.id}`} ({config.channel})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <p className="text-sm text-gray-600 hidden sm:block mt-1">
+                  Select a notification configuration for this target
+                </p>
               </div>
             )}
             {!selectedNotificationConfig && (
@@ -246,6 +263,14 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
           </>
         )}
       </CardContent>
+      <ConfigFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        configToEdit={null}
+        onSuccess={(configId) => {
+          updateNotificationConfigMutation.mutate(configId);
+        }}
+      />
     </Card>
   )
 }
