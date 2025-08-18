@@ -99,7 +99,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           </div>
 
           {addUrlMutation.isError && (
-            <div className="text-red-500 text-sm mt-2">{(addUrlMutation.error as any).detail[0].msg}</div>
+            <div className="text-red-500 text-sm mt-2">{(addUrlMutation.error as any)?.detail[0].msg}</div>
           )}
           {addUrlMutation.isSuccess && <div className="text-green-500 text-sm mt-2">URL added successfully!</div>}
 
