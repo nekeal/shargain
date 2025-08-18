@@ -5,6 +5,7 @@ import { defineConfig, loadEnv } from 'vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { tanStackRouterCodeSplitter } from '@tanstack/router-plugin/vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -16,6 +17,7 @@ export default defineConfig(({ mode }) => {
       tanStackRouterCodeSplitter(),
       viteReact(),
       tailwindcss(),
+      tsconfigPaths(),
     ],
     server: {
       proxy: {
@@ -23,11 +25,6 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_URL,
           changeOrigin: true,
         },
-      },
-    },
-    resolve: {
-      alias: {
-        '@': resolve(__dirname, './src'),
       },
     },
   }
