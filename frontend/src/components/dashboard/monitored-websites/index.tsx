@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import cn from "@/lib/utils"
 
 const urlSchema = z.string().url({ message: "Please enter a valid URL." }).nonempty({ message: "URL cannot be empty." })
 
@@ -81,8 +82,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
               id="url-address"
               value={newUrl}
               onChange={handleChangeUrlAddress}
-              className={`bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500 ${urlError ? "border-red-500" : ""
-                }`}
+              className={cn("bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500", urlError ? "border-red-500" : "")}
               placeholder="https://example.com/deals"
             />
             {urlError && <div className="text-red-500 text-sm mt-1">{urlError}</div>}
