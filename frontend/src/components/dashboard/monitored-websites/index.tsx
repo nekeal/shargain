@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { Bell, CheckCircle2, ExternalLink, Eye, EyeOff, Globe, Plus, Trash2 } from "lucide-react"
+import { ExternalLink, Eye, EyeOff, Globe, Plus, Trash2 } from "lucide-react"
 import { z } from "zod"
 import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
-import type { MonitoredUrl, OfferMonitor } from "@/types/dashboard"
+import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -142,18 +142,6 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                         <ExternalLink className="w-4 h-4 mr-1" />
                         {url.url}
                       </a>
-                      {url.lastChecked && (
-                        <span className="flex items-center">
-                          <CheckCircle2 className="w-4 h-4 mr-1 text-green-500" />
-                          Last checked: {url.lastChecked}
-                        </span>
-                      )}
-                      {url.offersFound !== undefined && (
-                        <span className="flex items-center">
-                          <Bell className="w-4 h-4 mr-1 text-violet-500" />
-                          {url.offersFound} offers found
-                        </span>
-                      )}
                     </div>
                   </>
                 </div>
