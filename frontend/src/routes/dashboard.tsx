@@ -44,8 +44,8 @@ function DashboardContent() {
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        <MonitorSettings offerMonitor={offerMonitor} isVisible={isVisible} />
                         <MonitoredWebsites offerMonitor={offerMonitor} isVisible={isVisible} />
+                        <MonitorSettings offerMonitor={offerMonitor} isVisible={isVisible} />
                     </div>
                     <DashboardSidebar offerMonitor={offerMonitor} isVisible={isVisible} />
                 </div>
