@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { AlertCircle, Bell, CheckCircle, Loader, XCircle } from "lucide-react"
-import type { MonitoredUrl, OfferMonitor } from "@/types/dashboard"
+import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"

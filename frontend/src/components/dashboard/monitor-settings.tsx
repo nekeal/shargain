@@ -1,11 +1,10 @@
-import { Plus, Settings } from "lucide-react"
+import { Plus, Send, Settings, Zap } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -23,12 +22,7 @@ interface MonitorSettingsProps {
 
 export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProps) {
   const queryClient = useQueryClient()
-  const [telegramBotUrl, setTelegramBotUrl] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-
-  const selectedNotificationConfig = offerMonitor.notificationConfigId
-
-  
 
   const toggleNotificationsMutation = useMutation({
     mutationFn: (enable: boolean) =>
@@ -59,11 +53,9 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
         throwOnError: true,
       }),
     onSuccess: (data) => {
-      setTelegramBotUrl(data.data.telegramBotUrl)
+        window.open(data.data.telegramBotUrl, '_blank');
     },
   })
-
-  
 
   const { data: notificationConfigs } = useQuery({
     queryKey: ['notificationConfigs'],
@@ -114,83 +106,68 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
         </div>
         {offerMonitor.enableNotifications && (
           <>
-            {(notificationConfigs?.data.configs ?? []).length > 0 && (
-              <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <h3 className="font-medium text-gray-900">Notification Configuration</h3>
-                    <p className="text-sm text-gray-600 sm:hidden">
-                      Select a notification configuration for this target
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2 w-full sm:w-auto">
-                    <div className="flex-1 min-w-0">
-                      <Label htmlFor="notification-config" className="sr-only">
-                        Notification Configuration
-                      </Label>
-                      <Select
-                        value={selectedNotificationConfig?.toString() || ""}
-                        onValueChange={(value) => {
-                          const configId = parseInt(value);
-                          updateNotificationConfigMutation.mutate(configId);
-                        }}
-                      >
-                        <SelectTrigger id="notification-config">
-                          <SelectValue placeholder="Select configuration" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {notificationConfigs?.data.configs.map((config) => (
-                            <SelectItem key={config.id} value={config.id.toString()}>
-                              {config.name || `Config ${config.id}`} ({config.channel})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => setIsModalOpen(true)}
-                      className="h-10 w-10 p-0 flex-shrink-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 hidden sm:block mt-1">
-                  Select a notification configuration for this target
-                </p>
-              </div>
-            )}
-            {!selectedNotificationConfig && (
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-                <div>
-                  <h3 className="font-medium text-gray-900">Telegram Notifications</h3>
-                  <p className="text-sm text-gray-600">
-                    {offerMonitor.notificationConfigId
-                      ? "Telegram notifications are configured."
-                      : "Enable notifications on telegram."}
-                  </p>
-                </div>
-                {!offerMonitor.notificationConfigId && (
-                  <Button
-                    onClick={() => generateTokenMutation.mutate()}
-                    disabled={generateTokenMutation.isPending}
-                  >
-                    Configure
-                  </Button>
-                )}
-              </div>
-            )}
-            {telegramBotUrl && (
-              <div className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-700 truncate">{telegramBotUrl}</p>
+            {(notificationConfigs?.data.configs ?? []).length === 0 ? (
+              <div className="p-6 bg-gradient-to-br from-violet-100 to-sky-100 rounded-lg text-center shadow-lg">
+                <Zap className="w-12 h-12 mx-auto text-violet-500 mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Connect a Notification Channel</h3>
+                <p className="text-md text-gray-600 mb-6">Get instant alerts for new offers on Telegram.</p>
                 <Button
-                  onClick={() => navigator.clipboard.writeText(telegramBotUrl)}
-                  variant="outline"
+                  onClick={() => generateTokenMutation.mutate()}
+                  disabled={generateTokenMutation.isPending}
+                  className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105"
+                  size="lg"
                 >
-                  Copy
+                  <Send className="w-5 h-5 mr-3" />
+                  Connect with Telegram
                 </Button>
+                <p className="text-sm text-gray-500 mt-3 mb-5">The quickest way to get started. Connects to your personal chat in one click.</p>
+                <div className="my-4 flex items-center">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="flex-shrink mx-4 text-gray-500 text-sm">Or</span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+                <Button
+                  variant="link"
+                  onClick={() => setIsModalOpen(true)}
+                  className="text-sm text-violet-600 hover:text-violet-800"
+                >
+                  Configure manually
+                </Button>
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg bg-white/80">
+                <h3 className="font-medium text-gray-900 mb-4 text-lg">Active Channel</h3>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-grow">
+                    <Select
+                      value={offerMonitor.notificationConfigId?.toString() || ""}
+                      onValueChange={(value) => {
+                        const configId = parseInt(value);
+                        updateNotificationConfigMutation.mutate(configId);
+                      }}
+                    >
+                      <SelectTrigger id="notification-config" className="w-full">
+                        <SelectValue placeholder="Select a channel..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(notificationConfigs?.data.configs ?? []).map((config) => (
+                          <SelectItem key={config.id} value={config.id.toString()}>
+                            {config.name || `Config ${config.id}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    onClick={() => setIsModalOpen(true)}
+                    variant="outline"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Channel
+                  </Button>
+                </div>
+                <div className="mt-4 flex items-center space-x-2">
+                </div>
               </div>
             )}
           </>
