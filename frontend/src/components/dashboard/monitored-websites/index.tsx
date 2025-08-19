@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { AlertCircle, CheckCircle, Save } from "lucide-react"
-import { ExternalLink, Eye, EyeOff, Globe, Plus, Trash2 } from "lucide-react"
+import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2  } from "lucide-react"
 import { z } from "zod"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import cn from "@/lib/utils"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { updateTargetName } from "@/lib/api/sdk.gen"
 
 const urlSchema = z.string().url({ message: "Please enter a valid URL." }).nonempty({ message: "URL cannot be empty." })
