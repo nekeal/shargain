@@ -12,17 +12,27 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter()
 
   useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch("/api/public/me", {
+          method: "GET",
+          credentials: "include",
+        })
 
-    const token = localStorage.getItem("auth_token")
-    const user = localStorage.getItem("user")
-
-    if (token && user) {
-      setIsAuthenticated(true)
-    } else {
-      setIsAuthenticated(false)
-      router.navigate({ to: "/auth" })
+        if (response.ok) {
+          setIsAuthenticated(true)
+        } else {
+          setIsAuthenticated(false)
+          router.navigate({ to: "/auth" })
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error)
+        setIsAuthenticated(false)
+        router.navigate({ to: "/auth" })
+      }
     }
 
+    checkAuthStatus()
   }, [router])
 
   if (isAuthenticated === null) {
