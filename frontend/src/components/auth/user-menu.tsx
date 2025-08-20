@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { logout } from "@/lib/auth"
 
 interface UserMenuProps {
   user: {
@@ -23,10 +24,8 @@ interface UserMenuProps {
 export const UserMenu = ({ user }: UserMenuProps) => {
   const router = useRouter()
 
-  const handleSignOut = () => {
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("user")
-    router.navigate({ to: "/" })
+  const handleSignOut = async () => {
+    await logout()
   }
 
   if (!user) return null
