@@ -11,8 +11,8 @@ interface RouterContext {
 
 function RootComponent() {
   const matchRoute = useMatchRoute()
-  const isAuthRoute = matchRoute({ to: '/auth' })
-  
+  const isAuthRoute = matchRoute({ to: '/auth/signin' }) || matchRoute({ to: '/auth/signup' })
+
   return (
     <>
       {isAuthRoute ? (

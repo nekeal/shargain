@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { Bell } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { getMe } from '@/lib/api/sdk.gen'
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -14,21 +15,12 @@ export function AuthGuard({ children }: AuthGuardProps) {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await fetch("/api/public/me", {
-          method: "GET",
-          credentials: "include",
-        })
-
-        if (response.ok) {
-          setIsAuthenticated(true)
-        } else {
-          setIsAuthenticated(false)
-          router.navigate({ to: "/auth" })
-        }
+        await getMe({})
+        setIsAuthenticated(true)
       } catch (error) {
         console.error("Auth check failed:", error)
         setIsAuthenticated(false)
-        router.navigate({ to: "/auth" })
+        router.navigate({ to: "/auth/signin" })
       }
     }
 
