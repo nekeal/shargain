@@ -1,3 +1,6 @@
+import { z } from "zod"
+import { useEffect, useState } from "react"
+import { useNavigate } from "@tanstack/react-router"
 import cn from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,10 +13,93 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+// Zod schema for login form validation
+const loginSchema = z.object({
+  email: z.string().min(1, "Username or email is required"),
+  password: z.string().min(1, "Password is required"),
+})
+
+type LoginFormInputs = z.infer<typeof loginSchema>
+
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const navigate = useNavigate()
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [errors, setErrors] = useState<Partial<LoginFormInputs>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [apiError, setApiError] = useState("")
+  const [csrfToken, setCsrfToken] = useState("")
+
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await fetch("/api/public/auth/csrf", {
+          method: "GET",
+          credentials: "include",
+        })
+        const data = await response.json()
+        setCsrfToken(data.csrfToken)
+      } catch (err) {
+        console.error("Failed to fetch CSRF token:", err)
+      }
+    }
+
+    fetchCsrfToken()
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setApiError("")
+
+    // Validate form inputs with Zod
+    const result = loginSchema.safeParse({ email: username, password })
+    
+    if (!result.success) {
+      // If validation fails, set errors and stop submission
+      const fieldErrors = result.error.flatten().fieldErrors
+      setErrors({
+        email: fieldErrors.email?.[0],
+        password: fieldErrors.password?.[0]
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    setErrors({})
+
+    try {
+      const response = await fetch("/api/public/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        credentials: "include",
+        body: JSON.stringify({ username, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Redirect to dashboard on successful login
+        navigate({ to: "/dashboard" })
+      } else {
+        // Set error message from API response
+        setApiError(data.message || "Login failed. Please try again.")
+      }
+    } catch (error) {
+      // Handle network errors
+      setApiError("Network error. Please check your connection and try again.")
+      console.error("Login error:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="w-full border-0 bg-white shadow-lg rounded-xl overflow-hidden">
@@ -24,17 +110,23 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 px-8">
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700">Email</Label>
+                <Label htmlFor="email" className="text-gray-700">Username or email</Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="m@example.com"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="user@example.com"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="border-2 border-gray-200 hover:border-gray-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 transition-all duration-300"
+                  className={`border-2 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100" : "border-gray-200 hover:border-gray-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"} transition-all duration-300`}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <div className="flex items-center">
@@ -49,23 +141,36 @@ export function LoginForm({
                 <Input 
                   id="password" 
                   type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required 
-                  className="border-2 border-gray-200 hover:border-gray-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 transition-all duration-300"
+                  className={`border-2 ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100" : "border-gray-200 hover:border-gray-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"} transition-all duration-300`}
                 />
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                )}
               </div>
+              {apiError && (
+                <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+                  {apiError}
+                </div>
+              )}
               <div className="flex flex-col gap-3">
                 <Button 
-                  type="submit" 
+                  type="submit"
+                  disabled={isSubmitting}
                   className="bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-300"
                 >
-                  Login
+                  {isSubmitting ? "Signing in..." : "Login"}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="border-2 border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 transition-all duration-300"
-                >
-                  Login with Google
-                </Button>
+
+                {/*  TODO: implement google login*/}
+                {/* <Button */}
+                {/*  variant="outline" */}
+                {/*  className="border-2 border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 transition-all duration-300"*/}
+                {/* >*/}
+                {/*  Login with Google*/}
+                {/* </Button>*/}
               </div>
             </div>
             <div className="mt-4 text-center text-sm text-gray-600">
