@@ -26,6 +26,7 @@ dependencies = [
     "django-better-admin-arrayfield",
     "gunicorn",
     "sentry-sdk",
+    "django-ninja",
 ]
 
 

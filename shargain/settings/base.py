@@ -159,6 +159,11 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 100,
 }
 
+# ------------- SECURITY -------------
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_HTTPONLY = False
+
+
 # ------------- NOTIFICATIONS -------------
 TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_WEBHOOK_URL = env("TELEGRAM_WEBHOOK_URL", "")

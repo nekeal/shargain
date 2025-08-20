@@ -54,7 +54,15 @@ from shargain.telegram.application.commands.generate_telegram_token import (
 )
 from shargain.telegram.bot import TelegramBot
 
-router = NinjaAPI()
+# Import the auth router
+from .auth import auth_router
+from .auth import router as protected_router
+
+router = NinjaAPI(csrf=True)
+
+# Include both routers
+router.add_router("/auth", auth_router)
+router.add_router("/", protected_router)
 
 
 class ErrorSchema(Schema):
