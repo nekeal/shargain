@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { LoginForm } from '@/components/auth/login-form'
 
 export const Route = createFileRoute('/auth')({
   component: Auth,
@@ -6,8 +7,10 @@ export const Route = createFileRoute('/auth')({
 
 function Auth() {
   return (
-    <div className="p-2">
-      <h3>Auth</h3>
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+            <LoginForm />
+        </div>
     </div>
   )
 }
