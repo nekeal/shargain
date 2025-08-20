@@ -1,6 +1,7 @@
 import { Outlet, createRootRouteWithContext, useMatchRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import Header from '../components/Header'
+import { AuthGuard } from '../components/auth/auth-guard'
 import type { QueryClient } from '@tanstack/react-query'
 
 
@@ -10,13 +11,24 @@ interface RouterContext {
 
 function RootComponent() {
   const matchRoute = useMatchRoute()
-  const hideHeader = matchRoute({ to: '/auth' })
+  const isAuthRoute = matchRoute({ to: '/auth' })
   
   return (
     <>
-      {!hideHeader && <Header />}
-      <Outlet />
-      <TanStackRouterDevtools />
+      {isAuthRoute ? (
+        <>
+          <Outlet />
+          <TanStackRouterDevtools />
+        </>
+      ) : (
+        <AuthGuard>
+          <>
+            <Header />
+            <Outlet />
+            <TanStackRouterDevtools />
+          </>
+        </AuthGuard>
+      )}
     </>
   )
 }
