@@ -34,11 +34,11 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   const toggleUrlActiveMutation = useToggleUrlActiveMutation(offerMonitor.id)
 
   const updateNameMutation = useMutation({
-    mutationFn: (newName: string) => {
+    mutationFn: (newMonitorName: string) => {
       setUpdateError(null);
       return updateTargetName({
         path: { target_id: offerMonitor.id },
-        body: { name: newName },
+        body: { name: newMonitorName },
         throwOnError: true,
       });
     },
