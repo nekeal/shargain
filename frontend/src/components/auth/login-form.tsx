@@ -35,7 +35,7 @@ export function LoginForm({
   const [errors, setErrors] = useState<Partial<LoginFormInputs>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState("")
-  const { loading: csrfLoading } = useCsrfToken()
+  const { loading: csrfLoading, csrfToken } = useCsrfToken()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,15 +63,18 @@ export function LoginForm({
         body: {
           username,
           password
-        }
+        },
+        headers: {
+          "X-CSRFToken": csrfToken
+        },
       })
 
-      if (response.data?.success) {
+      if (response.data.success) {
         // Redirect to dashboard on successful login
         navigate({ to: "/dashboard" })
       } else {
         // Set error message from API response
-        setApiError(response.data?.message || "Login failed. Please try again.")
+        setApiError(response.data.message || "Login failed. Please try again.")
       }
     } catch (error: any) {
       // Handle network errors
