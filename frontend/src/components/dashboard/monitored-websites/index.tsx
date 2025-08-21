@@ -68,7 +68,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
       )
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setUrlError(error.errors[0].message)
+        setUrlError(error.issues[0].message)
       }
     }
   }

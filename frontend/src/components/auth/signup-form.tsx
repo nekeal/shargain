@@ -40,7 +40,7 @@ export function SignupForm({
   const [errors, setErrors] = useState<Partial<SignupFormInputs>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState("")
-  const { loading: csrfLoading } = useCsrfToken()
+  const { loading: csrfLoading, csrfToken } = useCsrfToken()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -71,14 +71,17 @@ export function SignupForm({
         body: {
           email,
           password
+        },
+        headers: {
+          "X-CSRFToken": csrfToken
         }
       })
 
-      if (response.data?.success) {
+      if (response.data.success) {
         // Redirect to dashboard on successful signup
         navigate({ to: "/dashboard" })
       } else {
-        setApiError(response.data?.message || "Signup failed")
+        setApiError(response.data.message || "Signup failed")
       }
     } catch (error: any) {
       setApiError(error?.message || "Network error. Please check your connection and try again.")

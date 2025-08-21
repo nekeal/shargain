@@ -1,4 +1,3 @@
-import { useRouter } from "@tanstack/react-router"
 import { LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,8 +21,6 @@ interface UserMenuProps {
 }
 
 export const UserMenu = ({ user }: UserMenuProps) => {
-  const router = useRouter()
-
   const handleSignOut = async () => {
     await logout()
   }
