@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { ConfigFormModal } from "@/components/notifications/config-form-modal"
 import { generateTelegramToken, listNotificationConfigs, toggleTargetNotifications, updateTargetNotificationConfig } from "@/lib/api/sdk.gen"
+import { useCsrfToken } from "@/hooks/useCsrfToken"
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor
@@ -23,7 +24,7 @@ interface MonitorSettingsProps {
 export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProps) {
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
-
+  const { csrfToken } = useCsrfToken()
   const toggleNotificationsMutation = useMutation({
     mutationFn: (enable: boolean) =>
       toggleTargetNotifications({
@@ -50,10 +51,12 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
   const generateTokenMutation = useMutation({
     mutationFn: () =>
       generateTelegramToken({
-        throwOnError: true,
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
       }),
     onSuccess: (data) => {
-        window.open(data.data.telegramBotUrl, '_blank');
+      window.open(data.data.telegramBotUrl, '_blank');
     },
   })
 

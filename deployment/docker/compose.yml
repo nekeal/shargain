@@ -1,6 +1,5 @@
-version: '3.7'
 x-common-backend: &common-backend
-  image: registry.heroku.com/shargain/web:prod
+  image: registry.heroku.com/shargain/web:${IMAGE_TAG:-master}
   user: 1000:1000
   networks:
     - traefik
@@ -8,6 +7,24 @@ x-common-backend: &common-backend
   env_file: .env
 
 services:
+  frontend:
+    image: ${DOCKER_REGISTRY:-shargain}/frontend:${IMAGE_TAG:-latest}
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - traefik
+    ports:
+      - "3000:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.shargain-frontend.entrypoints=websecure"
+      - "traefik.http.routers.shargain-frontend.rule=Host(`${COMPOSE_DOMAIN_NAME}`)"
+      - "traefik.http.services.shargain-frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.shargain-frontend.tls=true"
+      - "traefik.http.routers.shargain-frontend.priority=1"
   backend:
     <<: *common-backend
     restart: always
@@ -15,7 +32,8 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
       - "traefik.http.routers.shargain.entrypoints=websecure"
-      - "traefik.http.routers.shargain.rule=Host(`${COMPOSE_DOMAIN_NAME}`)"
+      - "traefik.http.routers.shargain.rule=Host(`${COMPOSE_DOMAIN_NAME}`) && (PathPrefix(`/api`) || PathPrefix(`/admin`))"
+      - "traefik.http.routers.shargain.priority=2"
       - "traefik.http.services.shargain.loadbalancer.server.port=8010"
       - "traefik.http.routers.shargain.tls=true"
     command: "gunicorn shargain.wsgi -w 4 -b 0.0.0.0:8010"
@@ -42,7 +60,6 @@ volumes:
   static_files:
   traefik_shared_static_files:
     external: true
-
 
 networks:
   traefik:
