@@ -10,7 +10,8 @@
     "test": "vitest run",
     "lint": "tsc --noEmit; eslint .",
     "lint:fix": "eslint . --fix",
-    "generate:api-client": "openapi-ts"
+    "generate:api-client": "openapi-ts",
+    "build:docker:prod": "IMAGE_TAG=$(git rev-parse --abbrev-ref HEAD) DOCKER_REGISTRY=${DOCKER_REGISTRY} docker compose -f ../deployment/docker/compose.yml build frontend"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
