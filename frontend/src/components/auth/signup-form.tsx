@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useCsrfToken } from '@/hooks/useCsrfToken'
+
 import {
   shargainPublicApiAuthSignupView
 } from '@/lib/api/sdk.gen'
+import { refreshCsrfToken } from '@/lib/auth';
 
 // Zod schema for signup form validation
 const signupSchema = z.object({
@@ -42,7 +43,6 @@ export function SignupForm({
   const [errors, setErrors] = useState<Partial<SignupFormInputs>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState("")
-  const { loading: csrfLoading, csrfToken } = useCsrfToken()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,13 +73,13 @@ export function SignupForm({
         body: {
           email,
           password
-        },
-        headers: {
-          "X-CSRFToken": csrfToken
         }
       })
 
       if (response.data.success) {
+        // After successful signup, get a new CSRF token for the authenticated session
+        await refreshCsrfToken();
+        
         // Redirect to dashboard on successful signup
         navigate({ to: "/dashboard" })
       } else {
@@ -156,7 +156,7 @@ export function SignupForm({
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  disabled={isSubmitting || csrfLoading}
+                  disabled={isSubmitting}
                   className="bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   {isSubmitting ? t("auth.signup.signingUp") : t("auth.signup.submitButton")}

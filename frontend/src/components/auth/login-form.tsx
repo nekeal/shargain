@@ -13,10 +13,12 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useCsrfToken } from '@/hooks/useCsrfToken'
+
 import {
   shargainPublicApiAuthLoginView
 } from '@/lib/api/sdk.gen'
+
+import {refreshCsrfToken} from "@/lib/csrf.ts";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Username or email is required"),
@@ -36,7 +38,6 @@ export function LoginForm({
   const [errors, setErrors] = useState<Partial<LoginFormInputs>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState("")
-  const { loading: csrfLoading, csrfToken } = useCsrfToken()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,13 +65,13 @@ export function LoginForm({
         body: {
           username,
           password
-        },
-        headers: {
-          "X-CSRFToken": csrfToken
-        },
+        }
       })
 
       if (response.data.success) {
+        // After successful login, get a new CSRF token for the authenticated session
+        await refreshCsrfToken();
+        
         // Redirect to dashboard on successful login
         navigate({ to: "/dashboard" })
       } else {
@@ -144,7 +145,7 @@ export function LoginForm({
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  disabled={isSubmitting || csrfLoading}
+                  disabled={isSubmitting}
                   className="bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   {isSubmitting ? t("auth.login.signingIn") : t("auth.login.submitButton")}

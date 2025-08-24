@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { shargainPublicApiAuthGetCsrfToken } from '@/lib/api/sdk.gen'
 
+const updateCsrfToken = (token: string)=> {
+    sessionStorage.setItem('csrfToken', token)
+
+}
+
 export const useCsrfToken = () => {
   const [csrfToken, setCsrfToken] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
@@ -10,7 +15,9 @@ export const useCsrfToken = () => {
       try {
         setLoading(true)
         const response = await shargainPublicApiAuthGetCsrfToken()
-        setCsrfToken(response.data.csrfToken || '')
+        const token = response.data.csrfToken || ''
+        setCsrfToken(token)
+        updateCsrfToken(token)
       } catch (err) {
         console.error('Failed to fetch CSRF token:', err)
       } finally {

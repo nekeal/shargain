@@ -10,6 +10,8 @@ import './lib/i18n'
 import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
 
+import './interceptor-setup'
+
 const queryClient = new QueryClient()
 
 // Create a new router instance
