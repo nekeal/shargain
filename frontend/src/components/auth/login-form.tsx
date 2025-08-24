@@ -160,7 +160,7 @@ export function LoginForm({
             </div>
             <div className="mt-4 text-center text-sm text-gray-600">
               Don&apos;t have an account?{" "}
-              <a href="/auth/signup" className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate({ to: '/auth/signup' }); }} className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
                 Sign up
               </a>
             </div>
