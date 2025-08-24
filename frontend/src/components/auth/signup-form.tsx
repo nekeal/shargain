@@ -163,7 +163,7 @@ export function SignupForm({
             </div>
             <div className="mt-4 text-center text-sm text-gray-600">
               Already have an account?{" "}
-              <a href="/auth/signin" className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
+              <a onClick={(e) => { e.preventDefault(); navigate({ to: '/auth/signin' }); }} className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
                 Log in
               </a>
             </div>
