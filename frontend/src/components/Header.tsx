@@ -1,4 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router'
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default function Header() {
   const location = useLocation()
@@ -43,6 +44,9 @@ export default function Header() {
                 </Link>
               ))}
             </div>
+          </div>
+          <div className="flex items-center">
+            <LanguageSwitcher />
           </div>
         </div>
       </nav>

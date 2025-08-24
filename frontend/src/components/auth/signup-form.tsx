@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 import cn from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,7 +20,7 @@ import {
 
 // Zod schema for signup form validation
 const signupSchema = z.object({
-  email: z.string().email("Invalid email address").min(1, "Email is required"),
+  email: z.email("Invalid email address").min(1, "Email is required"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -33,6 +34,7 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -81,10 +83,10 @@ export function SignupForm({
         // Redirect to dashboard on successful signup
         navigate({ to: "/dashboard" })
       } else {
-        setApiError(response.data.message || "Signup failed")
+        setApiError(response.data.message || t("auth.signup.signupFailed"))
       }
     } catch (error: any) {
-      setApiError(error?.message || "Network error. Please check your connection and try again.")
+      setApiError(error?.message || t("auth.login.networkError"))
       console.error("Signup error:", error)
     } finally {
       setIsSubmitting(false)
@@ -95,20 +97,20 @@ export function SignupForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="w-full border-0 bg-white shadow-lg rounded-xl overflow-hidden">
         <CardHeader className="text-center pb-6 pt-8">
-          <CardTitle className="text-2xl font-bold text-gray-800">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-800">{t("auth.signup.title")}</CardTitle>
           <CardDescription className="text-gray-600">
-            Enter your email and password to create an account
+            {t("auth.signup.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 px-8">
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="space-y-2">
-                <Label htmlFor="signup-email" className="text-gray-700">Email</Label>
+                <Label htmlFor="signup-email" className="text-gray-700">{t("auth.signup.emailLabel")}</Label>
                 <Input
                   id="signup-email"
                   type="email"
-                  placeholder="user@example.com"
+                  placeholder={t("auth.signup.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -119,7 +121,7 @@ export function SignupForm({
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="signup-password" className="text-gray-700">Password</Label>
+                <Label htmlFor="signup-password" className="text-gray-700">{t("auth.signup.passwordLabel")}</Label>
                 <Input
                   id="signup-password"
                   type="password"
@@ -133,7 +135,7 @@ export function SignupForm({
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="signup-confirm-password" className="text-gray-700">Confirm Password</Label>
+                <Label htmlFor="signup-confirm-password" className="text-gray-700">{t("auth.signup.confirmPasswordLabel")}</Label>
                 <Input
                   id="signup-confirm-password"
                   type="password"
@@ -157,14 +159,14 @@ export function SignupForm({
                   disabled={isSubmitting || csrfLoading}
                   className="bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-300"
                 >
-                  {isSubmitting ? "Signing up..." : "Sign up"}
+                  {isSubmitting ? t("auth.signup.signingUp") : t("auth.signup.submitButton")}
                 </Button>
               </div>
             </div>
             <div className="mt-4 text-center text-sm text-gray-600">
-              Already have an account?{" "}
+              {t("auth.signup.alreadyHaveAccount")}{" "}
               <a onClick={(e) => { e.preventDefault(); navigate({ to: '/auth/signin' }); }} className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
-                Log in
+                {t("auth.signup.loginLink")}
               </a>
             </div>
           </form>
