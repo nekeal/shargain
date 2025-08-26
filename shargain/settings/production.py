@@ -55,3 +55,6 @@ STATIC_URL = "https://s3c.bcode.app/shargain/"
 
 # ------------- SECURITY -------------
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# ------------- TELEGRAM -------------
+TELEGRAM_SETUP_BOT = env.bool("TELEGRAM_SETUP_BOT", True)
