@@ -48,6 +48,11 @@ class ScrapingUrl(models.Model):
         max_length=1024,
         help_text=_("Target URL to one of the supported sites"),
     )
+    is_active = models.BooleanField(
+        _("Is active"),
+        help_text=_("Defines whether this url should be scrapped"),
+        default=True,
+    )
 
     scraping_target = models.ForeignKey(
         ScrappingTarget,

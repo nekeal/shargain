@@ -56,9 +56,15 @@ class ScrappingTargetSerializer(serializers.ModelSerializer):
             "notification_config",
         )
 
-    @staticmethod
-    def get_scraping_urls(obj: ScrappingTarget):
-        return [scraping_url.url for scraping_url in obj.scrapingurl_set.all()]
+    def get_scraping_urls(self, obj: ScrappingTarget):
+        request = self.context.get("request")
+        show_all = request and request.query_params.get("include_inactive_urls") == "true"
+
+        queryset = obj.scrapingurl_set.all()
+        if not show_all:
+            queryset = queryset.filter(is_active=True)
+
+        return [scraping_url.url for scraping_url in queryset]
 
 
 class AddTargetUrlSerializer(serializers.ModelSerializer):

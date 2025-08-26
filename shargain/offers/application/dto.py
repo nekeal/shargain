@@ -18,11 +18,12 @@ class ScrapingUrlDTO:
     id: int
     url: str
     name: str
+    is_active: bool
 
     @classmethod
     def from_orm(cls, url: ScrapingUrl) -> Self:
         """Create a DTO from a ScrapingUrl model instance."""
-        return cls(id=url.id, url=url.url, name=url.name)
+        return cls(id=url.id, url=url.url, name=url.name, is_active=url.is_active)
 
 
 @dataclasses.dataclass(frozen=True)
