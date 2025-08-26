@@ -24,7 +24,6 @@ class TestAddScrapingUrl:
             url=url,
             is_active=True,
             name=name,
-            is_active=True,
         )
 
     def test_add_scraping_url_with_no_name_defaults_to_url(self, scraping_target):
@@ -41,7 +40,6 @@ class TestAddScrapingUrl:
             url=url,
             is_active=True,
             name="",
-            is_active=True,
         )
 
     def test_add_scraping_url_to_non_existent_target_raises_error(self):

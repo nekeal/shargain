@@ -26,7 +26,6 @@ class TestUpdateScrapingUrl:
             url=scraping_url.url,
             is_active=scraping_url.is_active,
             name=new_name,
-            is_active=True,
         )
 
     def test_update_scraping_url_for_non_existent_url_raises_error(self):
