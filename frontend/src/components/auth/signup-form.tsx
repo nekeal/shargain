@@ -43,6 +43,7 @@ export function SignupForm({
   const [errors, setErrors] = useState<Partial<SignupFormInputs>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState("")
+  const { loading: csrfLoading, csrfToken } = useCsrfToken()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,13 +74,16 @@ export function SignupForm({
         body: {
           email,
           password
+        },
+        headers: {
+          "X-CSRFToken": csrfToken
         }
       })
 
       if (response.data.success) {
         // After successful signup, get a new CSRF token for the authenticated session
         await refreshCsrfToken();
-        
+
         // Redirect to dashboard on successful signup
         navigate({ to: "/dashboard" })
       } else {

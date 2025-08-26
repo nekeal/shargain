@@ -4,15 +4,11 @@ import Header from '../components/Header'
 import { AuthGuard } from '../components/auth/auth-guard'
 import type { QueryClient } from '@tanstack/react-query'
 
-
-import { useCsrfToken } from '@/hooks/useCsrfToken'
-
 interface RouterContext {
   queryClient: QueryClient
 }
 
 function RootComponent() {
-  useCsrfToken()
   const matchRoute = useMatchRoute()
   const isProtectedRoute = !!matchRoute({ to: '/auth/signin' }) || !!matchRoute({ to: '/auth/signup' }) || !!matchRoute({ to: '/' })
 

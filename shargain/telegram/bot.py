@@ -54,25 +54,22 @@ class TelegramBot:
         if not cls._bot:
             cls._bot = TeleBot(settings.TELEGRAM_BOT_TOKEN, threaded=False, use_class_middlewares=True)
             cls._bot.setup_middleware(SetLanguageMiddleware())
-            for lang in ["en", "pl"]:
-                with override(lang):
-                    cls._bot.set_my_commands(
-                        [
-                            BotCommand("menu", _("Show menu")),
-                        ],
-                        language_code=lang,
-                    )
-            if settings.TELEGRAM_WEBHOOK_URL:
-                logger.info("Setting webhook to %s", settings.TELEGRAM_WEBHOOK_URL)
-                cls._bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL)
-            else:
-                logger.info("Starting polling")
-                cls._bot.polling(none_stop=True)
+            cls._configure_bot()
             return cls._bot
         return cls._bot
 
     @classmethod
     def _configure_bot(cls):
+        if not settings.TELEGRAM_SETUP_BOT:
+            return
+        for lang in ["en", "pl"]:
+            with override(lang):
+                cls._bot.set_my_commands(
+                    [
+                        BotCommand("menu", _("Show menu")),
+                    ],
+                    language_code=lang,
+                )
         if settings.TELEGRAM_WEBHOOK_URL:
             cls._bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL)
 
