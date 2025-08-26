@@ -1,6 +1,7 @@
-import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
+import { Outlet, createRootRouteWithContext, useMatchRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import Header from '../components/Header'
+import { AuthGuard } from '../components/auth/auth-guard'
 import type { QueryClient } from '@tanstack/react-query'
 
 
@@ -8,12 +9,30 @@ interface RouterContext {
   queryClient: QueryClient
 }
 
-export const Route = createRootRouteWithContext<RouterContext>()({
-  component: () => (
+function RootComponent() {
+  const matchRoute = useMatchRoute()
+  const isProtectedRoute = !!matchRoute({ to: '/auth/signin' }) || !!matchRoute({ to: '/auth/signup' }) || !!matchRoute({ to: '/' })
+
+  return (
     <>
-      <Header />
-      <Outlet />
-      <TanStackRouterDevtools />
+      {isProtectedRoute ? (
+        <>
+          <Outlet />
+          <TanStackRouterDevtools />
+        </>
+      ) : (
+        <AuthGuard>
+          <>
+            <Header />
+            <Outlet />
+            <TanStackRouterDevtools />
+          </>
+        </AuthGuard>
+      )}
     </>
-  ),
+  )
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
+  component: RootComponent,
 })

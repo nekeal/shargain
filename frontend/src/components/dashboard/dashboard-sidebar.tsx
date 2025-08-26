@@ -1,9 +1,10 @@
-import { Link } from "@tanstack/react-router"
-import { AlertCircle, Bell, Globe } from "lucide-react"
-import type { MonitoredUrl, OfferMonitor } from "@/types/dashboard";
+import { useState } from "react"
+import { AlertCircle, Bell, CheckCircle, Loader, XCircle } from "lucide-react"
+import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { sendTargetTestNotification } from "@/lib/api/sdk.gen"
 
 interface DashboardSidebarProps {
   offerMonitor: OfferMonitor
@@ -11,6 +12,31 @@ interface DashboardSidebarProps {
 }
 
 export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarProps) {
+  type Status = 'idle' | 'loading' | 'success' | 'error'
+  const [status, setStatus] = useState<Status>('idle')
+  const [message, setMessage] = useState('')
+
+  const handleTestNotification = async () => {
+    setStatus('loading')
+    setMessage('')
+
+    try {
+      await sendTargetTestNotification({
+        path: { target_id: offerMonitor.id },
+      })
+      setStatus('success')
+      setMessage('Notification sent successfully!')
+    } catch (e) {
+      setStatus('error')
+      setMessage('Failed to send notification.')
+    }
+
+    setTimeout(() => {
+      setStatus('idle')
+      setMessage('')
+    }, 3000)
+  }
+
   return (
     <div className="space-y-6">
       {/* Status Card */}
@@ -59,41 +85,20 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
           <Button
             variant="outline"
             className="w-full justify-start border-violet-200 text-violet-600 hover:bg-violet-50 transition-all duration-300 hover:scale-105 bg-transparent"
+            onClick={handleTestNotification}
+            disabled={status !== 'idle'}
           >
-            <Bell className="w-4 h-4 mr-2" />
-            Test Notifications
+            {status === 'loading' ? (
+              <Loader className="w-4 h-4 mr-2 animate-spin" />
+            ) : status === 'success' ? (
+              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+            ) : status === 'error' ? (
+              <XCircle className="w-4 h-4 mr-2 text-red-500" />
+            ) : (
+              <Bell className="w-4 h-4 mr-2" />
+            )}
+            {message || "Test Notifications"}
           </Button>
-          <Button
-            variant="outline"
-            className="w-full justify-start border-violet-200 text-violet-600 hover:bg-violet-50 transition-all duration-300 hover:scale-105 bg-transparent"
-          >
-            <Globe className="w-4 h-4 mr-2" />
-            Check All URLs
-          </Button>
-          <Link to="/">
-            <Button
-              variant="outline"
-              className="w-full justify-start border-gray-200 text-gray-600 hover:bg-gray-50 transition-all duration-300 hover:scale-105 bg-transparent"
-            >
-              ← Back to Home
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
-
-      {/* Tips Card */}
-      <Card
-        className={`border-0 bg-gradient-to-br from-violet-50 to-purple-50 transition-all duration-700 delay-1000 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-          }`}
-      >
-        <CardHeader>
-          <CardTitle className="text-lg text-violet-800">💡 Pro Tips</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-violet-700">
-          <p>• Use specific URLs like /deals or /sales pages for better results</p>
-          <p>• Give descriptive names to easily identify your monitored sites</p>
-          <p>• Enable both Telegram and email for important deals</p>
-          <p>• Pause monitoring temporarily instead of deleting URLs</p>
         </CardContent>
       </Card>
     </div>

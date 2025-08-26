@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { OfferMonitor } from "@/types/dashboard";
-import { shargainPublicApiApiActivateScrapingUrl, shargainPublicApiApiAddUrlToTarget, shargainPublicApiApiDeactivateScrapingUrl, shargainPublicApiApiDeleteTargetUrl, shargainPublicApiApiGetMyTarget } from "@/lib/api";
+import { activateScrapingUrl, addUrlToTarget, deactivateScrapingUrl, deleteTargetUrl, getMyTarget } from "@/lib/api/sdk.gen";
 
 export const useGetMyTarget = () => {
     return useQuery<OfferMonitor>({
         queryKey: ['myTarget'],
-        queryFn: () => shargainPublicApiApiGetMyTarget().then(response => response.data as OfferMonitor),
+        queryFn: () => getMyTarget().then(response => response.data as OfferMonitor),
     });
 };
 
@@ -14,13 +14,7 @@ export const useAddUrlMutation = (
 ) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newUrl: { url: string, name?: string }) => shargainPublicApiApiAddUrlToTarget({ path: { target_id: targetId }, body: { url: newUrl.url, name: newUrl.name } }).then(response => {
-            if (response.error) {
-                console.error("Error adding URL:", response.error);
-                return Promise.reject(response.error);
-            }
-            return response.data;
-        }),
+        mutationFn: (newUrl: { url: string, name?: string }) => addUrlToTarget({ path: { target_id: targetId }, body: { url: newUrl.url, name: newUrl.name } }).then(response => response.data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myTarget'] });
         },
@@ -33,7 +27,7 @@ export const useAddUrlMutation = (
 export const useRemoveUrlMutation = (targetId: number) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (urlId: number) => shargainPublicApiApiDeleteTargetUrl({ path: { target_id: targetId, url_id: urlId } }),
+        mutationFn: (urlId: number) => deleteTargetUrl({ path: { target_id: targetId, url_id: urlId } }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myTarget'] });
         },
@@ -48,9 +42,9 @@ export const useToggleUrlActiveMutation = (targetId: number) => {
     return useMutation({
         mutationFn: ({ urlId, isActive }: { urlId: number, isActive: boolean }) => {
             if (isActive) {
-                return shargainPublicApiApiDeactivateScrapingUrl({ path: { target_id: targetId, url_id: urlId } });
+                return deactivateScrapingUrl({ path: { target_id: targetId, url_id: urlId } });
             }
-            return shargainPublicApiApiActivateScrapingUrl({ path: { target_id: targetId, url_id: urlId } });
+            return activateScrapingUrl({ path: { target_id: targetId, url_id: urlId } });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myTarget'] });

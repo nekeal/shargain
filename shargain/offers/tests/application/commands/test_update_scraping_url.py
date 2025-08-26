@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.update_scraping_url import update_scraping_url
 from shargain.offers.application.dto import ScrapingUrlDTO
 from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist
@@ -24,8 +24,8 @@ class TestUpdateScrapingUrl:
         assert target_dto.urls[0] == ScrapingUrlDTO(
             id=scraping_url.id,
             url=scraping_url.url,
+            is_active=scraping_url.is_active,
             name=new_name,
-            is_active=True,
         )
 
     def test_update_scraping_url_for_non_existent_url_raises_error(self):

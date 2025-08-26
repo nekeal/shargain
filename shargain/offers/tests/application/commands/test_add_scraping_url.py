@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.dto import ScrapingUrlDTO
 from shargain.offers.application.exceptions import TargetDoesNotExist
@@ -22,8 +22,8 @@ class TestAddScrapingUrl:
         assert target_dto.urls[0] == ScrapingUrlDTO(
             id=result_dto.id,
             url=url,
-            name=name,
             is_active=True,
+            name=name,
         )
 
     def test_add_scraping_url_with_no_name_defaults_to_url(self, scraping_target):
@@ -38,8 +38,8 @@ class TestAddScrapingUrl:
         assert target_dto.urls[0] == ScrapingUrlDTO(
             id=result_dto.id,
             url=url,
-            name="",
             is_active=True,
+            name="",
         )
 
     def test_add_scraping_url_to_non_existent_target_raises_error(self):

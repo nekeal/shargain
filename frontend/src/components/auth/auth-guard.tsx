@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "@tanstack/react-router"
 import { Bell } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { getMe } from '@/lib/api/sdk.gen'
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -12,17 +13,18 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter()
 
   useEffect(() => {
-
-    const token = localStorage.getItem("auth_token")
-    const user = localStorage.getItem("user")
-
-    if (token && user) {
-      setIsAuthenticated(true)
-    } else {
-      setIsAuthenticated(false)
-      router.navigate({ to: "/auth" })
+    const checkAuthStatus = async () => {
+      try {
+        await getMe({})
+        setIsAuthenticated(true)
+      } catch (error) {
+        console.error("Auth check failed:", error)
+        setIsAuthenticated(false)
+        router.navigate({ to: "/auth/signin" })
+      }
     }
 
+    checkAuthStatus()
   }, [router])
 
   if (isAuthenticated === null) {

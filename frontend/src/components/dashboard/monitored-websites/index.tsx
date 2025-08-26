@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { ExternalLink, Eye, EyeOff, Globe, Plus, Trash2 } from "lucide-react"
+import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2  } from "lucide-react"
 import { z } from "zod"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import cn from "@/lib/utils"
+import { updateTargetName } from "@/lib/api/sdk.gen"
 
 const urlSchema = z.string().url({ message: "Please enter a valid URL." }).nonempty({ message: "URL cannot be empty." })
 
@@ -21,10 +23,34 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   const [newUrl, setNewUrl] = useState("")
   const [newName, setNewName] = useState("")
   const [urlError, setUrlError] = useState<string | null>(null)
+  const [targetName, setTargetName] = useState(offerMonitor.name)
+  const [updateSuccess, setUpdateSuccess] = useState(false)
+  const [updateError, setUpdateError] = useState<string | null>(null)
+
+  const queryClient = useQueryClient()
 
   const addUrlMutation = useAddUrlMutation(offerMonitor.id)
   const removeUrlMutation = useRemoveUrlMutation(offerMonitor.id)
   const toggleUrlActiveMutation = useToggleUrlActiveMutation(offerMonitor.id)
+
+  const updateNameMutation = useMutation({
+    mutationFn: (newMonitorName: string) => {
+      setUpdateError(null);
+      return updateTargetName({
+        path: { target_id: offerMonitor.id },
+        body: { name: newMonitorName },
+        throwOnError: true,
+      });
+    },
+    onSuccess: () => {
+      setUpdateSuccess(true);
+      queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+      setTimeout(() => setUpdateSuccess(false), 2000);
+    },
+    onError: (err: any) => {
+      setUpdateError(err.message || "An unexpected error occurred.");
+    },
+  });
 
   const handleAddUrl = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -42,7 +68,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
       )
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setUrlError(error.errors[0].message)
+        setUrlError(error.issues[0].message)
       }
     }
   }
@@ -70,6 +96,51 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
         <CardDescription>Add and manage websites you want to monitor for offers</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Target Name Update */}
+        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium text-gray-900">Target Name</h3>
+              <p className="text-sm text-gray-600">Update the name of your scraping target.</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Input
+                value={targetName}
+                onChange={(e) => {
+                  setTargetName(e.target.value)
+                  setUpdateError(null)
+                }}
+                className="w-48"
+                disabled={updateNameMutation.isPending}
+              />
+              <Button
+                onClick={() => updateNameMutation.mutate(targetName)}
+                disabled={updateNameMutation.isPending || (targetName === offerMonitor.name && !updateError) || updateSuccess}
+                className="w-32 justify-center bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+              >
+                {updateNameMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : updateSuccess ? (
+                  <CheckCircle className="w-5 h-5 text-white" />
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Update
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+          {updateError && (
+            <div className="flex items-center mt-2 text-sm text-red-600">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              {updateError}
+            </div>
+          )}
+        </div>
         {/* Add New URL */}
         <form
           onSubmit={handleAddUrl}

@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Self
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist
 from shargain.offers.models import ScrapingUrl
 

@@ -1,8 +1,8 @@
 import pytest
 
 from shargain.accounts.tests.factories import UserFactory
+from shargain.commons.application.actor import Actor
 from shargain.notifications.tests.factories import NotificationConfigFactory
-from shargain.offers.application.actor import Actor
 from shargain.offers.application.commands.change_notification_config import (
     change_notification_config,
 )

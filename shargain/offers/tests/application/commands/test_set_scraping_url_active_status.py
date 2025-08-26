@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.set_scraping_url_active_status import set_scraping_url_active_status
 from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist
 from shargain.offers.models import ScrapingUrl

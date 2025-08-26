@@ -1,10 +1,20 @@
-import { Settings } from "lucide-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-// import { NotificationConfigSelector } from "./NotificationConfigSelector"
+import { Plus, Send, Settings, Zap } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { shargainPublicApiApiToggleNotifications } from "@/lib/api";
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import { ConfigFormModal } from "@/components/notifications/config-form-modal"
+import { generateTelegramToken, listNotificationConfigs, toggleTargetNotifications, updateTargetNotificationConfig } from "@/lib/api/sdk.gen"
+import { useCsrfToken } from "@/hooks/useCsrfToken"
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor
@@ -13,22 +23,21 @@ interface MonitorSettingsProps {
 
 export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProps) {
   const queryClient = useQueryClient()
-
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { csrfToken } = useCsrfToken()
   const toggleNotificationsMutation = useMutation({
     mutationFn: (enable: boolean) =>
-      shargainPublicApiApiToggleNotifications({
+      toggleTargetNotifications({
         path: { target_id: offerMonitor.id },
         body: { enable },
         throwOnError: true
       }),
     onMutate: (newEnableStatus: boolean) => {
       const previousOfferMonitor = queryClient.getQueryData(['myTarget']);
-
       queryClient.setQueryData(['myTarget'], (old: OfferMonitor | undefined) => {
         if (!old) return old;
         return { ...old, enableNotifications: newEnableStatus };
       });
-
       return { prev: previousOfferMonitor };
     },
     onError: (_err, _newEnableStatus, context) => {
@@ -38,6 +47,40 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
       queryClient.invalidateQueries({ queryKey: ['myTarget'] });
     }
   })
+
+  const generateTokenMutation = useMutation({
+    mutationFn: () =>
+      generateTelegramToken({
+        headers: {
+          "X-CSRFToken": csrfToken,
+        },
+      }),
+    onSuccess: (data) => {
+      window.open(data.data.telegramBotUrl, '_blank');
+    },
+  })
+
+  const { data: notificationConfigs } = useQuery({
+    queryKey: ['notificationConfigs'],
+    queryFn: () => listNotificationConfigs(),
+  });
+
+  const updateNotificationConfigMutation = useMutation({
+    mutationFn: (configId: number | null) => {
+      return updateTargetNotificationConfig({
+        path: { target_id: offerMonitor.id },
+        body: { notificationConfigId: configId },
+        throwOnError: true,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+    },
+    onError: (err: any) => {
+      console.error("Error updating notification configuration:", err);
+    },
+  });
+
 
   return (
     <Card
@@ -64,14 +107,83 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
             disabled={toggleNotificationsMutation.isPending}
           />
         </div>
-        {/* <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg"> */}
-        {/* <div>
-            <h3 className="font-medium text-gray-900">Notification Configuration</h3>
-            <p className="text-sm text-gray-600">Choose how you want to receive notifications</p>
-          </div> */}
-        {/* <NotificationConfigSelector offerMonitor={offerMonitor} /> */}
-        {/* </div> */}
+        {offerMonitor.enableNotifications && (
+          <>
+            {(notificationConfigs?.data.configs ?? []).length === 0 ? (
+              <div className="p-6 bg-gradient-to-br from-violet-100 to-sky-100 rounded-lg text-center shadow-lg">
+                <Zap className="w-12 h-12 mx-auto text-violet-500 mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Connect a Notification Channel</h3>
+                <p className="text-md text-gray-600 mb-6">Get instant alerts for new offers on Telegram.</p>
+                <Button
+                  onClick={() => generateTokenMutation.mutate()}
+                  disabled={generateTokenMutation.isPending}
+                  className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105"
+                  size="lg"
+                >
+                  <Send className="w-5 h-5 mr-3" />
+                  Connect with Telegram
+                </Button>
+                <p className="text-sm text-gray-500 mt-3 mb-5">The quickest way to get started. Connects to your personal chat in one click.</p>
+                <div className="my-4 flex items-center">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="flex-shrink mx-4 text-gray-500 text-sm">Or</span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+                <Button
+                  variant="link"
+                  onClick={() => setIsModalOpen(true)}
+                  className="text-sm text-violet-600 hover:text-violet-800"
+                >
+                  Configure manually
+                </Button>
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg bg-white/80">
+                <h3 className="font-medium text-gray-900 mb-4 text-lg">Active Channel</h3>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-grow">
+                    <Select
+                      value={offerMonitor.notificationConfigId?.toString() || ""}
+                      onValueChange={(value) => {
+                        const configId = parseInt(value);
+                        updateNotificationConfigMutation.mutate(configId);
+                      }}
+                    >
+                      <SelectTrigger id="notification-config" className="w-full">
+                        <SelectValue placeholder="Select a channel..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(notificationConfigs?.data.configs ?? []).map((config) => (
+                          <SelectItem key={config.id} value={config.id.toString()}>
+                            {config.name || `Config ${config.id}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    onClick={() => setIsModalOpen(true)}
+                    variant="outline"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Channel
+                  </Button>
+                </div>
+                <div className="mt-4 flex items-center space-x-2">
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
+      <ConfigFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        configToEdit={null}
+        onSuccess={(configId) => {
+          updateNotificationConfigMutation.mutate(configId);
+        }}
+      />
     </Card>
   )
 }

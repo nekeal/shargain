@@ -1,6 +1,6 @@
 import pytest
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.delete_scraping_url import delete_scraping_url
 from shargain.offers.models import ScrapingUrl
 from shargain.offers.tests.factories import ScrapingUrlFactory

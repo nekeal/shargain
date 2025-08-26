@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from django.db.models import QuerySet
 
-from shargain.offers.application.actor import Actor
+from shargain.commons.application.actor import Actor
 from shargain.offers.models import ScrappingTarget
 
 
