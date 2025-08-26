@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 import cn from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,12 +13,13 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useCsrfToken } from '@/hooks/useCsrfToken'
+
 import {
   shargainPublicApiAuthLoginView
 } from '@/lib/api/sdk.gen'
 
-// Zod schema for login form validation
+import {refreshCsrfToken} from "@/lib/csrf.ts";
+
 const loginSchema = z.object({
   email: z.string().min(1, "Username or email is required"),
   password: z.string().min(1, "Password is required"),
@@ -29,6 +31,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -63,22 +66,22 @@ export function LoginForm({
         body: {
           username,
           password
-        },
-        headers: {
-          "X-CSRFToken": csrfToken
-        },
+        }
       })
 
       if (response.data.success) {
+        // After successful login, get a new CSRF token for the authenticated session
+        await refreshCsrfToken();
+
         // Redirect to dashboard on successful login
         navigate({ to: "/dashboard" })
       } else {
         // Set error message from API response
-        setApiError(response.data.message || "Login failed. Please try again.")
+        setApiError(response.data.message || t("auth.login.loginFailed"))
       }
     } catch (error: any) {
       // Handle network errors
-      setApiError(error?.message || "Network error. Please check your connection and try again.")
+      setApiError(error?.message || t("auth.login.networkError"))
       console.error("Login error:", error)
     } finally {
       setIsSubmitting(false)
@@ -89,21 +92,21 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="w-full border-0 bg-white shadow-lg rounded-xl overflow-hidden">
         <CardHeader className="text-center pb-6 pt-8">
-          <CardTitle className="text-2xl font-bold text-gray-800">Login to your account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-800">{t("auth.login.title")}</CardTitle>
           <CardDescription className="text-gray-600">
-            Enter your email below to login to your account
+            {t("auth.login.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 px-8">
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700">Username or email</Label>
+                <Label htmlFor="email" className="text-gray-700">{t("auth.login.usernameOrEmailLabel")}</Label>
                 <Input
                   id="email"
                   type="text"
                   autoComplete="username"
-                  placeholder="user@example.com"
+                  placeholder={t("auth.login.usernameOrEmailPlaceholder")}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -115,12 +118,12 @@ export function LoginForm({
               </div>
               <div className="space-y-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password" className="text-gray-700">Password</Label>
+                  <Label htmlFor="password" className="text-gray-700">{t("auth.login.passwordLabel")}</Label>
                   <a
                     href="#"
                     className="ml-auto inline-block text-sm text-violet-600 hover:text-violet-800 transition-colors duration-200"
                   >
-                    Forgot your password?
+                    {t("auth.login.forgotPassword")}
                   </a>
                 </div>
                 <Input
@@ -143,10 +146,10 @@ export function LoginForm({
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  disabled={isSubmitting || csrfLoading}
+                  disabled={isSubmitting}
                   className="bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-300"
                 >
-                  {isSubmitting ? "Signing in..." : "Login"}
+                  {isSubmitting ? t("auth.login.signingIn") : t("auth.login.submitButton")}
                 </Button>
 
                 {/*  TODO: implement google login*/}
@@ -159,9 +162,9 @@ export function LoginForm({
               </div>
             </div>
             <div className="mt-4 text-center text-sm text-gray-600">
-              Don&apos;t have an account?{" "}
+              {t("auth.login.noAccount")}{" "}
               <a href="#" onClick={(e) => { e.preventDefault(); navigate({ to: '/auth/signup' }); }} className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
-                Sign up
+                {t("auth.login.signUpLink")}
               </a>
             </div>
           </form>

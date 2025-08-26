@@ -1,5 +1,6 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface BreadcrumbItem {
   label: string
@@ -7,18 +8,19 @@ interface BreadcrumbItem {
 }
 
 export function Breadcrumb() {
+  const { t } = useTranslation()
   const location = useLocation()
   
   // Define breadcrumbs based on the current path
   const breadcrumbs: Array<BreadcrumbItem> = [
-    { label: 'Home', href: '/dashboard' }
+    { label: t('breadcrumb.home'), href: '/dashboard' }
   ]
   
   // Add additional breadcrumbs based on the current path
   if (location.pathname.startsWith('/notifications')) {
-    breadcrumbs.push({ label: 'Notifications' })
+    breadcrumbs.push({ label: t('breadcrumb.notifications') })
   } else if (location.pathname === '/dashboard') {
-    breadcrumbs.push({ label: 'Dashboard' })
+    breadcrumbs.push({ label: t('breadcrumb.dashboard') })
   }
   
   return (

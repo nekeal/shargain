@@ -1,21 +1,22 @@
 import { Link, useLocation } from '@tanstack/react-router'
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default function Header() {
   const location = useLocation()
-  
+
   const navItems = [
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/notifications', label: 'Notifications' }
   ]
-  
+
   return (
     <header className="bg-white shadow-sm">
       <nav className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <div className="flex-shrink-0">
-              <Link 
-                to="/dashboard" 
+              <Link
+                to="/dashboard"
                 className="flex items-center space-x-3"
               >
                 <div className="bg-violet-600 text-white rounded-lg w-10 h-10 flex items-center justify-center">
@@ -30,9 +31,9 @@ export default function Header() {
             </div>
             <div className="flex space-x-1">
               {navItems.map((item) => (
-                <Link 
+                <Link
                   key={item.path}
-                  to={item.path} 
+                  to={item.path}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                     location.pathname === item.path 
                       ? 'bg-violet-100 text-violet-700' 
@@ -43,6 +44,9 @@ export default function Header() {
                 </Link>
               ))}
             </div>
+          </div>
+          <div className="flex items-center">
+            <LanguageSwitcher />
           </div>
         </div>
       </nav>

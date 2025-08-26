@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2  } from "lucide-react"
 import { z } from "zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -20,6 +21,7 @@ interface MonitoredWebsitesProps {
 }
 
 export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsitesProps) {
+  const { t } = useTranslation();
   const [newUrl, setNewUrl] = useState("")
   const [newName, setNewName] = useState("")
   const [urlError, setUrlError] = useState<string | null>(null)
@@ -91,17 +93,17 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
       <CardHeader>
         <CardTitle className="flex items-center text-2xl">
           <Globe className="w-6 h-6 mr-3 text-violet-600" />
-          Monitored Websites
+          {t('dashboard.monitoredWebsites.title')}
         </CardTitle>
-        <CardDescription>Add and manage websites you want to monitor for offers</CardDescription>
+        <CardDescription>{t('dashboard.monitoredWebsites.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Target Name Update */}
         <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-gray-900">Target Name</h3>
-              <p className="text-sm text-gray-600">Update the name of your scraping target.</p>
+              <h3 className="font-medium text-gray-900">{t('dashboard.monitoredWebsites.targetName')}</h3>
+              <p className="text-sm text-gray-600">{t('dashboard.monitoredWebsites.targetNameDescription')}</p>
             </div>
             <div className="flex items-center space-x-2">
               <Input
@@ -121,14 +123,14 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                 {updateNameMutation.isPending ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                    Saving...
+                    {t('dashboard.monitoredWebsites.saving')}
                   </>
                 ) : updateSuccess ? (
                   <CheckCircle className="w-5 h-5 text-white" />
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    Update
+                    {t('dashboard.monitoredWebsites.update')}
                   </>
                 )}
               </Button>
@@ -146,9 +148,9 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           onSubmit={handleAddUrl}
           className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg border border-violet-100"
         >
-          <h4 className="font-medium text-gray-900 mb-4">Add New Website</h4>
+          <h4 className="font-medium text-gray-900 mb-4">{t('dashboard.monitoredWebsites.addWebsite')}</h4>
           <div className="space-y-2">
-            <Label htmlFor="url-address">Website URL</Label>
+            <Label htmlFor="url-address">{t('dashboard.monitoredWebsites.url')}</Label>
             <Input
               id="url-address"
               value={newUrl}
@@ -159,20 +161,20 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             {urlError && <div className="text-red-500 text-sm mt-1">{urlError}</div>}
           </div>
           <div className="space-y-2 mt-4">
-            <Label htmlFor="url-name">Name</Label>
+            <Label htmlFor="url-name">{t('dashboard.monitoredWebsites.name')}</Label>
             <Input
               id="url-name"
               value={newName}
               onChange={handleChangeUrlName}
               className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
-              placeholder="e.g. Amazon Deals"
+              placeholder={t('dashboard.monitoredWebsites.namePlaceholder')}
             />
           </div>
 
           {addUrlMutation.isError && (
             <div className="text-red-500 text-sm mt-2">{(addUrlMutation.error as any)?.detail[0].msg}</div>
           )}
-          {addUrlMutation.isSuccess && <div className="text-green-500 text-sm mt-2">URL added successfully!</div>}
+          {addUrlMutation.isSuccess && <div className="text-green-500 text-sm mt-2">{t('dashboard.monitoredWebsites.addSuccess')}</div>}
 
           <Button
             type="submit"
@@ -180,7 +182,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             className="mt-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Add Website
+            {t('dashboard.monitoredWebsites.addWebsiteButton')}
           </Button>
         </form>
 
@@ -200,7 +202,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                         className={`${url.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
                           } border-0`}
                       >
-                        {url.isActive ? "Active" : "Paused"}
+                        {url.isActive ? t('dashboard.monitoredWebsites.active') : t('dashboard.monitoredWebsites.paused')}
                       </Badge>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
@@ -243,8 +245,8 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           {offerMonitor.urls.length === 0 && (
             <div className="text-center py-12 text-gray-500">
               <Globe className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">No websites added yet</p>
-              <p>Add your first website above to start monitoring offers</p>
+              <p className="text-lg font-medium mb-2">{t('dashboard.monitoredWebsites.noWebsitesTitle')}</p>
+              <p>{t('dashboard.monitoredWebsites.noWebsitesDescription')}</p>
             </div>
           )}
         </div>

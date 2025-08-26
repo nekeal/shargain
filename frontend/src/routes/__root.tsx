@@ -4,7 +4,6 @@ import Header from '../components/Header'
 import { AuthGuard } from '../components/auth/auth-guard'
 import type { QueryClient } from '@tanstack/react-query'
 
-
 interface RouterContext {
   queryClient: QueryClient
 }

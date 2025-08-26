@@ -1,0 +1,138 @@
+{
+  "welcomeMessage": "Welcome",
+  "landingPage": {
+    "title": "Landing Page"
+  },
+  "landing": {
+    "login": "Login",
+    "title": "Never Miss a Deal Again",
+    "subtitle": "Get instant notifications when new offers appear on your favorite websites.",
+    "signUp": "Sign Up for Beta",
+    "howItWorks": "How it Works",
+    "getStarted": "Get started in just three simple steps",
+    "step1": {
+      "title": "Add Your URLs",
+      "description": "Simply paste the URLs of websites you want to monitor for new offers."
+    },
+    "step2": {
+      "title": "Configure Alerts",
+      "description": "Choose how you want to be notified - Telegram, email, or both."
+    },
+    "step3": {
+      "title": "Get Notified",
+      "description": "Sit back and relax. We'll monitor your sites 24/7 and alert you instantly."
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "The service is free during the closed beta.",
+      "planName": "Beta Access",
+      "price": "Free",
+      "period": "during beta",
+      "feature1": "Monitor up to 5 websites",
+      "feature2": "Real-time notifications",
+      "feature3": "Telegram and email alerts",
+      "getStarted": "Get Started"
+    }
+  },
+  "dashboard": {
+    "loading": "Loading...",
+    "error": "Error loading dashboard data.",
+    "noData": "No monitor data available.",
+    "title": "Offer Monitor Dashboard",
+    "subtitle": "Manage your watched websites and notification preferences",
+    "monitoredWebsites": {
+      "title": "Monitored Websites",
+      "description": "Add and manage websites you want to monitor for offers",
+      "targetName": "Target Name",
+      "targetNameDescription": "Update the name of your scraping target.",
+      "saving": "Saving...",
+      "update": "Update",
+      "addWebsite": "Add New Website",
+      "url": "Website URL",
+      "name": "Name",
+      "namePlaceholder": "e.g. Amazon Deals",
+      "addSuccess": "URL added successfully!",
+      "addWebsiteButton": "Add Website",
+      "active": "Active",
+      "paused": "Paused",
+      "noWebsitesTitle": "No websites added yet",
+      "noWebsitesDescription": "Add your first website above to start monitoring offers"
+    },
+    "monitorSettings": {
+      "title": "Monitor Settings",
+      "description": "Configure your offer monitoring preferences",
+      "enableNotifications": "Enable Notifications",
+      "enableNotificationsDescription": "Receive alerts when new offers are found",
+      "connectChannel": {
+        "title": "Connect a Notification Channel",
+        "description": "Get instant alerts for new offers on Telegram.",
+        "button": "Connect with Telegram",
+        "note": "The quickest way to get started. Connects to your personal chat in one click.",
+        "or": "Or",
+        "manual": "Configure manually"
+      },
+      "activeChannel": "Active Channel",
+      "activeChannelPlaceholder": "Select a channel...",
+      "config": "Config",
+      "addChannel": "Add Channel"
+    },
+    "sidebar": {
+      "status": {
+        "title": "Monitor Status",
+        "activeWebsites": "Active Websites",
+        "totalWebsites": "Total Websites",
+        "notifications": "Notifications",
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "testNotifications": "Test Notifications"
+      },
+      "testNotification": {
+        "success": "Notification sent successfully!",
+        "error": "Failed to send notification."
+      }
+    }
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "notifications": "Notifications",
+    "dashboard": "Dashboard"
+  },
+  "auth": {
+    "login": {
+      "usernameOrEmailRequired": "Username or email is required",
+      "passwordRequired": "Password is required",
+      "title": "Login to your account",
+      "description": "Enter your email below to login to your account",
+      "usernameOrEmailLabel": "Username or email",
+      "usernameOrEmailPlaceholder": "user@example.com",
+      "passwordLabel": "Password",
+      "forgotPassword": "Forgot your password?",
+      "loginFailed": "Login failed. Please try again.",
+      "networkError": "Network error. Please check your connection and try again.",
+      "signingIn": "Signing in...",
+      "submitButton": "Login",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up"
+    },
+    "signup": {
+      "invalidEmail": "Invalid email address",
+      "emailRequired": "Email is required",
+      "passwordMinLength": "Password must be at least 8 characters long",
+      "passwordsDontMatch": "Passwords don't match",
+      "title": "Create an account",
+      "description": "Enter your email and password to create an account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "user@example.com",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "signupFailed": "Signup failed",
+      "signingUp": "Signing up...",
+      "submitButton": "Sign up",
+      "alreadyHaveAccount": "Already have an account?",
+      "loginLink": "Log in"
+    }
+  }
+}

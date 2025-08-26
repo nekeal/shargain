@@ -1,0 +1,138 @@
+{
+  "welcomeMessage": "Witamy",
+  "landingPage": {
+    "title": "Strona główna"
+  },
+  "landing": {
+    "login": "Zaloguj się",
+    "title": "Nigdy więcej nie przegap okazji",
+    "subtitle": "Otrzymuj natychmiastowe powiadomienia o nowych ofertach na Twoich ulubionych stronach.",
+    "signUp": "Zarejestruj się w wersji beta",
+    "howItWorks": "Jak to działa",
+    "getStarted": "Rozpocznij w trzech prostych krokach",
+    "step1": {
+      "title": "Dodaj swoje adresy URL",
+      "description": "Wklej adresy URL stron, które chcesz monitorować pod kątem nowych ofert."
+    },
+    "step2": {
+      "title": "Skonfiguruj alerty",
+      "description": "Wybierz sposób otrzymywania powiadomień - Telegram, e-mail lub oba."
+    },
+    "step3": {
+      "title": "Otrzymuj powiadomienia",
+      "description": "Usiądź wygodnie i się odpręż. Będziemy monitorować Twoje strony 24/7 i natychmiast Cię ostrzegać."
+    },
+    "pricing": {
+      "title": "Cennik",
+      "subtitle": "Usługa jest bezpłatna podczas zamkniętej wersji beta.",
+      "planName": "Dostęp do wersji Beta",
+      "price": "Bezpłatnie",
+      "period": "w trakcie beta",
+      "feature1": "Monitoruj do 5 stron internetowych",
+      "feature2": "Powiadomienia w czasie rzeczywistym",
+      "feature3": "Alerty przez Telegram i e-mail",
+      "getStarted": "Rozpocznij"
+    }
+  },
+  "dashboard": {
+    "loading": "Ładowanie...",
+    "error": "Błąd ładowania danych dashboardu.",
+    "noData": "Brak dostępnych danych monitora.",
+    "title": "Dashboard monitora ofert",
+    "subtitle": "Zarządzaj obserwowanymi stronami i preferencjami powiadomień",
+    "monitoredWebsites": {
+      "title": "Monitorowane strony",
+      "description": "Dodaj i zarządzaj stronami, które chcesz monitorować pod kątem ofert",
+      "targetName": "Nazwa celu",
+      "targetNameDescription": "Zaktualizuj nazwę swojego celu monitorowania.",
+      "saving": "Zapisywanie...",
+      "update": "Aktualizuj",
+      "addWebsite": "Dodaj nową stronę",
+      "url": "Adres URL strony",
+      "name": "Nazwa",
+      "namePlaceholder": "np. Amazon Deals",
+      "addSuccess": "Adres URL został pomyślnie dodany!",
+      "addWebsiteButton": "Dodaj stronę",
+      "active": "Aktywny",
+      "paused": "Wstrzymany",
+      "noWebsitesTitle": "Nie dodano jeszcze żadnych stron",
+      "noWebsitesDescription": "Dodaj swoją pierwszą stronę powyżej, aby rozpocząć monitorowanie ofert"
+    },
+    "monitorSettings": {
+      "title": "Ustawienia monitora",
+      "description": "Skonfiguruj preferencje monitorowania ofert",
+      "enableNotifications": "Włącz powiadomienia",
+      "enableNotificationsDescription": "Otrzymuj alerty, gdy znajdziemy nowe oferty",
+      "connectChannel": {
+        "title": "Połącz kanał powiadomień",
+        "description": "Otrzymuj natychmiastowe alerty o nowych ofertach na Telegramie.",
+        "button": "Połącz z Telegramem",
+        "note": "Najszybszy sposób na rozpoczęcie. Łączy się z Twoim czatem osobistym jednym kliknięciem.",
+        "or": "Lub",
+        "manual": "Skonfiguruj ręcznie"
+      },
+      "activeChannel": "Aktywny kanał",
+      "activeChannelPlaceholder": "Wybierz kanał...",
+      "config": "Konfiguracja",
+      "addChannel": "Dodaj kanał"
+    },
+    "sidebar": {
+      "status": {
+        "title": "Status monitora",
+        "activeWebsites": "Aktywne strony",
+        "totalWebsites": "Wszystkie strony",
+        "notifications": "Powiadomienia",
+        "enabled": "Włączone",
+        "disabled": "Wyłączone"
+      },
+      "quickActions": {
+        "title": "Szybkie działania",
+        "testNotifications": "Testuj powiadomienia"
+      },
+      "testNotification": {
+        "success": "Powiadomienie zostało wysłane pomyślnie!",
+        "error": "Nie udało się wysłać powiadomienia."
+      }
+    }
+  },
+  "breadcrumb": {
+    "home": "Strona główna",
+    "notifications": "Powiadomienia",
+    "dashboard": "Dashboard"
+  },
+  "auth": {
+    "login": {
+      "usernameOrEmailRequired": "Nazwa użytkownika lub email jest wymagana",
+      "passwordRequired": "Hasło jest wymagane",
+      "title": "Zaloguj się na swoje konto",
+      "description": "Wprowadź swój email poniżej, aby zalogować się na swoje konto",
+      "usernameOrEmailLabel": "Nazwa użytkownika lub email",
+      "usernameOrEmailPlaceholder": "uzytkownik@przyklad.com",
+      "passwordLabel": "Hasło",
+      "forgotPassword": "Nie pamiętasz hasła?",
+      "loginFailed": "Logowanie nie powiodło się. Proszę spróbuj ponownie.",
+      "networkError": "Błąd sieci. Sprawdź połączenie i spróbuj ponownie.",
+      "signingIn": "Logowanie...",
+      "submitButton": "Zaloguj się",
+      "noAccount": "Nie masz konta?",
+      "signUpLink": "Zarejestruj się"
+    },
+    "signup": {
+      "invalidEmail": "Nieprawidłowy adres email",
+      "emailRequired": "Email jest wymagany",
+      "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków",
+      "passwordsDontMatch": "Hasła nie pasują do siebie",
+      "title": "Utwórz konto",
+      "description": "Wprowadź swój email i hasło, aby utworzyć konto",
+      "emailLabel": "Email",
+      "emailPlaceholder": "uzytkownik@przyklad.com",
+      "passwordLabel": "Hasło",
+      "confirmPasswordLabel": "Potwierdź hasło",
+      "signupFailed": "Rejestracja nie powiodła się.",
+      "signingUp": "Rejestrowanie...",
+      "submitButton": "Zarejestruj się",
+      "alreadyHaveAccount": "Masz już konto?",
+      "loginLink": "Zaloguj się"
+    }
+  }
+}

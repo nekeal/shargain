@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { AlertCircle, Bell, CheckCircle, Loader, XCircle } from "lucide-react"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +13,7 @@ interface DashboardSidebarProps {
 }
 
 export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarProps) {
+  const { t } = useTranslation();
   type Status = 'idle' | 'loading' | 'success' | 'error'
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
@@ -25,10 +27,10 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
         path: { target_id: offerMonitor.id },
       })
       setStatus('success')
-      setMessage('Notification sent successfully!')
+      setMessage(t('dashboard.sidebar.testNotification.success'))
     } catch (e) {
       setStatus('error')
-      setMessage('Failed to send notification.')
+      setMessage(t('dashboard.sidebar.testNotification.error'))
     }
 
     setTimeout(() => {
@@ -47,27 +49,27 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
         <CardHeader>
           <CardTitle className="flex items-center text-lg">
             <AlertCircle className="w-5 h-5 mr-2 text-violet-600" />
-            Monitor Status
+            {t('dashboard.sidebar.status.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Active Websites</span>
+            <span className="text-sm text-gray-600">{t('dashboard.sidebar.status.activeWebsites')}</span>
             <Badge className="bg-green-100 text-green-800 border-0">
               {offerMonitor.urls.filter((url) => url.isActive).length}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Total Websites</span>
+            <span className="text-sm text-gray-600">{t('dashboard.sidebar.status.totalWebsites')}</span>
             <Badge className="bg-violet-100 text-violet-800 border-0">{offerMonitor.urls.length}</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Notifications</span>
+            <span className="text-sm text-gray-600">{t('dashboard.sidebar.status.notifications')}</span>
             <Badge
               className={`border-0 ${offerMonitor.enableNotifications ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
                 }`}
             >
-              {offerMonitor.enableNotifications ? "Enabled" : "Disabled"}
+              {offerMonitor.enableNotifications ? t('dashboard.sidebar.status.enabled') : t('dashboard.sidebar.status.disabled')}
             </Badge>
           </div>
         </CardContent>
@@ -79,7 +81,7 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
           }`}
       >
         <CardHeader>
-          <CardTitle className="text-lg">Quick Actions</CardTitle>
+          <CardTitle className="text-lg">{t('dashboard.sidebar.quickActions.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Button
@@ -97,7 +99,7 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
             ) : (
               <Bell className="w-4 h-4 mr-2" />
             )}
-            {message || "Test Notifications"}
+            {message || t('dashboard.sidebar.quickActions.testNotifications')}
           </Button>
         </CardContent>
       </Card>
