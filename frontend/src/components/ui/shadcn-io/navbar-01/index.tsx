@@ -1,6 +1,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
+import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
@@ -13,7 +14,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import cn from '@/lib/utils';
-import { Link } from '@tanstack/react-router';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -94,13 +94,23 @@ export interface Navbar01Props extends React.HTMLAttributes<HTMLElement> {
   onCtaClick?: () => void;
 }
 
-// Default navigation links
-const defaultNavigationLinks: Array<Navbar01NavLink> = [
-  { href: '#', label: 'Home', active: true },
-  { href: '#features', label: 'Features' },
-  { href: '#pricing', label: 'Pricing' },
-  { href: '#about', label: 'About' },
-];
+const NavLink = ({ href, label, className }: { href: string, label: string, className?: string }) => {
+  return (
+    <Link
+      to={href}
+      className={cn(
+        'px-4 py-2 rounded-lg font-medium transition-all duration-200',
+        'text-gray-700 hover:bg-violet-50 hover:text-violet-600',
+        className
+      )}
+      activeProps={{
+        className: 'bg-violet-100 text-violet-700'
+      }}
+    >
+      {label}
+    </Link>
+  )
+}
 
 export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
   (
@@ -108,7 +118,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       className,
       logo = <Logo />,
       logoHref = '#',
-      navigationLinks = defaultNavigationLinks,
+      navigationLinks = [],
       signInText = '',
       signInHref = '',
       ctaText = '',
@@ -185,17 +195,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                   <NavigationMenuList className="gap-1">
                     {navigationLinks.map((link, index) => (
                       <NavigationMenuItem key={index}>
-                        <Link
-                          to={link.href}
-                          className={cn(
-                            "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer no-underline",
-                          )}
-                          activeProps={{
-                            className: "bg-accent text-accent-foreground"
-                          }}
-                        >
-                          {link.label}
-                        </Link>
+                        <NavLink href={link.href} label={link.label} />
                       </NavigationMenuItem>
                     ))}
                   </NavigationMenuList>
@@ -221,17 +221,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                     <NavigationMenuList className="flex-col items-start gap-1">
                       {navigationLinks.map((link, index) => (
                         <NavigationMenuItem key={index} className="w-full">
-                          <Link
-                            to={link.href}
-                            className={cn(
-                              "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
-                            )}
-                            activeProps={{
-                              className: "bg-accent text-accent-foreground"
-                            }}
-                          >
-                            {link.label}
-                          </Link>
+                          <NavLink href={link.href} label={link.label} className="w-full" />
                         </NavigationMenuItem>
                       ))}
                     </NavigationMenuList>
