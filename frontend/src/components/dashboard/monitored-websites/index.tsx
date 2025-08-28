@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2  } from "lucide-react"
+import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2 } from "lucide-react"
 import { z } from "zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
@@ -100,25 +100,25 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
       <CardContent className="space-y-6">
         {/* Target Name Update */}
         <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex-1">
               <h3 className="font-medium text-gray-900">{t('dashboard.monitoredWebsites.targetName')}</h3>
               <p className="text-sm text-gray-600">{t('dashboard.monitoredWebsites.targetNameDescription')}</p>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <Input
                 value={targetName}
                 onChange={(e) => {
                   setTargetName(e.target.value)
                   setUpdateError(null)
                 }}
-                className="w-48"
+                className="w-full sm:w-48"
                 disabled={updateNameMutation.isPending}
               />
               <Button
                 onClick={() => updateNameMutation.mutate(targetName)}
                 disabled={updateNameMutation.isPending || (targetName === offerMonitor.name && !updateError) || updateSuccess}
-                className="w-32 justify-center bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+                className="w-full sm:w-32 justify-center bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
               >
                 {updateNameMutation.isPending ? (
                   <>
@@ -149,26 +149,28 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg border border-violet-100"
         >
           <h4 className="font-medium text-gray-900 mb-4">{t('dashboard.monitoredWebsites.addWebsite')}</h4>
-          <div className="space-y-2">
-            <Label htmlFor="url-address">{t('dashboard.monitoredWebsites.url')}</Label>
-            <Input
-              id="url-address"
-              value={newUrl}
-              onChange={handleChangeUrlAddress}
-              className={cn("bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500", urlError ? "border-red-500" : "")}
-              placeholder="https://example.com/deals"
-            />
-            {urlError && <div className="text-red-500 text-sm mt-1">{urlError}</div>}
-          </div>
-          <div className="space-y-2 mt-4">
-            <Label htmlFor="url-name">{t('dashboard.monitoredWebsites.name')}</Label>
-            <Input
-              id="url-name"
-              value={newName}
-              onChange={handleChangeUrlName}
-              className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
-              placeholder={t('dashboard.monitoredWebsites.namePlaceholder')}
-            />
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="url-address">{t('dashboard.monitoredWebsites.url')}</Label>
+              <Input
+                id="url-address"
+                value={newUrl}
+                onChange={handleChangeUrlAddress}
+                className={cn("bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500", urlError ? "border-red-500" : "")}
+                placeholder="https://example.com/deals"
+              />
+              {urlError && <div className="text-red-500 text-sm mt-1">{urlError}</div>}
+            </div>
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="url-name">{t('dashboard.monitoredWebsites.name')}</Label>
+              <Input
+                id="url-name"
+                value={newName}
+                onChange={handleChangeUrlName}
+                className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
+                placeholder={t('dashboard.monitoredWebsites.namePlaceholder')}
+              />
+            </div>
           </div>
 
           {addUrlMutation.isError && (
@@ -193,7 +195,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
               key={url.id}
               className="p-4 bg-white/50 rounded-lg border border-gray-200 hover:border-violet-300 transition-all duration-300 group"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col md:flex-row md:items-center justify-between">
                 <div className="flex-1">
                   <>
                     <div className="flex items-center space-x-3 mb-2">
@@ -210,7 +212,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                         href={url.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center hover:text-violet-600 transition-colors duration-300"
+                        className="flex items-center hover:text-violet-600 transition-colors duration-300 break-all"
                       >
                         <ExternalLink className="w-4 h-4 mr-1" />
                         {url.url}
@@ -219,7 +221,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                   </>
                 </div>
 
-                <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="flex items-center space-x-2 mt-4 md:mt-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
                   <Button
                     size="sm"
                     variant="outline"
