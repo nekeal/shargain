@@ -213,7 +213,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                         href={url.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center hover:text-violet-600 transition-colors duration-300 break-all"
+                        className="text line-clamp-2 hover:text-violet-600 transition-colors duration-300 break-all"
                       >
                         <ExternalLink className="w-4 h-4 mr-1" />
                         {url.url}
