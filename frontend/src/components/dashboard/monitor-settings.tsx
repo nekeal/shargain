@@ -136,8 +136,8 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
             ) : (
               <div className="p-4 rounded-lg bg-white/80">
                 <h3 className="font-medium text-gray-900 mb-4 text-lg">{t('dashboard.monitorSettings.activeChannel')}</h3>
-                <div className="flex items-center space-x-4">
-                  <div className="flex-grow">
+                <div className="flex flex-wrap items-center sm:space-x-4 gap-y-2">
+                  <div className="flex-grow w-full sm:w-auto">
                     <Select
                       value={offerMonitor.notificationConfigId?.toString() || ""}
                       onValueChange={(value: string) => {
@@ -147,7 +147,7 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                     >
                       <SelectTrigger
                         id="notification-config"
-                        className="w-full border-violet-200 hover:border-violet-300 focus:ring-violet-500"
+                        className="max-w-50 sm:max-w-full border-violet-200 hover:border-violet-300 focus:ring-violet-500"
                       >
                         <SelectValue placeholder={t('dashboard.monitorSettings.activeChannelPlaceholder')} />
                       </SelectTrigger>
@@ -163,6 +163,7 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                   <Button
                     onClick={() => setIsModalOpen(true)}
                     variant="outline"
+                    className="w-full sm:w-auto"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     {t('dashboard.monitorSettings.addChannel')}
