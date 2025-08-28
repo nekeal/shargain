@@ -1,27 +1,46 @@
 import { useTranslation } from 'react-i18next';
+import { Globe } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function LanguageSwitcher() {
   const { i18n } = useTranslation();
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
+  const languages = [
+    { value: 'en', label: 'English' },
+    { value: 'pl', label: 'Polski' },
+  ];
+
+  const onLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang);
   };
 
   return (
-    <div className="relative">
-      <select
-        value={i18n.language}
-        onChange={(e) => changeLanguage(e.target.value)}
-        className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-gray-500 dark:text-white"
+    <Select
+      defaultValue={i18n.language}
+      onValueChange={onLanguageChange}
+    >
+      <SelectTrigger
+        className="[&>svg]:text-muted-foreground/80 hover:bg-accent hover:text-accent-foreground h-8 border-none px-2 shadow-none [&>svg]:shrink-0"
+        aria-label="Select language"
       >
-        <option value="en">English</option>
-        <option value="pl">Polski</option>
-      </select>
-      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
-        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-        </svg>
-      </div>
-    </div>
+        <Globe size={16} aria-hidden={true} />
+        <SelectValue className="hidden sm:inline-flex" />
+      </SelectTrigger>
+      <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2">
+        {languages.map((lang) => (
+          <SelectItem key={lang.value} value={lang.value}>
+            <span className="flex items-center gap-2">
+              <span className="truncate">{lang.label}</span>
+            </span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

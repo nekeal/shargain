@@ -2,8 +2,7 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
-import { Globe } from 'lucide-react';
+import LanguageSwitcher from '../../../LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
@@ -16,13 +15,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import cn from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -138,16 +130,6 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
     },
     ref
   ) => {
-    const { i18n } = useTranslation();
-
-    const languages = [
-      { value: 'en', label: 'English' },
-      { value: 'pl', label: 'Polski' },
-    ];
-
-    const onLanguageChange = (lang: string) => {
-      i18n.changeLanguage(lang);
-    };
     const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
 
@@ -224,27 +206,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
           </div>
           {/* Right side */}
           <div className="flex items-center gap-3">
-            <Select
-              defaultValue={i18n.language}
-              onValueChange={onLanguageChange}
-            >
-              <SelectTrigger
-                className="[&>svg]:text-muted-foreground/80 hover:bg-accent hover:text-accent-foreground h-8 border-none px-2 shadow-none [&>svg]:shrink-0"
-                aria-label="Select language"
-              >
-                <Globe size={16} aria-hidden={true} />
-                <SelectValue className="hidden sm:inline-flex" />
-              </SelectTrigger>
-              <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2">
-                {languages.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    <span className="flex items-center gap-2">
-                      <span className="truncate">{lang.label}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <LanguageSwitcher />
             {isMobile && (
               <Popover>
                 <PopoverTrigger asChild>
