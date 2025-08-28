@@ -3,6 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { AuthGuard } from '../components/auth/auth-guard'
 import type { QueryClient } from '@tanstack/react-query'
 import { Navbar01 } from "@/components/ui/shadcn-io/navbar-01";
+import { refreshCsrfToken } from '@/lib/csrf';
 
 interface RouterContext {
   queryClient: QueryClient
@@ -54,4 +55,7 @@ function RootComponent() {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
+  beforeLoad: () => {
+    refreshCsrfToken()
+  },
 })
