@@ -74,14 +74,13 @@ export function NotificationListPage() {
   const configs = data?.data.configs || []
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-gray-900">Notification Configurations</h2>
+    <div className="space-y-3">
+      <div className="sm:text-right">
         <Button
           onClick={handleCreateClick}
-          className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
+          className="w-full sm:w-auto"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-5 h-5 ml-0 mr-2" />
           Create New Configuration
         </Button>
       </div>
