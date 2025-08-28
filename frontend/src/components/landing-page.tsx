@@ -10,7 +10,7 @@ export function LandingPage() {
     <>
       {/* Header with Login button */}
       <div className="absolute top-4 right-4">
-        <Button asChild variant="outline" className="border-2 border-violet-300 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/50">
+        <Button asChild variant="outline" className="border-2">
           <Link to="/auth/signin">{t('landing.login')}</Link>
         </Button>
       </div>
