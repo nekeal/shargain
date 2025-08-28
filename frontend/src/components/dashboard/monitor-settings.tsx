@@ -7,8 +7,8 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@radix-ui/react-select"
+  SelectValue,
+} from "@/components/ui/select"
 import type { OfferMonitor } from "@/types/dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -145,7 +145,10 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                         updateNotificationConfigMutation.mutate(configId);
                       }}
                     >
-                      <SelectTrigger id="notification-config" className="w-full">
+                      <SelectTrigger
+                        id="notification-config"
+                        className="w-full border-violet-200 hover:border-violet-300 focus:ring-violet-500"
+                      >
                         <SelectValue placeholder={t('dashboard.monitorSettings.activeChannelPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
