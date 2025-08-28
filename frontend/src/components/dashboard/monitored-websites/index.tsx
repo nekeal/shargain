@@ -118,7 +118,9 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
               <Button
                 onClick={() => updateNameMutation.mutate(targetName)}
                 disabled={updateNameMutation.isPending || (targetName === offerMonitor.name && !updateError) || updateSuccess}
-                className="w-full sm:w-32 justify-center bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+                variant="default"
+                size="icon"
+                className="w-full sm:w-32 justify-center"
               >
                 {updateNameMutation.isPending ? (
                   <>
@@ -130,7 +132,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    {t('dashboard.monitoredWebsites.update')}
+                    {/* {t('dashboard.monitoredWebsites.update')} */}
                   </>
                 )}
               </Button>
@@ -181,7 +183,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           <Button
             type="submit"
             disabled={!newUrl || addUrlMutation.isPending}
-            className="mt-4 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:scale-105"
+            className="mt-4"
           >
             <Plus className="w-4 h-4 mr-2" />
             {t('dashboard.monitoredWebsites.addWebsiteButton')}
@@ -226,16 +228,14 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                     size="sm"
                     variant="outline"
                     onClick={() => toggleUrlActiveMutation.mutate({ urlId: url.id, isActive: url.isActive })}
-                    className={`border-gray-300 ${url.isActive ? "text-gray-600 hover:bg-gray-50" : "text-green-600 hover:bg-green-50"
-                      }`}
+                    className={cn(url.isActive ? "text-gray-600 hover:bg-gray-50" : "text-green-600 hover:bg-green-50")}
                   >
                     {url.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="destructive"
                     onClick={() => removeUrlMutation.mutate(url.id)}
-                    className="border-red-200 text-red-600 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

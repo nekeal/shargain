@@ -1,4 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router'
+
 import LanguageSwitcher from './LanguageSwitcher'
 
 export default function Header() {
@@ -34,11 +35,10 @@ export default function Header() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    location.pathname === item.path 
-                      ? 'bg-violet-100 text-violet-700' 
-                      : 'text-gray-700 hover:bg-violet-50 hover:text-violet-600'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${location.pathname === item.path
+                    ? 'bg-violet-100 text-violet-700'
+                    : 'text-gray-700 hover:bg-violet-50 hover:text-violet-600'
+                    }`}
                 >
                   {item.label}
                 </Link>

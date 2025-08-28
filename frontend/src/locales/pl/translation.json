@@ -43,7 +43,7 @@
     "monitoredWebsites": {
       "title": "Monitorowane strony",
       "description": "Dodaj i zarządzaj stronami, które chcesz monitorować pod kątem ofert",
-      "targetName": "Nazwa celu",
+      "targetName": "Nazwa Monitora",
       "targetNameDescription": "Zaktualizuj nazwę swojego celu monitorowania.",
       "saving": "Zapisywanie...",
       "update": "Aktualizuj",

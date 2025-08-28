@@ -114,7 +114,6 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                 <Button
                   onClick={() => generateTokenMutation.mutate()}
                   disabled={generateTokenMutation.isPending}
-                  className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105"
                   size="lg"
                 >
                   <Send className="w-5 h-5 mr-3" />

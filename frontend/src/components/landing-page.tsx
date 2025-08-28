@@ -84,7 +84,7 @@ export function LandingPage() {
                   {t('landing.pricing.feature3')}
                 </li>
               </ul>
-              <Button asChild className="mt-8 w-full bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800">
+              <Button asChild className="mt-8 w-full">
                 <Link to="/auth/signup">{t('landing.pricing.getStarted')}</Link>
               </Button>
             </div>

@@ -38,7 +38,6 @@ export function LoginForm({
   const [errors, setErrors] = useState<Partial<LoginFormInputs>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState("")
-  const { loading: csrfLoading, csrfToken } = useCsrfToken()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -147,7 +146,6 @@ export function LoginForm({
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   {isSubmitting ? t("auth.login.signingIn") : t("auth.login.submitButton")}
                 </Button>
