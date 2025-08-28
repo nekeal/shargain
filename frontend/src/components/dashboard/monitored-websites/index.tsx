@@ -100,19 +100,19 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
       <CardContent className="space-y-6">
         {/* Target Name Update */}
         <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between">
             <div className="flex-1">
               <h3 className="font-medium text-gray-900">{t('dashboard.monitoredWebsites.targetName')}</h3>
               <p className="text-sm text-gray-600">{t('dashboard.monitoredWebsites.targetNameDescription')}</p>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex sm:flex-row items-center gap-2">
               <Input
                 value={targetName}
                 onChange={(e) => {
                   setTargetName(e.target.value)
                   setUpdateError(null)
                 }}
-                className="w-full sm:w-48"
+                className="w-full"
                 disabled={updateNameMutation.isPending}
               />
               <Button
@@ -120,7 +120,6 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                 disabled={updateNameMutation.isPending || (targetName === offerMonitor.name && !updateError) || updateSuccess}
                 variant="default"
                 size="icon"
-                className="w-full sm:w-32 justify-center"
               >
                 {updateNameMutation.isPending ? (
                   <>
@@ -131,7 +130,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                   <CheckCircle className="w-5 h-5 text-white" />
                 ) : (
                   <>
-                    <Save className="w-4 h-4 mr-2" />
+                    <Save className="w-4 h-4 m-2" />
                     {/* {t('dashboard.monitoredWebsites.update')} */}
                   </>
                 )}
