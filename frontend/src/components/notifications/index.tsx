@@ -90,7 +90,7 @@ export function NotificationListPage() {
           {configs.map((config) => (
             <Card key={config.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xl font-semibold text-gray-900">
+                <CardTitle className="text-xl font-semibold text-gray-900 truncate">
                   {config.name || 'Unnamed Configuration'}
                 </CardTitle>
                 <div className="flex space-x-2">
