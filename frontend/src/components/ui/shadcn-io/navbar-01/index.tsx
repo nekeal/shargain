@@ -220,7 +220,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-48 p-2">
                   <NavigationMenu className="max-w-none">
-                    <NavigationMenuList className="flex-col items-start gap-1">
+                    <NavigationMenuList className="flex-col items-start gap-4">
                       {navigationLinks.map((link, index) => (
                         <NavigationMenuItem key={index} className="w-full">
                           <NavLink href={link.href} label={link.label} className="w-full" />
