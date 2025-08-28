@@ -49,6 +49,8 @@ jobs:
           registry: ${{ secrets.REGISTRY_URL }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Create .env.production file
+        run: touch ./frontend/.env.production
       - name: Build & Publish Frontend Image
         uses: docker/build-push-action@v4
         env:
