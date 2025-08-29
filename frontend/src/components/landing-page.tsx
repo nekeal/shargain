@@ -10,7 +10,7 @@ export function LandingPage() {
     <>
       {/* Header with Login button */}
       <div className="absolute top-4 right-4">
-        <Button asChild variant="outline" className="border-2 border-violet-300 hover:bg-violet-50 dark:border-violet-700 dark:hover:bg-violet-900/50">
+        <Button asChild variant="outline" className="border-2">
           <Link to="/auth/signin">{t('landing.login')}</Link>
         </Button>
       </div>
@@ -84,7 +84,7 @@ export function LandingPage() {
                   {t('landing.pricing.feature3')}
                 </li>
               </ul>
-              <Button asChild className="mt-8 w-full bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800">
+              <Button asChild className="mt-8 w-full">
                 <Link to="/auth/signup">{t('landing.pricing.getStarted')}</Link>
               </Button>
             </div>

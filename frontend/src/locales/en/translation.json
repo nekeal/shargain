@@ -43,7 +43,7 @@
     "monitoredWebsites": {
       "title": "Monitored Websites",
       "description": "Add and manage websites you want to monitor for offers",
-      "targetName": "Target Name",
+      "targetName": "Monitor Name",
       "targetNameDescription": "Update the name of your scraping target.",
       "saving": "Saving...",
       "update": "Update",

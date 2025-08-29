@@ -17,7 +17,8 @@ import { Label } from "@/components/ui/label"
 import {
   shargainPublicApiAuthSignupView
 } from '@/lib/api/sdk.gen'
-import { refreshCsrfToken } from '@/lib/auth';
+import { refreshCsrfToken } from '@/lib/csrf';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
 
 // Zod schema for signup form validation
 const signupSchema = z.object({
@@ -43,7 +44,7 @@ export function SignupForm({
   const [errors, setErrors] = useState<Partial<SignupFormInputs>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState("")
-  const { loading: csrfLoading, csrfToken } = useCsrfToken()
+  const { csrfToken } = useCsrfToken()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -161,7 +162,6 @@ export function SignupForm({
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-gradient-to-r from-violet-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   {isSubmitting ? t("auth.signup.signingUp") : t("auth.signup.submitButton")}
                 </Button>

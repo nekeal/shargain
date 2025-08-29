@@ -2,14 +2,14 @@ import { Plus, Send, Settings, Zap } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import type { OfferMonitor } from "@/types/dashboard"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@radix-ui/react-select"
-import type { OfferMonitor } from "@/types/dashboard"
+  SelectValue,
+} from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
@@ -114,7 +114,6 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                 <Button
                   onClick={() => generateTokenMutation.mutate()}
                   disabled={generateTokenMutation.isPending}
-                  className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105"
                   size="lg"
                 >
                   <Send className="w-5 h-5 mr-3" />
@@ -137,8 +136,8 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
             ) : (
               <div className="p-4 rounded-lg bg-white/80">
                 <h3 className="font-medium text-gray-900 mb-4 text-lg">{t('dashboard.monitorSettings.activeChannel')}</h3>
-                <div className="flex items-center space-x-4">
-                  <div className="flex-grow">
+                <div className="flex flex-wrap items-center sm:space-x-4 gap-y-2">
+                  <div className="flex-grow w-full sm:w-auto">
                     <Select
                       value={offerMonitor.notificationConfigId?.toString() || ""}
                       onValueChange={(value: string) => {
@@ -146,7 +145,10 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                         updateNotificationConfigMutation.mutate(configId);
                       }}
                     >
-                      <SelectTrigger id="notification-config" className="w-full">
+                      <SelectTrigger
+                        id="notification-config"
+                        className="max-w-50 sm:max-w-full border-violet-200 hover:border-violet-300 focus:ring-violet-500"
+                      >
                         <SelectValue placeholder={t('dashboard.monitorSettings.activeChannelPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
@@ -161,6 +163,7 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                   <Button
                     onClick={() => setIsModalOpen(true)}
                     variant="outline"
+                    className="w-full sm:w-auto"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     {t('dashboard.monitorSettings.addChannel')}
