@@ -56,7 +56,20 @@
       "active": "Active",
       "paused": "Paused",
       "noWebsitesTitle": "No websites added yet",
-      "noWebsitesDescription": "Add your first website above to start monitoring offers"
+      "noWebsitesDescription": "Add your first website above to start monitoring offers",
+      "supportedWebsites": {
+        "title": "Supported Websites",
+        "description": "Here are the websites currently supported for monitoring. For best results, follow the instructions below to get the correct URL.",
+        "currentlySupported": "Currently Supported Websites",
+        "visitWebsite": "Visit website",
+        "olxInstructions": "Search for items on OLX and copy the URL from your browser's address bar. Make sure it contains your search criteria.",
+        "howToGetUrl": "How to get the correct URL",
+        "step1": "Go to the supported website and perform a search with your desired criteria",
+        "step2": "Ensure the URL in your browser's address bar reflects your search (contains keywords, filters, etc.)",
+        "step3": "IMPORTANT: Copy the URL for a list of items (search results), NOT a specific item page",
+        "step4": "Paste it in the URL field above, add an optional name, and you will get notifications when new offers are found.",
+        "closeButton": "Close"
+      }
     },
     "monitorSettings": {
       "title": "Monitor Settings",

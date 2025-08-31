@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2 } from "lucide-react"
+import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2, HelpCircle } from "lucide-react"
 import { z } from "zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import cn from "@/lib/utils"
 import { updateTargetName } from "@/lib/api/sdk.gen"
+import { SupportedWebsitesModal } from "./supported-websites-modal"
 
 const urlSchema = z.string().url({ message: "Please enter a valid URL." }).nonempty({ message: "URL cannot be empty." })
 
@@ -28,6 +29,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   const [targetName, setTargetName] = useState(offerMonitor.name)
   const [updateSuccess, setUpdateSuccess] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null)
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -174,6 +176,16 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             </div>
           </div>
 
+          <Button
+            type="button"
+            variant="link"
+            className="text-violet-600 hover:text-violet-800 p-0 h-auto font-normal text-sm flex items-center gap-1"
+            onClick={() => setIsHelpModalOpen(true)}
+          >
+            <HelpCircle className="w-4 h-4" />
+            {t('dashboard.monitoredWebsites.supportedWebsites.title')}
+          </Button>
+
           {addUrlMutation.isError && (
             <div className="text-red-500 text-sm mt-2">{(addUrlMutation.error as any)?.detail[0].msg}</div>
           )}
@@ -252,6 +264,10 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           )}
         </div>
       </CardContent>
+      <SupportedWebsitesModal 
+        isOpen={isHelpModalOpen} 
+        onClose={() => setIsHelpModalOpen(false)} 
+      />
     </Card>
   )
 }

@@ -56,7 +56,20 @@
       "active": "Aktywny",
       "paused": "Wstrzymany",
       "noWebsitesTitle": "Nie dodano jeszcze żadnych stron",
-      "noWebsitesDescription": "Dodaj swoją pierwszą stronę powyżej, aby rozpocząć monitorowanie ofert"
+      "noWebsitesDescription": "Dodaj swoją pierwszą stronę powyżej, aby rozpocząć monitorowanie ofert",
+      "supportedWebsites": {
+        "title": "Obsługiwane strony",
+        "description": "Oto strony, które są obecnie obsługiwane do monitorowania. Aby uzyskać najlepsze wyniki, postępuj zgodnie z poniższymi instrukcjami, aby uzyskać poprawny adres URL.",
+        "currentlySupported": "Obecnie obsługiwane strony",
+        "visitWebsite": "Odwiedź stronę",
+        "olxInstructions": "Wyszukaj przedmioty na OLX i skopiuj adres URL z paska adresu przeglądarki. Upewnij się, że zawiera kryteria wyszukiwania.",
+        "howToGetUrl": "Jak uzyskać poprawny adres URL",
+        "step1": "Przejdź do obsługiwanej strony i wykonaj wyszukiwanie z pożądanymi kryteriami",
+        "step2": "Upewnij się, że adres URL w pasku adresu przeglądarki odzwierciedla Twoje wyszukiwanie (zawiera słowa kluczowe, filtry itp.)",
+        "step3": "WAŻNE: Skopiuj adres URL dla listy przedmiotów (wyniki wyszukiwania), NIE dla konkretnej strony przedmiotu",
+        "step4": "Wklej go w powyższe pole URL, dodaj opcjonalną nazwę, i otrzymuj powiadomienia o nowych ofertach.",
+        "closeButton": "Zamknij"
+      }
     },
     "monitorSettings": {
       "title": "Ustawienia monitora",
