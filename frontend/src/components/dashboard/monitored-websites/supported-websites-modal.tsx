@@ -1,14 +1,15 @@
+import { ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { CollapsibleExampleUrls } from "./collapsible-example-urls";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
-  DialogFooter
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
 
 interface SupportedWebsitesModalProps {
   isOpen: boolean;
@@ -49,6 +50,25 @@ export function SupportedWebsitesModal({ isOpen, onClose }: SupportedWebsitesMod
                 <p className="text-sm text-gray-600 mt-2">
                   {t('dashboard.monitoredWebsites.supportedWebsites.olxInstructions')}
                 </p>
+                <CollapsibleExampleUrls
+                  websiteName="OLX"
+                  validUrlExamples={[
+                    {
+                      url: "https://www.olx.pl/nieruchomosci/mieszkania/?search%5Bfilter_float_price:to%5D=700",
+                      displayText: "https://www.olx.pl/nieruchomosci/mieszkania/"
+                    },
+                    {
+                      url: "https://www.olx.pl/motoryzacja/samochody/?search%5Bfilter_float_price%3Afrom%5D=31000&search%5Bfilter_float_price%3Ato%5D=31100",
+                      displayText: "https://www.olx.pl/motoryzacja/samochody/"
+                    }
+                  ]}
+                  invalidUrlExamples={[
+                    {
+                      url: "https://www.olx.pl/d/oferta/citroen-berlingo-xl-CID5-ID17exAm.html",
+                      displayText: "https://www.olx.pl/d/oferta/citroen-berlingo-xl-CID5-ID17exAm.html"
+                    }
+                  ]}
+                />
               </div>
             </div>
           </div>

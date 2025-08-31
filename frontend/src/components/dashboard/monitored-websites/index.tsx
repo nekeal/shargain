@@ -1,20 +1,20 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2, HelpCircle } from "lucide-react"
+import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, HelpCircle, Plus, Save, Trash2 } from "lucide-react"
 import { z } from "zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
+import { SupportedWebsitesModal } from "./supported-websites-modal"
 import type { OfferMonitor } from "@/types/dashboard"
+import cn from "@/lib/utils"
+import { updateTargetName } from "@/lib/api/sdk.gen"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import cn from "@/lib/utils"
-import { updateTargetName } from "@/lib/api/sdk.gen"
-import { SupportedWebsitesModal } from "./supported-websites-modal"
 
-const urlSchema = z.string().url({ message: "Please enter a valid URL." }).nonempty({ message: "URL cannot be empty." })
+const urlSchema = z.url({ message: "Please enter a valid URL." }).nonempty({ message: "URL cannot be empty." })
 
 interface MonitoredWebsitesProps {
   offerMonitor: OfferMonitor
@@ -264,9 +264,9 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           )}
         </div>
       </CardContent>
-      <SupportedWebsitesModal 
-        isOpen={isHelpModalOpen} 
-        onClose={() => setIsHelpModalOpen(false)} 
+      <SupportedWebsitesModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
       />
     </Card>
   )
