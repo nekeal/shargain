@@ -1,5 +1,6 @@
 import { CheckCircle, ChevronDown, ChevronRight, ExternalLink, XCircle } from "lucide-react";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Collapsible,
   CollapsibleContent,
@@ -23,13 +24,14 @@ export function CollapsibleExampleUrls({
   validUrlExamples,
   invalidUrlExamples,
 }: CollapsibleExampleUrlsProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
       <CollapsibleTrigger asChild>
         <Button variant="ghost" className="w-full flex justify-between p-4">
-          <span>Show URL examples for {websiteName}</span>
+          <span>{t('dashboard.monitoredWebsites.supportedWebsites.showUrlExamples', { websiteName })}</span>
           {isOpen ? (
             <ChevronDown className="h-4 w-4" />
           ) : (

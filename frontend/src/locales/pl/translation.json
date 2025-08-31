@@ -58,7 +58,7 @@
       "noWebsitesTitle": "Nie dodano jeszcze żadnych stron",
       "noWebsitesDescription": "Dodaj swoją pierwszą stronę powyżej, aby rozpocząć monitorowanie ofert",
       "supportedWebsites": {
-        "title": "Obsługiwane strony",
+        "title": "Jak uzyskać adres URL?",
         "description": "Oto strony, które są obecnie obsługiwane do monitorowania. Aby uzyskać najlepsze wyniki, postępuj zgodnie z poniższymi instrukcjami, aby uzyskać poprawny adres URL.",
         "currentlySupported": "Obecnie obsługiwane strony",
         "visitWebsite": "Odwiedź stronę",
@@ -68,7 +68,8 @@
         "step2": "Upewnij się, że adres URL w pasku adresu przeglądarki odzwierciedla Twoje wyszukiwanie (zawiera słowa kluczowe, filtry itp.)",
         "step3": "WAŻNE: Skopiuj adres URL dla listy przedmiotów (wyniki wyszukiwania), NIE dla konkretnej strony przedmiotu",
         "step4": "Wklej go w powyższe pole URL, dodaj opcjonalną nazwę, i otrzymuj powiadomienia o nowych ofertach.",
-        "closeButton": "Zamknij"
+        "closeButton": "Zamknij",
+        "showUrlExamples": "Pokaż przykłady URL dla {{websiteName}}"
       }
     },
     "monitorSettings": {

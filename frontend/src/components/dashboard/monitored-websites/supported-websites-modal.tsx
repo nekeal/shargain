@@ -28,7 +28,18 @@ export function SupportedWebsitesModal({ isOpen, onClose }: SupportedWebsitesMod
             {t('dashboard.monitoredWebsites.supportedWebsites.description')}
           </DialogDescription>
         </DialogHeader>
-
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <h3 className="font-medium text-lg text-amber-800 flex items-center">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-white mr-2">!</span>
+            {t('dashboard.monitoredWebsites.supportedWebsites.howToGetUrl')}
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 mt-2">
+            <li>{t('dashboard.monitoredWebsites.supportedWebsites.step1')}</li>
+            <li>{t('dashboard.monitoredWebsites.supportedWebsites.step2')}</li>
+            <li className="font-medium text-amber-700">{t('dashboard.monitoredWebsites.supportedWebsites.step3')}</li>
+            <li>{t('dashboard.monitoredWebsites.supportedWebsites.step4')}</li>
+          </ol>
+        </div>
         <div className="space-y-6 py-4">
           <div className="space-y-4">
             <h3 className="font-medium text-lg">{t('dashboard.monitoredWebsites.supportedWebsites.currentlySupported')}</h3>
@@ -73,18 +84,7 @@ export function SupportedWebsitesModal({ isOpen, onClose }: SupportedWebsitesMod
             </div>
           </div>
 
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <h3 className="font-medium text-lg text-amber-800 flex items-center">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-white mr-2">!</span>
-              {t('dashboard.monitoredWebsites.supportedWebsites.howToGetUrl')}
-            </h3>
-            <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 mt-2">
-              <li>{t('dashboard.monitoredWebsites.supportedWebsites.step1')}</li>
-              <li>{t('dashboard.monitoredWebsites.supportedWebsites.step2')}</li>
-              <li className="font-medium text-amber-700">{t('dashboard.monitoredWebsites.supportedWebsites.step3')}</li>
-              <li>{t('dashboard.monitoredWebsites.supportedWebsites.step4')}</li>
-            </ol>
-          </div>
+
         </div>
 
         <DialogFooter>

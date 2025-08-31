@@ -58,7 +58,7 @@
       "noWebsitesTitle": "No websites added yet",
       "noWebsitesDescription": "Add your first website above to start monitoring offers",
       "supportedWebsites": {
-        "title": "Supported Websites",
+        "title": "How to get the URL?",
         "description": "Here are the websites currently supported for monitoring. For best results, follow the instructions below to get the correct URL.",
         "currentlySupported": "Currently Supported Websites",
         "visitWebsite": "Visit website",
@@ -68,7 +68,8 @@
         "step2": "Ensure the URL in your browser's address bar reflects your search (contains keywords, filters, etc.)",
         "step3": "IMPORTANT: Copy the URL for a list of items (search results), NOT a specific item page",
         "step4": "Paste it in the URL field above, add an optional name, and you will get notifications when new offers are found.",
-        "closeButton": "Close"
+        "closeButton": "Close",
+        "showUrlExamples": "Show URL examples for {{websiteName}}"
       }
     },
     "monitorSettings": {
