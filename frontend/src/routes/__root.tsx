@@ -56,7 +56,8 @@ function RootComponent() {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
-  beforeLoad: () => {
+  beforeLoad: ({ context, location }) => {
+    console.log("RENDERING ROOT page", location.pathname, context.auth.user?.username)
     refreshCsrfToken()
   },
 })
