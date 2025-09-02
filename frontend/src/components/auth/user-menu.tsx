@@ -16,7 +16,7 @@ interface UserMenuProps {
     id: string
     name: string
     email: string
-    provider: string
+    provider: string | null
   } | null
 }
 
