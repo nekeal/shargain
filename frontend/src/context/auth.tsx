@@ -6,7 +6,6 @@ import { getMe } from "@/lib/api/sdk.gen";
 export type AuthContextType = {
   isAuthenticated: boolean;
   user: User | null;
-  isLoading: boolean;
   login: (user: User) => void;
   logout: () => void;
 };
@@ -15,8 +14,15 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
-  const { data, isLoading } = useQuery<User>({ queryKey: ["me"], queryFn: () => getMe().then(response => response.data) });
-
+  const { data, isLoading } = useQuery<User | null>({
+    queryKey: ["me"],
+    queryFn: () => getMe().then(response => response.data),
+    throwOnError: false,
+    retry: 0,
+  })
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
   const login = (user: User) => {
     queryClient.setQueryData(["me"], user);
   };
@@ -30,7 +36,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         isAuthenticated: !!data,
         user: data || null,
-        isLoading,
         login,
         logout,
       }}

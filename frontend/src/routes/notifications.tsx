@@ -1,9 +1,16 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { AppHeader } from '@/components/app-header'
 import {NotificationListPage} from "@/components/notifications";
 
 export const Route = createFileRoute('/notifications')({
   component: NotificationsPage,
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isAuthenticated) {
+      throw redirect({
+        to: '/auth/signin',
+      })
+    }
+  },
 })
 
 function NotificationsPage() {

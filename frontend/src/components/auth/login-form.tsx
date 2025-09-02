@@ -15,10 +15,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 import {
+  getMe,
   shargainPublicApiAuthLoginView
 } from '@/lib/api/sdk.gen'
 
-import {refreshCsrfToken} from "@/lib/csrf.ts";
+import { refreshCsrfToken } from "@/lib/csrf.ts";
+import { useAuth } from "@/context/auth";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Username or email is required"),
@@ -33,6 +35,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState<Partial<LoginFormInputs>>({})
@@ -71,6 +74,9 @@ export function LoginForm({
       if (response.data.success) {
         // After successful login, get a new CSRF token for the authenticated session
         await refreshCsrfToken();
+
+        const userResponse = await getMe()
+        login(userResponse.data)
 
         // Redirect to dashboard on successful login
         navigate({ to: "/dashboard" })
