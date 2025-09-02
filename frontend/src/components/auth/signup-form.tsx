@@ -87,7 +87,7 @@ export function SignupForm({
       if (response.data.success) {
         // After successful signup, get a new CSRF token for the authenticated session
         await refreshCsrfToken();
-        
+
         // Get user data and update auth context
         const userResponse = await getMe()
         login(userResponse.data)
@@ -176,7 +176,7 @@ export function SignupForm({
             </div>
             <div className="mt-4 text-center text-sm text-gray-600">
               {t("auth.signup.alreadyHaveAccount")}{" "}
-              <a onClick={(e) => { e.preventDefault(); navigate({ to: '/auth/signin' }); }} className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate({ to: '/auth/signin' }); }} className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
                 {t("auth.signup.loginLink")}
               </a>
             </div>
