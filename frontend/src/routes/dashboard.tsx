@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppHeader } from '@/components/app-header';
@@ -9,6 +9,14 @@ import { useGetMyTarget } from '@/components/dashboard/monitored-websites/useMon
 
 export const Route = createFileRoute('/dashboard')({
     component: DashboardContent,
+    beforeLoad: ({ context }) => {
+        console.log("RENDERING DASHBOARD", context.auth.user?.username)
+        if (!context.auth.isAuthenticated) {
+            throw redirect({
+                to: '/auth/signin',
+            })
+        }
+    },
 });
 
 function DashboardContent() {

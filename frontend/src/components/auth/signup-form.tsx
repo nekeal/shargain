@@ -15,10 +15,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 import {
+  getMe,
   shargainPublicApiAuthSignupView
 } from '@/lib/api/sdk.gen'
 import { refreshCsrfToken } from '@/lib/csrf';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
+import { useAuth } from "@/context/auth";
 
 // Zod schema for signup form validation
 const signupSchema = z.object({
@@ -38,6 +40,7 @@ export function SignupForm({
 }: React.ComponentProps<"div">) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -84,6 +87,10 @@ export function SignupForm({
       if (response.data.success) {
         // After successful signup, get a new CSRF token for the authenticated session
         await refreshCsrfToken();
+
+        // Get user data and update auth context
+        const userResponse = await getMe()
+        login(userResponse.data)
 
         // Redirect to dashboard on successful signup
         navigate({ to: "/dashboard" })
@@ -169,7 +176,7 @@ export function SignupForm({
             </div>
             <div className="mt-4 text-center text-sm text-gray-600">
               {t("auth.signup.alreadyHaveAccount")}{" "}
-              <a onClick={(e) => { e.preventDefault(); navigate({ to: '/auth/signin' }); }} className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate({ to: '/auth/signin' }); }} className="text-violet-600 hover:text-violet-800 transition-colors duration-200">
                 {t("auth.signup.loginLink")}
               </a>
             </div>
