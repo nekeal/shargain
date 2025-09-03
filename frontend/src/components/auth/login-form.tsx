@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { useState } from "react"
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate, useRouter } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import cn from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
 import {
   getMe,
   shargainPublicApiAuthLoginView
@@ -35,6 +34,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const router = useRouter()
   const { login } = useAuth()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -77,8 +77,7 @@ export function LoginForm({
 
         const userResponse = await getMe()
         login(userResponse.data)
-
-        // Redirect to dashboard on successful login
+        await router.invalidate()
         navigate({ to: "/dashboard" })
       } else {
         // Set error message from API response

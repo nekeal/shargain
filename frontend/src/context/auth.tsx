@@ -1,8 +1,7 @@
+import { createContext, useContext, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "@/types/user";
 import { getMe } from "@/lib/api/sdk.gen";
-import { set } from "zod";
 
 export type AuthContextType = {
   isAuthenticated: boolean;
@@ -14,27 +13,27 @@ export type AuthContextType = {
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const queryClient = useQueryClient();
-  const [user, setUser] = useState<User | null>(null);
-  // const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient()
+  // @ts-ignore local user is used just to force re-render
+  const [localUser, setUser] = useState<User | null>(null);
   const { data, isLoading } = useQuery<User | null>({
     queryKey: ["me"],
     queryFn: () => getMe().then(response => response.data),
     throwOnError: false,
-    retry: 1,
+    retry: false,
   })
 
-  console.log("RENDER PROVIDER", data)
+
   if (isLoading) {
     return <div>Loading...</div>
   }
   const login = (user: User) => {
-    setUser(user)
+    setUser(user) // << < this is only to force re-render. See https://github.com/TanStack/router/issues/2072
     queryClient.setQueryData(["me"], user);
   };
 
   const logout = () => {
-    // setUser(null)
+    setUser(null)
     queryClient.setQueryData(["me"], null);
   };
 
