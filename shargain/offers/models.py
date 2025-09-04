@@ -38,7 +38,7 @@ class ScrappingTarget(models.Model):
         verbose_name_plural = _("Scrapping targets")
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.id})"
 
 
 class ScrapingUrl(models.Model):
