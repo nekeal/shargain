@@ -113,9 +113,33 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
         )
 
 
+class StaleUrlFilter(admin.SimpleListFilter):
+    title = _("stale urls")
+    parameter_name = "stale"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("stale", _("Stale URLs")),
+            ("fresh", _("Fresh URLs")),
+        )
+
+    def queryset(self, request, queryset):
+        from django.utils import timezone
+
+        if self.value() == "stale":
+            # Default to 24 hours as stale threshold
+            stale_threshold = timezone.now() - timedelta(hours=24)
+            return queryset.filter(checkins__timestamp__lt=stale_threshold).distinct()
+        if self.value() == "fresh":
+            stale_threshold = timezone.now() - timedelta(hours=24)
+            return queryset.exclude(checkins__timestamp__lt=stale_threshold).distinct()
+        return queryset
+
+
 @admin.register(ScrapingUrl)
 class ScrapingUrlAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "scraping_target", "get_scraping_urls")
+    list_display = ("id", "name", "scraping_target", "get_scraping_urls", "last_checkin_time")
+    list_filter = ("scraping_target", StaleUrlFilter)
     search_fields = ("url",)
 
     @staticmethod
@@ -124,6 +148,14 @@ class ScrapingUrlAdmin(admin.ModelAdmin):
             "<a href={} target=_blank><div style='width:100%'><i class='fas fa-external-link-alt'></i></div></a>",
             obj.url,
         )
+
+    @admin.display(description=_("Last Check-in Time"))
+    def last_checkin_time(self, obj):
+        """Display the last check-in time for this URL."""
+        latest_checkin = obj.checkins.order_by("-timestamp").first()
+        if latest_checkin:
+            return latest_checkin.timestamp
+        return "No check-ins yet"
 
 
 @admin.register(ScrapingCheckin)

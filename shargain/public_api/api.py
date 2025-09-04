@@ -113,6 +113,7 @@ class ScrapingUrlResponse(BaseSchema):
     url: str
     name: str
     is_active: bool
+    last_checked_at: str | None = None
 
 
 class TargetResponse(BaseSchema):
