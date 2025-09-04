@@ -231,6 +231,16 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                         {url.url}
                       </a>
                     </div>
+                    {/* Last checked time */}
+                    <div className="mt-2 text-sm text-gray-500">
+                      {url.lastCheckedAt ? (
+                        <>
+                          {t('dashboard.monitoredWebsites.lastChecked')}: {new Date(url.lastCheckedAt).toLocaleString()}
+                        </>
+                      ) : (
+                        t('dashboard.monitoredWebsites.pending')
+                      )}
+                    </div>
                   </>
                 </div>
 

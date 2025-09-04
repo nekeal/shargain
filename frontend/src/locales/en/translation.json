@@ -55,6 +55,8 @@
       "addWebsiteButton": "Add Website",
       "active": "Active",
       "paused": "Paused",
+      "lastChecked": "Last checked",
+      "pending": "Pending",
       "noWebsitesTitle": "No websites added yet",
       "noWebsitesDescription": "Add your first website above to start monitoring offers",
       "supportedWebsites": {
