@@ -20,6 +20,10 @@ export type ScrapingUrlResponse = {
      * Isactive
      */
     isActive: boolean;
+    /**
+     * Lastcheckedat
+     */
+    lastCheckedAt?: string | null;
 };
 
 /**

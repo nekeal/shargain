@@ -19,11 +19,12 @@ class ScrapingUrlDTO:
     url: str
     name: str
     is_active: bool
+    last_checked_at: str | None = None
 
     @classmethod
-    def from_orm(cls, url: ScrapingUrl) -> Self:
+    def from_orm(cls, url: ScrapingUrl, last_checked_at: str | None = None) -> Self:
         """Create a DTO from a ScrapingUrl model instance."""
-        return cls(id=url.id, url=url.url, name=url.name, is_active=url.is_active)
+        return cls(id=url.id, url=url.url, name=url.name, is_active=url.is_active, last_checked_at=last_checked_at)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -38,9 +39,15 @@ class TargetDTO:
     urls: list[ScrapingUrlDTO]
 
     @classmethod
-    def from_orm(cls, target: ScrappingTarget) -> Self:
+    def from_orm(cls, target: ScrappingTarget, url_ids_to_timestamps: dict[int, str] | None = None) -> Self:
         """Create a DTO from a ScrappingTarget model instance."""
-        urls = [ScrapingUrlDTO.from_orm(url) for url in target.scrapingurl_set.all()]
+        if url_ids_to_timestamps is None:
+            url_ids_to_timestamps = {}
+
+        urls = [
+            ScrapingUrlDTO.from_orm(url, last_checked_at=url_ids_to_timestamps.get(url.id))
+            for url in target.scrapingurl_set.all()
+        ]
         return cls(
             id=target.id,
             name=target.name,

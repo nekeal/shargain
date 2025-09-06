@@ -51,6 +51,9 @@ class ScrappingTargetViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelView
             return AddTargetUrlSerializer
         return super().get_serializer_class()
 
+    def get_queryset(self):
+        return super().get_queryset().distinct()
+
     @action(methods=["POST"], detail=True, url_path="add-target-url")
     def add_target_url(self, request, pk=None):
         """

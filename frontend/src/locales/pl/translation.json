@@ -55,6 +55,8 @@
       "addWebsiteButton": "Dodaj stronę",
       "active": "Aktywny",
       "paused": "Wstrzymany",
+      "lastChecked": "Ostatnio sprawdzono",
+      "pending": "Oczekujące",
       "noWebsitesTitle": "Nie dodano jeszcze żadnych stron",
       "noWebsitesDescription": "Dodaj swoją pierwszą stronę powyżej, aby rozpocząć monitorowanie ofert",
       "supportedWebsites": {
