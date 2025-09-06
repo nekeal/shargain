@@ -110,6 +110,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             <div className="flex sm:flex-row items-center gap-2">
               <Input
                 value={targetName}
+                placeholder={t('dashboard.monitoredWebsites.targetNamePlaceholder')}
                 onChange={(e) => {
                   setTargetName(e.target.value)
                   setUpdateError(null)
