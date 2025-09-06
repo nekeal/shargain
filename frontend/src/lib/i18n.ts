@@ -19,7 +19,7 @@ i18n
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
-    fallbackLng: 'en',
+    fallbackLng: 'pl',
     supportedLngs: ['en', 'pl'],
     defaultNS,
     debug: true,
@@ -28,7 +28,7 @@ i18n
     },
     detection: {
       // For all available options, see: https://github.com/i18next/i18next-browser-languageDetector#detector-options
-      order: ['localStorage', 'cookie', 'navigator', 'htmlTag', 'path', 'subdomain'],
+      order: ['querystring', 'localStorage', 'cookie', 'navigator', 'htmlTag', 'path', 'subdomain'],
       caches: ['localStorage', 'cookie'],
       excludeCacheFor: ['cimode'], // Languages to not persist (cookie, localStorage)
     },
