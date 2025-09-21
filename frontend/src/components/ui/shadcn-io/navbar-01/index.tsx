@@ -1,7 +1,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import LanguageSwitcher from '../../../LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import cn from '@/lib/utils';
+import { useAuth } from '@/context/auth';
+import { shargainPublicApiAuthLogoutView } from '@/lib/api/sdk.gen';
+import { useTranslation } from 'react-i18next';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -130,8 +133,21 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
     },
     ref
   ) => {
+    const { t } = useTranslation();
     const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
+    const { isAuthenticated, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+      try {
+        await shargainPublicApiAuthLogoutView();
+        logout();
+        navigate({ to: '/auth/signin' });
+      } catch (error) {
+        console.error("Logout failed", error);
+      }
+    };
 
     useEffect(() => {
       const checkWidth = () => {
@@ -231,38 +247,46 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 </PopoverContent>
               </Popover>
             )}
-            {signInText && signInHref && (
-              <Link to={signInHref}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-                  onClick={(e) => {
-                    if (onSignInClick) {
-                      e.preventDefault();
-                      onSignInClick();
-                    }
-                  }}
-                >
-                  {signInText}
-                </Button>
-              </Link>
-            )}
-            {ctaText && ctaHref && (
-              <Link to={ctaHref}>
-                <Button
-                  size="sm"
-                  className="text-sm font-medium px-4 h-9 rounded-md shadow-sm"
-                  onClick={(e) => {
-                    if (onCtaClick) {
-                      e.preventDefault();
-                      onCtaClick();
-                    }
-                  }}
-                >
-                  {ctaText}
-                </Button>
-              </Link>
+            {isAuthenticated ? (
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                {t('navbar.logout')}
+              </Button>
+            ) : (
+              <>
+                {signInText && signInHref && (
+                  <Link to={signInHref}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                      onClick={(e) => {
+                        if (onSignInClick) {
+                          e.preventDefault();
+                          onSignInClick();
+                        }
+                      }}
+                    >
+                      {signInText}
+                    </Button>
+                  </Link>
+                )}
+                {ctaText && ctaHref && (
+                  <Link to={ctaHref}>
+                    <Button
+                      size="sm"
+                      className="text-sm font-medium px-4 h-9 rounded-md shadow-sm"
+                      onClick={(e) => {
+                        if (onCtaClick) {
+                          e.preventDefault();
+                          onCtaClick();
+                        }
+                      }}
+                    >
+                      {ctaText}
+                    </Button>
+                  </Link>
+                )}
+              </>
             )}
           </div>
         </div>

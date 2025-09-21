@@ -259,6 +259,10 @@ export type UserSchema = {
      * Email
      */
     email: string;
+    /**
+     * Tier
+     */
+    tier: string;
 };
 
 /**

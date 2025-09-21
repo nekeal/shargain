@@ -151,5 +151,8 @@
       "alreadyHaveAccount": "Already have an account?",
       "loginLink": "Log in"
     }
+  },
+  "navbar": {
+    "logout": "Log Out"
   }
 }
