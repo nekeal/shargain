@@ -737,6 +737,27 @@ The process works in three main stages:
     -   **Database Optimization:** Ensure all foreign keys and frequently filtered columns have database indexes. Use tools like `django-debug-toolbar` during development to identify and eliminate slow or duplicate queries.
     -   **Asynchronous Operations:** Continue to use the `Async Job Service (Celery)` for any operation that is not instantaneous, ensuring the API remains fast.
 
+### Accessibility (A11y)
+
+#### Compliance Target
+
+-   **Standard:** The application **MUST** adhere to the **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** standard.
+
+#### Core Principles
+
+1.  **Semantic HTML:** Use correct, semantic HTML5 elements (`<nav>`, `<main>`, `<button>`, etc.) at all times. This is the foundation of accessibility and ensures screen readers can interpret the page structure.
+2.  **Keyboard Navigation:** All interactive elements, including links, buttons, and form fields, **MUST** be fully operable using only the keyboard. Focus order must be logical, and a visible focus indicator (outline) must always be present.
+3.  **ARIA Roles:** For complex custom components (like modals or custom dropdowns), appropriate ARIA (Accessible Rich Internet Applications) roles and attributes **MUST** be used to describe their function to assistive technologies. However, native HTML elements should always be preferred over ARIA when possible.
+4.  **Color Contrast:** All text must meet a minimum contrast ratio of **4.5:1** against its background to be legible for users with visual impairments.
+
+#### Testing Strategy
+
+1.  **Automated Linting:** The `eslint-plugin-jsx-a11y` package **MUST** be integrated into our ESLint configuration to catch common accessibility issues during development.
+2.  **Manual Testing:** Before a feature is considered complete, it **MUST** be manually tested for:
+    -   Full keyboard navigability.
+    -   Usability with a screen reader (e.g., VoiceOver on macOS, NVDA on Windows).
+
+
 ### **Testing Strategy (Revised)**
 
 #### **The Testing Pyramid**
