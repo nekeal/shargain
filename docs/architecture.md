@@ -15,7 +15,7 @@ N/A - Greenfield project.
 
 #### **Technical Summary**
 
-The Shargain platform is designed as a decoupled system featuring a modern single-page application (SPA) frontend and a robust monolithic backend. The frontend is a React/TypeScript application built with Vite, communicating via a contract-first RESTful API defined with OpenAPI. The backend is a Django application utilizing Django Ninja for efficient API development and Celery for asynchronous task processing. The entire system is containerized using Docker, with Traefik managing ingress and routing in production, ensuring a scalable and maintainable architecture well-suited to the project's goals of providing a reliable second-hand item marketplace.
+The Shargain platform is designed as a decoupled system featuring a modern single-page application (SPA) frontend and monolithic backend. The frontend is a React/TypeScript application built with Vite, communicating via a contract-first RESTful API defined with OpenAPI. The backend is a Django application utilizing Django Ninja for efficient API development and Celery for asynchronous task processing. The entire system is containerized using Docker, with Traefik managing ingress and routing in production, ensuring a scalable and maintainable architecture well-suited to the project's goals of providing a reliable second-hand item marketplace.
 
 #### **Platform and Infrastructure Choice**
 
@@ -98,6 +98,15 @@ graph TD
 | **Testing** | | | | |
 | Backend | Pytest | `latest` | A mature, feature-rich testing framework for Python. | Enables writing simple, scalable tests from small units to complex functions. |
 | E2E | TBD | `N/A` | End-to-end testing framework. | Recommendation: Playwright for its modern features and cross-browser support. |
+
+#### **Alternatives Considered**
+
+-   **Backend API Framework (Django Ninja vs. FastAPI):**
+    -   **FastAPI** was considered as it is a high-performance, modern Python API framework.
+    -   **Decision:** **Django Ninja** was chosen because it integrates directly into the existing Django framework. This "batteries-included" approach reduces the amount of manual code required for setup, authentication, and ORM integration compared to a standalone FastAPI application.
+
+-   **Frontend Framework (React vs. Others):**
+    -   **Decision:** **React** was selected as the frontend framework due to the development team's deep expertise and the extensive ecosystem of libraries and tools available (such as TanStack Query and shadcn/ui), which align perfectly with the project's architectural goals.
 
 ### **Data Models**
 
@@ -189,7 +198,7 @@ interface ScrapingUrl {
 
 #### **Offer**
 
-**Purpose:** Represents a single item/listing discovered by the scraper on a target website. It contains all the relevant details of the listing, such as title, price, and image.
+**Purpose:** Represents a single item/listing discovered by the scraper on a target website. It contains all the relevant details of the listing, such as title, price, and image. This is backend only as frontend does not display offers.
 
 **Key Attributes:**
 - `id`: `integer` - The unique, primary identifier for the offer in our system.
@@ -201,22 +210,6 @@ interface ScrapingUrl {
 - `published_at`: `DateTime` (optional) - The timestamp when the offer was originally published on the source website.
 - `closed_at`: `DateTime` (optional) - The timestamp when our system detected that the offer was no longer available.
 - `created_at`: `DateTime` - The timestamp when our system first discovered this offer.
-
-##### **TypeScript Interface**
-```typescript
-interface Offer {
-  id: number;
-  url: string;
-  title: string;
-  price?: number;
-  main_image_url?: string;
-  list_url: string;
-  published_at?: string; // ISO 8601 DateTime
-  closed_at?: string; // ISO 8601 DateTime
-  created_at: string; // ISO 8601 DateTime
-  target: number; // ID of the parent ScrappingTarget
-}
-```
 
 ##### **Relationships**
 -   **Many-to-One:** Belongs to a `ScrappingTarget`. The `on_delete=models.PROTECT` rule is a critical detail: it prevents a `ScrappingTarget` from being deleted if it has associated offers, thus preserving historical data.
