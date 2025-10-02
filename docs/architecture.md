@@ -1,251 +1,5 @@
 <!-- Powered by BMAD™ Core -->
-# Shargain Fullstack Architecture Document
-
-### **Introduction**
-
-This document outlines the complete fullstack architecture for the Shargain project, including backend systems, frontend implementation, and their integration. It serves as the single source of truth for AI-driven development, ensuring consistency across the entire technology stack.
-
-This unified approach combines what would traditionally be separate backend and frontend architecture documents, streamlining the development process for modern fullstack applications where these concerns are increasingly intertwined.
-
-#### **Starter Template or Existing Project**
-
-N/A - Greenfield project.
-
-### **High Level Architecture**
-
-#### **Technical Summary**
-
-The Shargain platform is designed as a decoupled system featuring a modern single-page application (SPA) frontend and monolithic backend. The frontend is a React/TypeScript application built with Vite, communicating via a contract-first RESTful API defined with OpenAPI. The backend is a Django application utilizing Django Ninja for efficient API development and Celery for asynchronous task processing. The entire system is containerized using Docker, with Traefik managing ingress and routing in production, ensuring a scalable and maintainable architecture well-suited to the project's goals of providing a reliable second-hand item marketplace.
-
-#### **Platform and Infrastructure Choice**
-
-**Platform:** Self-hosted Infrastructure as a Service (IaaS)
-**Key Services:** Docker, Traefik, PostgreSQL, Gunicorn, Celery, RabbitMQ
-**Deployment Host and Regions:** Single Linux Virtual Private Server (e.g., AWS EC2, DigitalOcean Droplet) in a primary region (e.g., `eu-central-1`).
-
-#### **Repository Structure**
-
-**Structure:** Monorepo
-**Monorepo Tool:** N/A (simple folder-based separation)
-**Package Organization:** The project utilizes a simple monorepo structure with two primary top-level directories: `frontend/` for the React SPA and `shargain/` for the Django backend. There is currently no formal monorepo management tool (like Turborepo or Nx), as shared logic is minimal and the API contract serves as the primary interface.
-
-#### **High Level Architecture Diagram**
-
-```mermaid
-graph TD
-    subgraph "User's Browser"
-        A[React SPA]
-    end
-
-    subgraph "Cloud IaaS (e.g., AWS, DigitalOcean)"
-        B[Traefik Reverse Proxy]
-        C[Frontend Static Files]
-        D[Django/Gunicorn API]
-        E[PostgreSQL Database]
-        F[Celery Worker]
-        G[RabbitMQ]
-    end
-
-    A -- HTTPS --> B
-    B -- Serves static files --> C
-    B -- Forwards API requests --> D
-    D -- Reads/writes --> E
-    D -- Dispatches async tasks --> F
-    F -- Reads/writes --> E
-    F -- Uses for message broking --> G
-```
-
-#### **Architectural Patterns**
-
--   **Decoupled SPA + API:** The frontend is a standalone Single-Page Application that communicates with the backend exclusively through a stateless API.
-    -   *Rationale:* This separation allows independent development, deployment, and scaling of the frontend and backend, promoting a clean division of concerns.
--   **Component-Based UI:** The React frontend is built as a collection of reusable, self-contained components.
-    -   *Rationale:* This enhances maintainability, testability, and development speed, as complex UIs can be composed from simpler, independent parts.
--   **Asynchronous Task Processing:** Long-running or non-critical operations are delegated to background workers using Celery.
-    -   *Rationale:* This ensures the main API remains responsive and provides a better user experience by not blocking web requests for heavy processing.
--   **API Gateway (Lightweight):** Traefik acts as a single entry point for all incoming traffic, routing to the appropriate service.
-    -   *Rationale:* This centralizes concerns like SSL termination, routing, and load balancing, simplifying the architecture of the downstream services.
-
-### **Tech Stack**
-
-#### **Technology Stack Table**
-
-| Category | Technology | Version | Purpose | Rationale |
-| :--- | :--- | :--- | :--- | :--- |
-| **Frontend** | | | | |
-| Language | TypeScript | `<5.9.0` | Provides static typing for JavaScript. | Enhances code quality, readability, and developer experience. |
-| Framework | React | `^19.0.0` | A JavaScript library for building user interfaces. | Component-based architecture and vast ecosystem make it ideal for SPAs. |
-| UI Components | shadcn/ui | `latest` | A collection of reusable components built with Radix UI and Tailwind CSS. | Provides accessible, unstyled components that are easy to customize. |
-| State Mgmt | TanStack Query | `^5.84.1` | Manages server state, including caching, refetching, and mutations. | Simplifies data fetching and state synchronization with the backend API. |
-| CSS Framework | Tailwind CSS | `^4.1.11` | A utility-first CSS framework for rapid UI development. | Allows for building custom designs without leaving your HTML. |
-| Build Tool | Vite | `^6.3.5` | A modern frontend build tool that provides an extremely fast development experience. | Offers near-instant server start and Hot Module Replacement (HMR). |
-| Testing | Vitest | `^3.0.5` | A fast and modern testing framework for Vite projects. | Seamless integration with Vite and a familiar Jest-like API. |
-| **Backend** | | | | |
-| Language | Python | `>=3.13` | A high-level, general-purpose programming language. | Strong ecosystem for web development, data science, and more. |
-| Framework | Django | `~5.0` | A high-level Python web framework that encourages rapid development. | "Batteries-included" philosophy provides many features out of the box. |
-| API Style | Django Ninja | `latest` | A fast, async-ready, and type-hint based API framework for Django. | Enables building modern, OpenAPI-compliant APIs with Pydantic-style schemas. |
-| Async Tasks | Celery | `latest` | A distributed task queue for processing asynchronous jobs. | Essential for offloading long-running tasks from the main web thread. |
-| **Database** | | | | |
-| Main Database | PostgreSQL | `13-alpine` | A powerful, open-source object-relational database system. | Known for its reliability, feature robustness, and performance. |
-| Message Broker| RabbitMQ | `latest` | A robust and widely used open-source message broker. | Reliably handles message queuing for Celery's distributed tasks. |
-| Cache | Django Cache | `N/A` | Django's built-in caching framework (e.g., in-memory). | Provides basic caching. Can be swapped for Redis if needed. |
-| **Infrastructure**| | | | |
-| File Storage | Local Filesystem | `N/A` | Stores user-uploaded media on the server's disk. | Simple for development. Recommend AWS S3 for production scalability. |
-| Authentication | Django Auth + django-allauth | `latest` | Handles user registration, login, and session management, including OAuth2. | Combines Django's robust system with `django-allauth`'s comprehensive social authentication support. |
-| IaC Tool | Docker Compose | `latest` | A tool for defining and running multi-container Docker applications. | Simplifies container orchestration for local development and production. |
-| CI/CD | GitHub Actions | `N/A` | Automates the build, test, and deployment pipeline. | Tightly integrated with the GitHub repository for seamless workflow management. |
-| Monitoring | Sentry | `latest` | Error tracking and performance monitoring. | Provides real-time insight into application errors and performance. |
-| **Testing** | | | | |
-| Backend | Pytest | `latest` | A mature, feature-rich testing framework for Python. | Enables writing simple, scalable tests from small units to complex functions. |
-| E2E | TBD | `N/A` | End-to-end testing framework. | Recommendation: Playwright for its modern features and cross-browser support. |
-
-#### **Alternatives Considered**
-
--   **Backend API Framework (Django Ninja vs. FastAPI):**
-    -   **FastAPI** was considered as it is a high-performance, modern Python API framework.
-    -   **Decision:** **Django Ninja** was chosen because it integrates directly into the existing Django framework. This "batteries-included" approach reduces the amount of manual code required for setup, authentication, and ORM integration compared to a standalone FastAPI application.
-
--   **Frontend Framework (React vs. Others):**
-    -   **Decision:** **React** was selected as the frontend framework due to the development team's deep expertise and the extensive ecosystem of libraries and tools available (such as TanStack Query and shadcn/ui), which align perfectly with the project's architectural goals.
-
-### **Data Models**
-
-#### **User (Final, Aligned with API)**
-
-**Purpose:** Represents an individual account on the platform. A user defines scraping targets to monitor for offers and configures how they receive notifications about new findings.
-
-**Key Attributes:**
-- `id`: `integer` - The unique, primary identifier for the user.
-- `username`: `string` - The user's public-facing name.
-- `email`: `string` - The user's private email address, used for login.
-- `tier`: `string` - The user's subscription tier or access level.
-
-##### **TypeScript Interface**
-```typescript
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  tier: string;
-}
-```
-
-##### **Relationships**
--   **One-to-Many:** A `User` has many `ScrappingTarget`s (via the `scraping_targets` related name).
--   **One-to-Many:** A `User` has many `NotificationConfig`s (via the `notification_configs` related name).
-
-#### **ScrappingTarget**
-
-**Purpose:** A user-defined group that contains one or more specific URLs to be monitored for new offers. It serves as the central configuration for a scraping job, linking search pages to a notification channel.
-
-**Key Attributes:**
-- `id`: `integer` - The unique, primary identifier for the scraping target.
-- `name`: `string` - A user-friendly name for the target group (e.g., "Looking for 15-inch laptops").
-- `enable_notifications`: `boolean` - A master switch to enable or disable notifications for all offers found under this target.
-- `is_active`: `boolean` - A master switch to enable or disable the scraping process for this target.
-
-##### **TypeScript Interface**
-```typescript
-interface ScrappingTarget {
-  id: number;
-  name: string;
-  enable_notifications: boolean;
-  is_active: boolean;
-  notification_config: number | null; // ID of the NotificationConfig
-  owner: string; // UUID of the User
-  scraping_urls: ScrapingUrl[]; // Array of associated URLs to be scraped
-}
-
-// We will define this next, but including it here for context
-interface ScrapingUrl {
-  id: number;
-  name: string;
-  url: string;
-  is_active: boolean;
-}
-```
-
-##### **Relationships**
--   **Many-to-One:** Belongs to a `User` (the `owner`).
--   **Many-to-One:** Can be linked to one `NotificationConfig`.
--   **One-to-Many:** Has many `ScrapingUrl`s, which contain the actual URLs to scrape.
--   **One-to-Many:** Has many `Offer`s found during scraping.
-
-#### **ScrapingUrl**
-
-**Purpose:** Represents a single, specific URL that the system will actively monitor for offers. It is the "leaf" in the scraping configuration tree, belonging to a parent `ScrappingTarget`.
-
-**Key Attributes:**
-- `id`: `integer` - The unique, primary identifier for the scraping URL.
-- `name`: `string` - A user-friendly, human-readable name for this specific URL (e.g., "OLX Laptops < $500").
-- `url`: `string` - The full URL of the listings page to be scraped.
-- `is_active`: `boolean` - A switch to enable or disable scraping for this specific URL.
-
-##### **TypeScript Interface**
-```typescript
-interface ScrapingUrl {
-  id: number;
-  name: string;
-  url: string;
-  is_active: boolean;
-  scraping_target: number; // ID of the parent ScrappingTarget
-}
-```
-
-##### **Relationships**
--   **Many-to-One:** Belongs to a `ScrappingTarget`. The `on_delete=models.CASCADE` rule means if the parent `ScrappingTarget` is deleted, all of its associated `ScrapingUrl`s will also be deleted.
--   **One-to-Many:** Has many `ScrapingCheckin`s, which log the history of scraping attempts for this URL.
-
-#### **Offer**
-
-**Purpose:** Represents a single item/listing discovered by the scraper on a target website. It contains all the relevant details of the listing, such as title, price, and image. This is backend only as frontend does not display offers.
-
-**Key Attributes:**
-- `id`: `integer` - The unique, primary identifier for the offer in our system.
-- `url`: `string` - The direct URL to the offer page on the source website.
-- `title`: `string` - The title of the listing (e.g., "Slightly used MacBook Pro").
-- `price`: `number` (optional) - The price of the item.
-- `main_image_url`: `string` (optional) - The URL of the offer's primary image.
-- `list_url`: `string` - The URL of the search/listing page where this offer was found.
-- `published_at`: `DateTime` (optional) - The timestamp when the offer was originally published on the source website.
-- `closed_at`: `DateTime` (optional) - The timestamp when our system detected that the offer was no longer available.
-- `created_at`: `DateTime` - The timestamp when our system first discovered this offer.
-
-##### **Relationships**
--   **Many-to-One:** Belongs to a `ScrappingTarget`. The `on_delete=models.PROTECT` rule is a critical detail: it prevents a `ScrappingTarget` from being deleted if it has associated offers, thus preserving historical data.
-
-#### **NotificationConfig**
-
-**Purpose:** Represents a configured destination channel for sending notifications about new offers. A user can create multiple configurations (e.g., one for Telegram, one for Discord) and assign them to their `ScrappingTarget`s.
-
-**Key Attributes:**
-- `id`: `integer` - The unique, primary identifier for the notification configuration.
-- `name`: `string` - A user-friendly name for this configuration (e.g., "My Personal Telegram").
-- `channel`: `string` - The type of notification channel. This will be an enum of available choices (e.g., "discord", "telegram").
-- `register_token`: `string` - A unique token provided to the user to link their chat client (like Telegram) to this configuration.
-
-##### **TypeScript Interface**
-```typescript
-enum NotificationChannel {
-  DISCORD = 'discord',
-  TELEGRAM = 'telegram',
-}
-
-interface NotificationConfig {
-  id: number;
-  name: string;
-  channel: NotificationChannel;
-  register_token: string;
-  owner: string; // UUID of the User
-}
-```
-
-##### **Relationships**
--   **Many-to-One:** Belongs to a `User` (the `owner`). If the user is deleted, this configuration is also deleted (`on_delete=models.CASCADE`).
--   **One-to-Many:** Can be used by many `ScrappingTarget`s.
-
-<!-- Powered by BMAD™ Core -->
-# Shargain Fullstack Architecture Document
+## Shargain Fullstack Architecture Document
 
 ### **Introduction**
 
@@ -518,6 +272,10 @@ The API is organized around the following core resources:
 -   **Scrapping Targets:** (`/api/public/targets/...`) - Provides functionality to manage scraping targets. The API follows a hybrid approach, combining resource-oriented endpoints for fetching targets with **action-oriented endpoints** (e.g., `/activate`, `/toggle-notifications`, `/send-test-notification`) to execute specific business logic.
 -   **Notifications:** (`/api/public/notifications/...`) - Full CRUD functionality for managing notification configurations.
 
+### **Database Schema**
+
+*This section is a placeholder. It should contain the definitive database schema, preferably as SQL DDL (Data Definition Language) statements, to precisely define tables, columns, indexes, and relationships.*
+
 ### **Components**
 
 #### **Frontend Application (React SPA) (Revised)**
@@ -557,6 +315,14 @@ The API is organized around the following core resources:
     -   **Message Broker (RabbitMQ)**
     -   **Async Job Service (Celery)**
 -   **Technology Stack:** Django, Django Ninja, Python, Gunicorn.
+
+### **External APIs**
+
+*This section is a placeholder. It should be populated with details about any third-party APIs the project integrates with, including authentication methods, key endpoints, and rate limits.*
+
+### **Core Workflows**
+
+*This section is a placeholder. It should contain Mermaid sequence diagrams to illustrate the primary user journeys and system interactions (e.g., user registration, creating a scraping target, receiving a notification).*
 
 ### **Unified Project Structure**
 
@@ -964,5 +730,11 @@ This final checklist validates our architecture against key principles.
 - **Testability:** ✅ **Pass**. The decoupled nature and clear separation of concerns make the application highly testable. The defined testing strategy provides good coverage.
 
 - **Observability:** ✅ **Pass**. The strategy to use Sentry for unified monitoring and structured logging provides a solid foundation for observing the system's health in production.
+
+```
+
+### **Next Steps**
+
+*This section is a placeholder. It should outline the recommended next actions, such as proceeding to frontend-specific architecture, beginning implementation of high-priority user stories, or setting up the defined infrastructure.*
 
 ```
