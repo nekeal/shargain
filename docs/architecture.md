@@ -1,35 +1,40 @@
 <!-- Powered by BMAD™ Core -->
 ## Shargain Fullstack Architecture Document
 
-## **Introduction**
+## Introduction
 
 This document outlines the complete fullstack architecture for the Shargain project, including backend systems, frontend implementation, and their integration. It serves as the single source of truth for AI-driven development, ensuring consistency across the entire technology stack.
 
 This unified approach combines what would traditionally be separate backend and frontend architecture documents, streamlining the development process for modern fullstack applications where these concerns are increasingly intertwined.
 
-### **Starter Template or Existing Project**
+### Starter Template or Existing Project
 
 N/A - Greenfield project.
 
-## **High Level Architecture**
+### Change Log
+| Date | Version | Description | Author |
+| :--- | :--- | :--- | :--- |
+|      |         |             |        |
 
-### **Technical Summary**
+## High Level Architecture
+
+### Technical Summary
 
 The Shargain platform is designed as a decoupled system featuring a modern single-page application (SPA) frontend and a robust monolithic backend. The frontend is a React/TypeScript application built with Vite, communicating via a contract-first RESTful API defined with OpenAPI. The backend is a Django application utilizing Django Ninja for efficient API development and Celery for asynchronous task processing. The entire system is containerized using Docker, with Traefik managing ingress and routing in production, ensuring a scalable and maintainable architecture well-suited to the project's goals of providing a reliable second-hand item marketplace.
 
-### **Platform and Infrastructure Choice**
+### Platform and Infrastructure Choice
 
 **Platform:** Self-hosted Infrastructure as a Service (IaaS)
 **Key Services:** Docker, Traefik, PostgreSQL, Gunicorn, Celery, RabbitMQ
 **Deployment Host and Regions:** Single Linux Virtual Private Server (e.g., AWS EC2, DigitalOcean Droplet) in a primary region (e.g., `eu-central-1`).
 
-### **Repository Structure**
+### Repository Structure
 
 **Structure:** Monorepo
 **Monorepo Tool:** N/A (simple folder-based separation)
 **Package Organization:** The project utilizes a simple monorepo structure with two primary top-level directories: `frontend/` for the React SPA and `shargain/` for the Django backend. There is currently no formal monorepo management tool (like Turborepo or Nx), as shared logic is minimal and the API contract serves as the primary interface.
 
-### **High Level Architecture Diagram**
+### High Level Architecture Diagram
 
 ```mermaid
 graph TD
@@ -55,7 +60,7 @@ graph TD
     F -- Uses for message broking --> G
 ```
 
-### **Architectural Patterns**
+### Architectural Patterns
 
 -   **Decoupled SPA + API:** The frontend is a standalone Single-Page Application that communicates with the backend exclusively through a stateless API.
     -   *Rationale:* This separation allows independent development, deployment, and scaling of the frontend and backend, promoting a clean division of concerns.
@@ -66,9 +71,9 @@ graph TD
 -   **API Gateway (Lightweight):** Traefik acts as a single entry point for all incoming traffic, routing to the appropriate service.
     -   *Rationale:* This centralizes concerns like SSL termination, routing, and load balancing, simplifying the architecture of the downstream services.
 
-## **Tech Stack**
+## Tech Stack
 
-### **Technology Stack Table**
+### Technology Stack Table
 
 | Category | Technology | Version | Purpose | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
@@ -99,9 +104,9 @@ graph TD
 | Backend | Pytest | `latest` | A mature, feature-rich testing framework for Python. | Enables writing simple, scalable tests from small units to complex functions. |
 | E2E | TBD | `N/A` | End-to-end testing framework. | Recommendation: Playwright for its modern features and cross-browser support. |
 
-## **Data Models**
+## Data Models
 
-### **User (Final, Aligned with API)**
+### User (Final, Aligned with API)
 
 **Purpose:** Represents an individual account on the platform. A user defines scraping targets to monitor for offers and configures how they receive notifications about new findings.
 
@@ -111,7 +116,7 @@ graph TD
 - `email`: `string` - The user's private email address, used for login.
 - `tier`: `string` - The user's subscription tier or access level.
 
-#### **TypeScript Interface**
+#### TypeScript Interface
 ```typescript
 interface User {
   id: number;
@@ -121,11 +126,11 @@ interface User {
 }
 ```
 
-#### **Relationships**
+#### Relationships
 -   **One-to-Many:** A `User` has many `ScrappingTarget`s (via the `scraping_targets` related name).
 -   **One-to-Many:** A `User` has many `NotificationConfig`s (via the `notification_configs` related name).
 
-### **ScrappingTarget**
+### ScrappingTarget
 
 **Purpose:** A user-defined group that contains one or more specific URLs to be monitored for new offers. It serves as the central configuration for a scraping job, linking search pages to a notification channel.
 
@@ -135,7 +140,7 @@ interface User {
 - `enable_notifications`: `boolean` - A master switch to enable or disable notifications for all offers found under this target.
 - `is_active`: `boolean` - A master switch to enable or disable the scraping process for this target.
 
-#### **TypeScript Interface**
+#### TypeScript Interface
 ```typescript
 interface ScrappingTarget {
   id: number;
@@ -156,13 +161,13 @@ interface ScrapingUrl {
 }
 ```
 
-#### **Relationships**
+#### Relationships
 -   **Many-to-One:** Belongs to a `User` (the `owner`).
 -   **Many-to-One:** Can be linked to one `NotificationConfig`.
 -   **One-to-Many:** Has many `ScrapingUrl`s, which contain the actual URLs to scrape.
 -   **One-to-Many:** Has many `Offer`s found during scraping.
 
-### **ScrapingUrl**
+### ScrapingUrl
 
 **Purpose:** Represents a single, specific URL that the system will actively monitor for offers. It is the "leaf" in the scraping configuration tree, belonging to a parent `ScrappingTarget`.
 
@@ -172,7 +177,7 @@ interface ScrapingUrl {
 - `url`: `string` - The full URL of the listings page to be scraped.
 - `is_active`: `boolean` - A switch to enable or disable scraping for this specific URL.
 
-#### **TypeScript Interface**
+#### TypeScript Interface
 ```typescript
 interface ScrapingUrl {
   id: number;
@@ -183,11 +188,11 @@ interface ScrapingUrl {
 }
 ```
 
-#### **Relationships**
+#### Relationships
 -   **Many-to-One:** Belongs to a `ScrappingTarget`. The `on_delete=models.CASCADE` rule means if the parent `ScrappingTarget` is deleted, all of its associated `ScrapingUrl`s will also be deleted.
 -   **One-to-Many:** Has many `ScrapingCheckin`s, which log the history of scraping attempts for this URL.
 
-### **Offer**
+### Offer
 
 **Purpose:** Represents a single item/listing discovered by the scraper on a target website. It contains all the relevant details of the listing, such as title, price, and image.
 
@@ -202,7 +207,7 @@ interface ScrapingUrl {
 - `closed_at`: `DateTime` (optional) - The timestamp when our system detected that the offer was no longer available.
 - `created_at`: `DateTime` - The timestamp when our system first discovered this offer.
 
-#### **TypeScript Interface**
+#### TypeScript Interface
 ```typescript
 interface Offer {
   id: number;
@@ -218,10 +223,10 @@ interface Offer {
 }
 ```
 
-#### **Relationships**
+#### Relationships
 -   **Many-to-One:** Belongs to a `ScrappingTarget`. The `on_delete=models.PROTECT` rule is a critical detail: it prevents a `ScrappingTarget` from being deleted if it has associated offers, thus preserving historical data.
 
-### **NotificationConfig**
+### NotificationConfig
 
 **Purpose:** Represents a configured destination channel for sending notifications about new offers. A user can create multiple configurations (e.g., one for Telegram, one for Discord) and assign them to their `ScrappingTarget`s.
 
@@ -231,7 +236,7 @@ interface Offer {
 - `channel`: `string` - The type of notification channel. This will be an enum of available choices (e.g., "discord", "telegram").
 - `register_token`: `string` - A unique token provided to the user to link their chat client (like Telegram) to this configuration.
 
-#### **TypeScript Interface**
+#### TypeScript Interface
 ```typescript
 enum NotificationChannel {
   DISCORD = 'discord',
@@ -247,23 +252,22 @@ interface NotificationConfig {
 }
 ```
 
-#### **Relationships**
+#### Relationships
 -   **Many-to-One:** Belongs to a `User` (the `owner`). If the user is deleted, this configuration is also deleted (`on_delete=models.CASCADE`).
 -   **One-to-Many:** Can be used by many `ScrappingTarget`s.
 
-## **API Specification**
+## API Specification
 
-### **API Style and Specification**
-
+### REST API Specification
 -   **Style:** RESTful API
 -   **Specification Format:** OpenAPI 3.1.0
 -   **Source of Truth:** The canonical API specification is the `openapi.json` file located in the `frontend/` directory. This file is automatically generated by Django Ninja from the backend code. This ensures the specification is always synchronized with the implementation. This architecture document will summarize the API's structure but will not duplicate the full specification.
 
-### **Authentication**
+#### Authentication
 
 The API uses session-based authentication. After a user logs in via the `/api/public/auth/login` endpoint, a `sessionid` HTTP-only cookie is set. Subsequent authenticated requests must include this cookie. Endpoints requiring authentication are marked with the `SessionAuth` security scheme in the OpenAPI specification.
 
-### **Core Resources and Endpoints (Revised)**
+#### Core Resources and Endpoints (Revised)
 
 The API is organized around the following core resources:
 
@@ -272,20 +276,16 @@ The API is organized around the following core resources:
 -   **Scrapping Targets:** (`/api/public/targets/...`) - Provides functionality to manage scraping targets. The API follows a hybrid approach, combining resource-oriented endpoints for fetching targets with **action-oriented endpoints** (e.g., `/activate`, `/toggle-notifications`, `/send-test-notification`) to execute specific business logic.
 -   **Notifications:** (`/api/public/notifications/...`) - Full CRUD functionality for managing notification configurations.
 
-## **Database Schema**
+## Components
 
-*This section is a placeholder. It should contain the definitive database schema, preferably as SQL DDL (Data Definition Language) statements, to precisely define tables, columns, indexes, and relationships.*
-
-## **Components**
-
-### **Frontend Application (React SPA) (Revised)**
+### Frontend Application (React SPA) (Revised)
 
 -   **Responsibility:** To provide the configuration interface for the Shargain platform. Its purpose is to allow users to manage their account, scraping targets, and notification channels. **It is explicitly out of scope for this component to display the offers discovered by the scraper.** Users receive offers only via their configured notification channels (e.g., Telegram, Discord).
 -   **Key Interfaces:** Consumes the backend REST API for all data and business operations. It does not have any direct access to the database or other backend services.
 -   **Dependencies:** Depends entirely on the **Backend API** to function.
 -   **Technology Stack:** React 19, Vite, TypeScript, TanStack Router, TanStack Query, Tailwind CSS.
 
-### **Scraping Microservice (External)**
+### Scraping Microservice (External)
 
 -   **Responsibility:** To operate as a fully independent service that drives the scraping process. It periodically polls the main backend for jobs, executes the scraping, and pushes the results back.
 -   **Key Interfaces:**
@@ -297,7 +297,7 @@ The API is organized around the following core resources:
     -   **External Websites:** Dependent on the availability and structure of the target websites.
 -   **Technology Stack:** Independent of this project. The specific technologies are not relevant to this architecture, only its interfaces are.
 
-### **Backend API (Django) (Revised)**
+### Backend API (Django) (Revised)
 
 -   **Responsibility:** To serve the frontend application, manage core data, and provide an interface for the external scraper. Its duties include:
     -   Handling user authentication and account management.
@@ -316,15 +316,28 @@ The API is organized around the following core resources:
     -   **Async Job Service (Celery)**
 -   **Technology Stack:** Django, Django Ninja, Python, Gunicorn.
 
-## **External APIs**
+### Component Diagrams
+*This section is a placeholder. It should contain Mermaid diagrams to visualize component relationships.*
+
+## External APIs
 
 *This section is a placeholder. It should be populated with details about any third-party APIs the project integrates with, including authentication methods, key endpoints, and rate limits.*
 
-## **Core Workflows**
+## Core Workflows
 
 *This section is a placeholder. It should contain Mermaid sequence diagrams to illustrate the primary user journeys and system interactions (e.g., user registration, creating a scraping target, receiving a notification).*
 
-## **Unified Project Structure**
+## Database Schema
+
+*This section is a placeholder. It should contain the definitive database schema, preferably as SQL DDL (Data Definition Language) statements, to precisely define tables, columns, indexes, and relationships.*
+
+## Frontend Architecture
+*This section is a placeholder. It should define frontend-specific details like component organization, state management, and routing architecture based on the template.*
+
+## Backend Architecture
+*This section is a placeholder. It should define backend-specific details like service/function organization, database access patterns, and auth implementation based on the template.*
+
+## Unified Project Structure
 
 The project is organized as a monorepo, containing the frontend, backend, and all related configuration in a single Git repository. This co-location simplifies cross-stack development and ensures consistency.
 
@@ -355,18 +368,18 @@ shargain/ (Monorepo Root)
 └── pyproject.toml              # Backend dependencies
 ```
 
-## **Development Workflow**
+## Development Workflow
 
-### **Local Development Setup**
+### Local Development Setup
 
-#### **Prerequisites**
+#### Prerequisites
 
 Before you begin, ensure you have the following tools installed on your system:
 -   Docker & Docker Compose
 -   `pnpm` (for frontend package management)
 -   `uv` (for backend Python package management)
 
-#### **Initial Setup**
+#### Initial Setup
 
 To set up the project for the first time, follow these steps:
 
@@ -391,7 +404,7 @@ cd ..
 docker-compose up --build -d
 ```
 
-#### **Development Commands**
+#### Development Commands
 
 Once the initial setup is complete, use these commands for daily development:
 
@@ -409,9 +422,9 @@ cd frontend && pnpm test
 pytest shargain/
 ```
 
-### **Environment Configuration**
+### Environment Configuration
 
-#### **Required Environment Variables**
+#### Required Environment Variables
 
 -   **Backend (`.env`):**
     -   `SECRET_KEY`: Django's secret key for cryptographic signing.
@@ -421,9 +434,9 @@ pytest shargain/
 -   **Frontend (`frontend/.env.development`):**
     -   `VITE_API_URL`: The full URL to the local backend API (e.g., `http://localhost:8000`).
 
-## **Deployment Architecture**
+## Deployment Architecture
 
-### **Deployment Strategy**
+### Deployment Strategy
 
 The entire application is deployed as a set of Docker containers, orchestrated by Docker Compose on a single server.
 
@@ -438,7 +451,7 @@ The entire application is deployed as a set of Docker containers, orchestrated b
     -   **Build Command:** `docker compose -f compose.yml build backend`
     -   **Deployment Method:** The production `compose.yml` file is run on the server, which starts the `backend` API container, runs database `migrations`, and collects static files.
 
-### **CI/CD Pipeline (GitHub Actions) - Explained**
+### CI/CD Pipeline
 
 We use a system called GitHub Actions to create an automated assembly line for our code. Whenever a developer merges new code into the `main` branch, this assembly line kicks off automatically to ensure the code is tested and safely deployed to our live server.
 
@@ -448,16 +461,16 @@ The process works in three main stages:
     -   First, the system acts as a quality checker. It automatically runs every single test for both the frontend and the backend.
     -   **Goal:** To catch bugs early. If even one test fails, the process stops immediately, and the team is notified. This prevents a bad update from ever leaving the starting gate.
 
-2.  **Stage 2: Build the Application "Boxes"**
+2.  **Stage 2: Build the Application "Boxes"
     -   Once all tests pass, the system builds the application. It packages the backend code and the frontend code into separate, standardized containers called "Docker images".
     -   **Goal:** To create self-contained, ready-to-run versions of our application. Think of them as perfectly packed, sealed boxes that will run identically anywhere. These boxes are then uploaded to a secure storage library (a container registry).
 
-3.  **Stage 3: Deploy to the Live Server**
+3.  **Stage 3: Deploy to the Live Server
     -   After the "boxes" are built and stored, the system automatically connects to our production server.
     -   It tells the server to pull down the new application boxes and start them up, seamlessly replacing the old ones.
     -   **Goal:** To update the live application with the new code, with zero manual work and zero downtime.
 
-### **Environments**
+### Environments
 
 | Environment | Frontend URL | Backend URL | Purpose |
 | :--- | :--- | :--- | :--- |
@@ -465,9 +478,9 @@ The process works in three main stages:
 | Staging | `https://staging.yourdomain.com` | `https://staging.yourdomain.com` | Pre-production testing |
 | Production | `https://yourdomain.com` | `https://yourdomain.com` | Live environment |
 
-## **Security and Performance**
+## Security and Performance
 
-### **Security Requirements**
+### Security Requirements
 
 -   **Frontend Security:**
     -   **CSP Headers:** A strict Content Security Policy (CSP) must be implemented to prevent Cross-Site Scripting (XSS) attacks. It should only allow scripts, styles, and images from trusted, specified domains.
@@ -484,7 +497,7 @@ The process works in three main stages:
     -   **Password Policy:** The application must enforce strong password policies using Django's built-in password validators (e.g., minimum length, complexity).
     -   **Secrets Management:** All secrets (e.g., `SECRET_KEY`, database passwords, API tokens) must be loaded from environment variables and never hard-coded.
 
-### **Performance Optimization**
+### Performance Optimization
 
 -   **Frontend Performance:**
     -   **Bundle Size Target:** The initial JavaScript bundle size should be kept under 250KB. Use code-splitting by route (handled by Vite) and lazy-load heavy components.
@@ -496,30 +509,9 @@ The process works in three main stages:
     -   **Database Optimization:** Ensure all foreign keys and frequently filtered columns have database indexes. Use tools like `django-debug-toolbar` during development to identify and eliminate slow or duplicate queries.
     -   **Asynchronous Operations:** Continue to use the `Async Job Service (Celery)` for any operation that is not instantaneous, ensuring the API remains fast.
 
-## Accessibility (A11y)
+## Testing Strategy
 
-### Compliance Target
-
--   **Standard:** The application **MUST** adhere to the **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** standard.
-
-### Core Principles
-
-1.  **Semantic HTML:** Use correct, semantic HTML5 elements (`<nav>`, `<main>`, `<button>`, etc.) at all times. This is the foundation of accessibility and ensures screen readers can interpret the page structure.
-2.  **Keyboard Navigation:** All interactive elements, including links, buttons, and form fields, **MUST** be fully operable using only the keyboard. Focus order must be logical, and a visible focus indicator (outline) must always be present.
-3.  **ARIA Roles:** For complex custom components (like modals or custom dropdowns), appropriate ARIA (Accessible Rich Internet Applications) roles and attributes **MUST** be used to describe their function to assistive technologies. However, native HTML elements should always be preferred over ARIA when possible.
-4.  **Color Contrast:** All text must meet a minimum contrast ratio of **4.5:1** against its background to be legible for users with visual impairments.
-
-### Testing Strategy
-
-1.  **Automated Linting:** The `eslint-plugin-jsx-a11y` package **MUST** be integrated into our ESLint configuration to catch common accessibility issues during development.
-2.  **Manual Testing:** Before a feature is considered complete, it **MUST** be manually tested for:
-    -   Full keyboard navigability.
-    -   Usability with a screen reader (e.g., VoiceOver on macOS, NVDA on Windows).
-
-
-## **Testing Strategy (Revised)**
-
-### **The Testing Pyramid**
+### The Testing Pyramid
 
 Our strategy emphasizes having a large base of fast, inexpensive unit tests and a smaller layer of integration tests to verify that components work together correctly. End-to-end testing is currently out of scope.
 
@@ -531,7 +523,7 @@ Our strategy emphasizes having a large base of fast, inexpensive unit tests and 
 /------------------\
 ```
 
-### **Test Organization**
+### Test Organization
 
 -   **Frontend Tests (Vitest):**
     -   Unit and integration tests for React components are written with Vitest and React Testing Library.
@@ -543,9 +535,9 @@ Our strategy emphasizes having a large base of fast, inexpensive unit tests and 
     -   Tests are located in a `tests` subdirectory within each Django app.
     -   **Structure:** `shargain/offers/tests/test_models.py`
 
-### **Test Examples**
+### Test Examples
 
-#### **Frontend Component Test (Vitest)**
+#### Frontend Component Test (Vitest)
 
 ```typescript
 // src/components/Header.test.tsx
@@ -561,7 +553,7 @@ test('renders the header with the application name', () => {
 });
 ```
 
-#### **Backend API Test (Pytest)**
+#### Backend API Test (Pytest)
 
 ```python
 # shargain/offers/tests/test_api.py
@@ -579,16 +571,16 @@ def test_get_targets_unauthenticated(client: APIClient):
     assert response.status_code == 403  # Or 401, depending on auth setup
 ```
 
-## **Coding Standards**
+## Coding Standards
 
-### **Critical Fullstack Rules**
+### Critical Fullstack Rules
 
 1.  **API Interaction:** All frontend communication with the backend API **MUST** go through the auto-generated TanStack Query hooks. Direct use of `fetch` or `axios` is forbidden.
 2.  **Component Design:** New React components **MUST** be built by composing the generic UI primitives from the `src/components/ui/` directory to ensure visual consistency.
 3.  **Asynchronous Logic:** Any backend process that is not instantaneous (e.g., sending a notification) **MUST** be delegated to the `Async Job Service (Celery)` to keep the API responsive.
 4.  **API Separation:** The public API (e.g., `/api/public/...`) is exclusively for the frontend. The internal API endpoints (e.g., `/api/scrapping-targets`) are exclusively for the external scraping microservice. Do not cross these boundaries.
 
-### **Naming Conventions**
+### Naming Conventions
 
 | Element | Convention | Example |
 | :--- | :--- | :--- |
@@ -599,9 +591,29 @@ def test_get_targets_unauthenticated(client: APIClient):
 | Python Code | `snake_case` | `def get_active_targets():` |
 | TypeScript Code | `camelCase` | `const newTarget = ...` |
 
-## **Error Handling Strategy**
+### Accessibility (A11y)
 
-### **Error Flow Diagram**
+#### Compliance Target
+
+-   **Standard:** The application **MUST** adhere to the **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** standard.
+
+#### Core Principles
+
+1.  **Semantic HTML:** Use correct, semantic HTML5 elements (`<nav>`, `<main>`, `<button>`, etc.) at all times. This is the foundation of accessibility and ensures screen readers can interpret the page structure.
+2.  **Keyboard Navigation:** All interactive elements, including links, buttons, and form fields, **MUST** be fully operable using only the keyboard. Focus order must be logical, and a visible focus indicator (outline) must always be present.
+3.  **ARIA Roles:** For complex custom components (like modals or custom dropdowns), appropriate ARIA (Accessible Rich Internet Applications) roles and attributes **MUST** be used to describe their function to assistive technologies. However, native HTML elements should always be preferred over ARIA when possible.
+4.  **Color Contrast:** All text must meet a minimum contrast ratio of **4.5:1** against its background to be legible for users with visual impairments.
+
+#### Testing Strategy
+
+1.  **Automated Linting:** The `eslint-plugin-jsx-a11y` package **MUST** be integrated into our ESLint configuration to catch common accessibility issues during development.
+2.  **Manual Testing:** Before a feature is considered complete, it **MUST** be manually tested for:
+    -   Full keyboard navigability.
+    -   Usability with a screen reader (e.g., VoiceOver on macOS, NVDA on Windows).
+
+## Error Handling Strategy
+
+### Error Flow Diagram
 
 This diagram shows the flow of an error from the backend to the frontend when a user requests a resource that doesn't exist.
 
@@ -622,7 +634,7 @@ sequenceDiagram
     Sentry-->>-Component: Acknowledges
 ```
 
-### **Standard Error Response Format**
+### Error Response Format
 
 All API errors (4xx and 5xx status codes) **MUST** return a JSON body with the following structure. This is based on the `ErrorSchema` found in the OpenAPI specification.
 
@@ -632,7 +644,7 @@ interface ApiError {
 }
 ```
 
-### **Frontend Error Handling**
+### Frontend Error Handling
 
 In the frontend, TanStack Query automatically catches any non-2xx API responses and places the error object into the `error` property of the `useQuery` or `useMutation` result. Components must check for this error state.
 
@@ -668,7 +680,7 @@ const TargetDetail: React.FC<{ targetId: number }> = ({ targetId }) => {
 };
 ```
 
-### **Backend Error Handling**
+### Backend Error Handling
 
 In the backend, Django Ninja should be configured with a global exception handler to catch exceptions and convert them into the standard JSON error format, ensuring a consistent response for all errors.
 
@@ -690,9 +702,9 @@ def permission_denied_handler(request: HttpRequest, exc: PermissionDenied):
 # Similar handlers should be created for other common exceptions like Http404, ValidationError, etc.
 ```
 
-## **Monitoring and Observability**
+## Monitoring and Observability
 
-### **Monitoring Stack**
+### Monitoring Stack
 
 We will use **Sentry** as our primary, unified monitoring platform. It provides a comprehensive solution covering error tracking, performance monitoring, and session replay for both the frontend and backend.
 
@@ -701,21 +713,21 @@ We will use **Sentry** as our primary, unified monitoring platform. It provides 
 -   **Error Tracking:** Sentry Error Tracking will be used across both the frontend and backend to capture, aggregate, and alert on all application errors in real-time.
 -   **Logging:** The application will log to `stdout`/`stderr` within the Docker containers. In production, the Docker host can be configured to forward these logs to a log aggregation service (e.g., Datadog, Logstash) for long-term storage and analysis.
 
-### **Key Metrics to Monitor**
+### Key Metrics
 
 -   **Frontend Metrics:**
-    -   **Core Web Vitals (LCP, FID, CLS):** To measure the user's perceived loading experience.
-    -   **JavaScript Errors:** The rate of unhandled exceptions in the browser.
-    -   **API Latency:** The time it takes for API requests to complete, as measured from the client-side.
-    -   **User Interactions:** Key conversion funnels, such as the number of users who successfully create a scraping target.
+    -   Core Web Vitals (LCP, FID, CLS): To measure the user's perceived loading experience.
+    -   JavaScript Errors: The rate of unhandled exceptions in the browser.
+    -   API Latency: The time it takes for API requests to complete, as measured from the client-side.
+    -   User Interactions: Key conversion funnels, such as the number of users who successfully create a scraping target.
 
 -   **Backend Metrics:**
-    -   **Request Rate (Throughput):** The number of requests per minute the API is handling.
-    -   **Error Rate:** The percentage of 5xx server errors.
-    -   **API Latency (p95/p99):** The 95th and 99th percentile response times for API endpoints.
-    -   **Database Query Performance:** The execution time of the slowest and most frequent database queries.
+    -   Request Rate (Throughput): The number of requests per minute the API is handling.
+    -   Error Rate: The percentage of 5xx server errors.
+    -   API Latency (p95/p99): The 95th and 99th percentile response times for API endpoints.
+    -   Database Query Performance: The execution time of the slowest and most frequent database queries.
 
-## **Checklist Results Report**
+## Checklist Results Report
 
 This final checklist validates our architecture against key principles.
 
@@ -731,10 +743,6 @@ This final checklist validates our architecture against key principles.
 
 - **Observability:** ✅ **Pass**. The strategy to use Sentry for unified monitoring and structured logging provides a solid foundation for observing the system's health in production.
 
-```
-
-## **Next Steps**
+## Next Steps
 
 *This section is a placeholder. It should outline the recommended next actions, such as proceeding to frontend-specific architecture, beginning implementation of high-priority user stories, or setting up the defined infrastructure.*
-
-```
