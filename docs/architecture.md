@@ -267,7 +267,7 @@ interface NotificationConfig {
 
 The API uses session-based authentication. After a user logs in via the `/api/public/auth/login` endpoint, a `sessionid` HTTP-only cookie is set. Subsequent authenticated requests must include this cookie. Endpoints requiring authentication are marked with the `SessionAuth` security scheme in the OpenAPI specification.
 
-#### Core Resources and Endpoints (Revised)
+#### Core Resources and Endpoints
 
 The API is organized around the following core resources:
 
@@ -278,7 +278,7 @@ The API is organized around the following core resources:
 
 ## Components
 
-### Frontend Application (React SPA) (Revised)
+### Frontend Application (React SPA)
 
 -   **Responsibility:** To provide the configuration interface for the Shargain platform. Its purpose is to allow users to manage their account, scraping targets, and notification channels. **It is explicitly out of scope for this component to display the offers discovered by the scraper.** Users receive offers only via their configured notification channels (e.g., Telegram, Discord).
 -   **Key Interfaces:** Consumes the backend REST API for all data and business operations. It does not have any direct access to the database or other backend services.
@@ -297,7 +297,7 @@ The API is organized around the following core resources:
     -   **External Websites:** Dependent on the availability and structure of the target websites.
 -   **Technology Stack:** Independent of this project. The specific technologies are not relevant to this architecture, only its interfaces are.
 
-### Backend API (Django) (Revised)
+### Backend API (Django)
 
 -   **Responsibility:** To serve the frontend application, manage core data, and provide an interface for the external scraper. Its duties include:
     -   Handling user authentication and account management.
@@ -317,15 +317,187 @@ The API is organized around the following core resources:
 -   **Technology Stack:** Django, Django Ninja, Python, Gunicorn.
 
 ### Component Diagrams
-*This section is a placeholder. It should contain Mermaid diagrams to visualize component relationships.*
+
+```mermaid
+graph TD
+    subgraph "User"
+        U[User's Browser]
+    end
+
+    subgraph "Shargain System (Hosted on IaaS)"
+        T[Traefik Reverse Proxy]
+
+        subgraph "Frontend"
+            F[React SPA <br>(Nginx Container)]
+        end
+
+        subgraph "Backend"
+            B[Backend API <br>(Django/Gunicorn Container)]
+            C[Async Job Service <br>(Celery Container)]
+            DB[(PostgreSQL Database)]
+            MQ[(RabbitMQ Broker)]
+        end
+    end
+
+    subgraph "External Services"
+        S[Scraping Microservice]
+        W[Target Websites]
+        N[Notification Services <br>(e.g., Telegram API)]
+    end
+
+    U -- "Interacts with" --> F
+    F -- "API Calls (HTTPS)" --> T
+    T -- "Serves Static Files" --> F
+    T -- "Forwards API Traffic" --> B
+
+    B -- "Reads/Writes Data" --> DB
+    B -- "Dispatches Jobs" --> MQ
+    C -- "Consumes Jobs" --> MQ
+    C -- "Reads/Writes Data" --> DB
+    C -- "Sends Notifications" --> N
+
+    S -- "Fetches Scraping Jobs (Internal API)" --> B
+    S -- "Submits Found Offers (Internal API)" --> B
+    S -- "Scrapes" --> W
+```
 
 ## External APIs
 
-*This section is a placeholder. It should be populated with details about any third-party APIs the project integrates with, including authentication methods, key endpoints, and rate limits.*
+### Telegram Bot API
+
+-   **Purpose:** To send notifications about newly found offers to users who have configured a Telegram channel.
+-   **Documentation:** `https://core.telegram.org/bots/api`
+-   **Base URL(s):** `https://api.telegram.org/bot<token>/`
+-   **Authentication:** A secret Bot Token, which is included in the request URL. This token must be stored securely as an environment variable and should never be exposed client-side.
+-   **Rate Limits:** The API has rate limits that must be respected. While high, bulk notifications should be sent with care, potentially with small delays between messages to avoid being flagged.
+
+**Key Endpoints Used:**
+-   `POST /sendMessage` - This is the primary endpoint used to send a text message to a specific chat ID. The message content will include the offer's title, price, and a direct link.
+
+**Integration Notes:**
+-   The `Async Job Service (Celery)` is solely responsible for making outbound calls to this API.
+-   The application must gracefully handle potential errors, such as an invalid `chat_id` (if a user revokes permission) or network failures.
+-   The `register_token` in the `NotificationConfig` model is used to associate a user's Telegram `chat_id` with their Shargain account during a one-time setup flow.
+
+### Target Websites (e.g., OLX, Vinted)
+
+-   **Purpose:** To serve as the source of data (offers) for the **Scraping Microservice**.
+-   **Documentation:** N/A. There is no official, public API. The "contract" is the website's HTML structure, which is volatile and subject to change without any notice.
+-   **Base URL(s):** The specific URLs of the search/listing pages provided by users in the `ScrapingUrl` entries.
+-   **Authentication:** Not typically required for accessing public listings. However, the scraper may need to manage cookies or a basic session to mimic a regular user and avoid detection.
+-   **Rate Limits:** While there are no published rate limits, overly aggressive or rapid-fire requests will likely result in temporary IP bans, CAPTCHA challenges, or other anti-bot measures.
+
+**Integration Notes:**
+-   **High Instability:** This is the most fragile part of the system. The scraping logic must be designed for resilience and adaptability, as changes to the target websites' HTML layout are expected and will break the scraper.
+-   **"Good Citizen" Scraping:** The **Scraping Microservice** must be configured to be respectful. This includes using realistic user-agents, introducing randomized delays between requests, and potentially rotating IP addresses to avoid being blocked.
+-   **Maintenance Overhead:** A significant portion of ongoing maintenance for this project will likely be updating the scraper to adapt to changes on these target websites.
 
 ## Core Workflows
 
-*This section is a placeholder. It should contain Mermaid sequence diagrams to illustrate the primary user journeys and system interactions (e.g., user registration, creating a scraping target, receiving a notification).*
+This section contains diagrams and descriptions for the primary user journeys and system interactions.
+
+### 1. User Registration & First Login
+
+This workflow describes how a new user creates an account and logs in.
+
+1.  **Initiation:** The user navigates to the signup page on the **Frontend** and submits their credentials (e.g., username, email, password).
+2.  **Request:** The **Frontend** sends a `POST` request with the user's details to the `/api/public/auth/signup` endpoint on the **Backend API**.
+3.  **Processing:** The **Backend API** validates the submitted data, ensuring the username and email are unique. It then hashes the password and creates a new `User` record in the **Database**.
+4.  **Response & Login:** Upon successful creation, the **Backend API** automatically logs the new user in by creating a new session and returning a secure, `HttpOnly` session cookie to the **Frontend**.
+5.  **Completion:** The **Frontend** receives the successful response and redirects the user to their dashboard, now as an authenticated user.
+
+### 2. Linking a Notification Channel to a Target
+
+This workflow describes the webhook-driven process for connecting a user's Telegram account to a scraping target.
+
+1.  **Initiation:** While viewing a `ScrappingTarget` on the **Frontend**, the user clicks "Add Notification Channel".
+2.  **Redirection:** The **Frontend**, having already generated a unique `register_token` for this action, redirects the user's browser to a special Telegram URL (e.g., `https://t.me/YourBotName?start=<register_token>`).
+3.  **User Action:** The user's Telegram client opens, and they click the "START" button to interact with the bot.
+4.  **Webhook:** **Telegram's servers** send a webhook (an HTTP POST request) to a pre-configured endpoint on our **Backend API** (e.g., `/api/webhooks/telegram`). This webhook payload contains the `register_token` and the user's unique Telegram `chat_id`.
+5.  **Processing:** The **Backend API** receives the webhook. It finds the `register_token` in its system, identifies the associated user, and securely extracts the `chat_id` from the payload.
+6.  **Creation & Linking:** The **Backend API** creates a new `NotificationConfig` record in the **Database**, saving the user's `chat_id`. It then programmatically links this new configuration to the `ScrappingTarget` from which the user initiated the process.
+7.  **Confirmation (Optional):** The **Backend API** can send a confirmation message back to the user via the Telegram Bot API to confirm the successful link.
+
+### 3. End-to-End Offer Notification (The "Happy Path")
+
+```mermaid
+sequenceDiagram
+    participant Scraper as Scraping Microservice
+    participant Target as Target Website
+    participant API as Backend API (Django)
+    participant DB as Database (PostgreSQL)
+    participant Broker as Message Broker (RabbitMQ)
+    participant Worker as Async Job Service (Celery)
+    participant Telegram as Telegram Bot API
+
+    loop Periodic Scraping Cycle
+        Scraper->>+API: GET /api/internal/scraping-jobs
+        API->>+DB: Fetch active ScrapingUrls
+        DB-->>-API: Return list of URLs
+        API-->>-Scraper: Return list of URLs
+    end
+
+    Scraper->>+Target: GET /product-listings
+    Target-->>-Scraper: HTML Response
+
+    Scraper->>Scraper: Parse HTML, find new offer
+
+    opt Check if offer is new
+        Scraper->>+API: GET /api/internal/offers?url=...
+        API-->>-Scraper: 404 Not Found (Offer is new)
+    end
+
+    Scraper->>+API: POST /api/internal/offers (submit new offer data)
+    API->>API: Validate data
+    API->>+DB: Save new Offer record
+    DB-->>-API: Confirm save
+    API->>+Broker: Dispatch notification task (e.g., send_telegram.delay(offer_id))
+    Note right of API: Returns 201 Created to Scraper immediately
+    API-->>-Scraper: 201 Created
+    Broker-->>-API: Acknowledge task received
+
+    Note over Broker, Worker: Asynchronous Hand-off
+    Worker->>+Broker: Consume notification task from queue
+    Worker->>+DB: Fetch offer details and user's chat_id
+    DB-->>-Worker: Return offer and config data
+    Worker->>Worker: Format notification message
+
+    Worker->>+Telegram: POST /sendMessage (to user's chat_id)
+    Telegram-->>-Worker: 200 OK
+```
+
+### 4. Subscription Management (Stripe)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant API as Backend API (Django)
+    participant Stripe
+    participant DB as Database (PostgreSQL)
+
+    User->>+Frontend: Clicks "Upgrade to Pro Plan"
+    Frontend->>+API: POST /api/public/subscriptions/create-checkout-session
+    API->>+Stripe: create_checkout_session(user_id, plan='pro')
+    Stripe-->>-API: Returns {session_id, url}
+
+    API-->>-Frontend: Returns {url: "https://checkout.stripe.com/..."}
+    Frontend->>User: Redirect to Stripe Checkout URL
+
+    User->>+Stripe: Enters payment details and confirms
+    Stripe->>Stripe: Processes payment securely
+
+    Note over Stripe, API: Later, asynchronously...
+
+    Stripe-->>+API: Webhook: POST /api/webhooks/stripe (event: 'checkout.session.completed')
+    API->>API: Verify Stripe webhook signature
+    API->>+DB: UPDATE users SET tier='pro' WHERE id=...
+    DB-->>-API: Confirm update
+    API-->>-Stripe: 200 OK
+```
+
+### 5. User Deactivates a Target
+This is simply a `POST` request to the backend to disable the whole target.
 
 ## Database Schema
 
@@ -407,10 +579,106 @@ CREATE INDEX "offers_offer_created_at_idx" ON "offers_offer" ("created_at");
 ```
 
 ## Frontend Architecture
-*This section is a placeholder. It should define frontend-specific details like component organization, state management, and routing architecture based on the template.*
+
+This section defines the specific architectural patterns, folder structure, and conventions for the React Single-Page Application (SPA).
+
+### Folder Structure
+
+The `frontend/src/` directory is organized to promote scalability, maintainability, and a clear separation of concerns.
+
+```plaintext
+src/
+├── components/
+│   ├── common/         # Custom, reusable components (e.g., PageHeader, DataTable)
+│   ├── features/       # Components specific to a feature (e.g., target-form)
+│   └── ui/             # Unstyled base components from shadcn/ui (Button, Input)
+├── hooks/              # Custom React hooks for reusable logic (e.g., use-media-query)
+├── lib/
+│   ├── api/            # Auto-generated API client and TanStack Query hooks (DO NOT EDIT)
+│   └── utils.ts        # Shared utility functions (e.g., cn for classnames)
+├── routes/             # File-based routing definitions for TanStack Router
+│   ├── __root.tsx      # The root layout component for the entire app
+│   ├── index.tsx       # The component for the '/' route (landing page)
+│   └── dashboard.tsx   # The component for the '/dashboard' route
+└── types/              # Shared TypeScript types and interfaces (if not from API)
+```
+
+### Component Strategy
+
+Our strategy is centered around composition, leveraging `shadcn/ui` as a primitive component library.
+
+1.  **Primitives First:** All UI elements are built upon the unstyled, accessible primitives found in `src/components/ui/`. These are the foundational building blocks.
+2.  **Composition:** We create custom, reusable components (e.g., a `DataTable` with sorting and filtering) by composing these primitives. These live in `src/components/common/`.
+3.  **Feature-Specific Components:** Components that are only used within a single feature or route (e.g., a complex form for creating a `ScrappingTarget`) are located in `src/components/features/`.
+4.  **Smart vs. Dumb Components:**
+    -   **Smart Components (Containers):** These are typically the route-level components found in `src/routes/`. Their primary responsibility is to fetch data using TanStack Query hooks and manage application state. They then pass this data down to presentational components as props.
+    -   **Dumb Components (Presentational):** The majority of components (in `common/` and `features/`) are "dumb." They receive data and callbacks via props, render the UI, and have little to no internal state of their own. This makes them highly reusable and easy to test.
+
+### State Management
+
+We strictly differentiate between server state and client state.
+
+-   **Server State:** Exclusively managed by **TanStack Query**. This is the source of truth for any data that comes from the backend. It handles all caching, background refetching, and optimistic updates for mutations. There should be no other stores (like Redux or Zustand) for server data.
+-   **Global UI State:** For minimal, app-wide UI state (e.g., theme preference, mobile navigation visibility), we will use React's built-in **Context API**. A lightweight library like Zustand will only be considered if performance with the Context API becomes a demonstrable issue.
+-   **Local Component State:** State that is confined to a single component (e.g., the current value of an input field) should be managed with standard `useState` and `useReducer` hooks.
+
+### Routing
+
+Routing is handled by **TanStack Router** using its file-based routing engine.
+
+-   **File-based:** The URL structure of the application is determined by the file and folder hierarchy within the `src/routes/` directory.
+-   **Layouts:** The `__root.tsx` file defines the root layout that wraps all pages. Nested layouts can be created by creating new directories with their own layout files.
+-   **Data Loading:** Data for a route should be pre-fetched using the `loader` function provided by TanStack Router. This integrates seamlessly with TanStack Query to ensure data is available before a page component renders, which helps prevent loading spinners from flickering on screen.
+
+### API Interaction
+
+This is a critical rule for maintaining type safety and consistency.
+
+-   **Generated Client is King:** All communication with the backend REST API **MUST** go through the auto-generated TanStack Query hooks located in `src/lib/api/`. The `pnpm generate:api-client` command is the source of truth for this client.
+-   **No Direct `fetch` or `axios`:** Direct, manual use of `fetch` or other HTTP clients (like `axios`) for interacting with the backend API is strictly forbidden. Using the generated hooks ensures that all API calls are type-safe and that server state is managed correctly by TanStack Query.
 
 ## Backend Architecture
-*This section is a placeholder. It should define backend-specific details like service/function organization, database access patterns, and auth implementation based on the template.*
+
+This section describes the architecture of the backend system, which is a modular monolith Django application designed for clarity, security, and performance.
+
+### Application Structure (Django Apps)
+
+The backend is organized into several discrete Django applications, each with a single, well-defined responsibility. This modular approach simplifies development and maintenance.
+
+-   `shargain/accounts/`: Manages user models, profiles, and authentication. It integrates with `django-allauth` to handle registration and login flows (including social auth if configured).
+-   `shargain/offers/`: The core application containing the primary business models: `ScrappingTarget`, `ScrapingUrl`, and `Offer`. It holds the logic for managing these resources. The business logic mainly lives in `shargain/offers/application/` directory which contains commands and queries which are interface to the rest of the application.
+-   `shargain/notifications/`: Manages `NotificationConfig` models and contains the business logic for preparing and dispatching notifications to the async task queue.
+-   `shargain/public_api/`: This app serves as the primary entry point for the REST API. It initializes the `NinjaAPI` instance and includes modular `APIRouter` instances from the other applications to construct the complete `openapi.json` specification.
+
+### API Design with Django Ninja
+
+Our API design philosophy prioritizes type safety, automatic documentation, and developer efficiency.
+
+-   **Contract-First via Code:** We use Django Ninja to automatically generate the `openapi.json` specification from our Python code. Type hints and Pydantic schemas define the API contract, ensuring the implementation and documentation are always synchronized.
+-   **Schema Validation:** All incoming request data (bodies, query parameters) is automatically validated against Pydantic schemas. This provides robust data integrity at the edge of the application, preventing invalid data from reaching the business logic.
+-   **Modular Routers:** To keep the API code organized, each Django app exposes its own `APIRouter`. These routers are then included in the main `NinjaAPI` instance in the `public_api` app. This allows API endpoints to live alongside the models and logic they relate to.
+
+### Authentication and Authorization
+
+Security is handled with a multi-layered approach.
+
+-   **Frontend Authentication:** The primary mechanism is **session-based authentication**. After a user logs in, Django sets a secure, `HttpOnly` session cookie. This cookie is automatically sent by the browser on subsequent requests and is not accessible to JavaScript, mitigating the risk of XSS-based token theft.
+-   **Internal API Authentication:** The endpoints for the `Scraping Microservice` will be secured using a simple **API Key**. The scraper will include a pre-shared secret in an HTTP header, which will be validated by a custom Django Ninja authentication class.
+-   **Authorization:** Permissions are enforced within each API view. For any action on a resource, the backend logic **MUST** first verify that the authenticated user (`request.user`) is the owner of that resource. This prevents one user from accessing or modifying another user's data.
+
+### Asynchronous Task Processing (Celery)
+
+To ensure the API remains fast and responsive, any operation that is not instantaneous is delegated to a background task.
+
+-   **Flow:**
+    1.  **Dispatch:** When a long-running action is triggered (e.g., sending a notification), the API view calls `.delay()` on a Celery task function (e.g., `send_telegram_notification.delay(offer_id)`).
+    2.  **Queue:** This action places a message describing the job onto a **RabbitMQ** queue and the API returns an immediate response to the client.
+    3.  **Execution:** An independent **Celery worker** process continually monitors the queue. It picks up the job message and executes the task function in the background, without blocking the web server.
+
+### Database Access
+
+-   **Django ORM:** All database interactions are performed exclusively through the Django Object-Relational Mapper (ORM). Direct SQL queries are forbidden. This provides a secure, abstract interface for database operations, preventing SQL injection vulnerabilities and making the code more portable and readable.
+-   **Migrations:** The database schema is managed declaratively via Django models. Schema changes are version-controlled and applied using Django's built-in migration system (`makemigrations` and `migrate`).
 
 ## Unified Project Structure
 
@@ -820,4 +1088,23 @@ This final checklist validates our architecture against key principles.
 
 ## Next Steps
 
-*This section is a placeholder. It should outline the recommended next actions, such as proceeding to frontend-specific architecture, beginning implementation of high-priority user stories, or setting up the defined infrastructure.*
+With the fullstack architecture now defined, the following actions are recommended to begin the implementation phase in a structured and prioritized manner.
+
+1.  **Secure the Internal Scraper API:**
+    -   **Action:** Implement the API Key authentication mechanism for the internal API endpoints designated for the `Scraping Microservice`.
+    -   **Rationale:** This addresses the security concern identified in the checklist and is a prerequisite for developing the scraper itself.
+
+2.  **Implement Core User Stories:**
+    -   **Action:** Begin frontend and backend development for the foundational user-facing features. The initial focus should be on:
+        -   User Authentication (Signup, Login, Logout).
+        -   Full CRUD (Create, Read, Update, Delete) functionality for `NotificationConfig`.
+        -   Full CRUD functionality for `ScrappingTarget` and its associated `ScrapingUrl`s.
+    -   **Rationale:** These features form the core of the user-facing application and are required before any other functionality can be built.
+
+3.  **Establish the CI/CD Pipeline:**
+    -   **Action:** Create the initial CI/CD workflow in GitHub Actions. At a minimum, this initial pipeline should automatically run all backend (Pytest) and frontend (Vitest) tests on every push to the `main` branch.
+    -   **Rationale:** Implementing continuous integration early ensures that all new code is automatically validated, maintaining code quality and preventing regressions from day one.
+
+4.  **Develop the Scraper Prototype:**
+    -   **Action:** Begin development of the external `Scraping Microservice`. The first milestone should be to successfully fetch jobs from the secured internal API and submit mock `Offer` data back.
+    -   **Rationale:** This de-risks the most uncertain part of the project—the interaction with external websites—and validates the internal API contract.
