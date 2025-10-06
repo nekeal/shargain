@@ -1,12 +1,14 @@
 # Introduction
 
-This document captures the CURRENT STATE of the Shargain codebase, including its architecture, patterns, and technology stack. It is based on an analysis of the existing code and is intended to serve as a reference for AI agents and senior developers working on the project.
+This document outlines the complete fullstack architecture for the Shargain project, including backend systems, frontend implementation, and their integration. It serves as the single source of truth for AI-driven development, ensuring consistency across the entire technology stack.
 
-## Document Scope
-This is a comprehensive documentation of the entire system, prepared to formalize the project for its public launch and future monetization.
+This unified approach combines what would traditionally be separate backend and frontend architecture documents, streamlining the development process for modern fullstack applications where these concerns are increasingly intertwined.
+
+## Starter Template or Existing Project
+
+N/A - Greenfield project.
 
 ## Change Log
-
 | Date | Version | Description | Author |
-| --- | --- | --- | --- |
-| 2025-09-20 | 1.0 | Initial brownfield analysis | Winston (Architect) |
+| :--- | :--- | :--- | :--- |
+|      |         |             |        |
