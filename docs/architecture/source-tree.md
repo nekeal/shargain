@@ -1,4 +1,4 @@
-# Unified Project Structure
+# Source Tree
 
 The project is organized as a monorepo, containing the frontend, backend, and all related configuration in a single Git repository. This co-location simplifies cross-stack development and ensures consistency.
 

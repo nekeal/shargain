@@ -1,1 +1,0 @@
-# Shargain Fullstack Architecture Document
