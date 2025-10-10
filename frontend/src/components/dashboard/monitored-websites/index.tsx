@@ -110,6 +110,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             <div className="flex sm:flex-row items-center gap-2">
               <Input
                 value={targetName}
+                placeholder={t('dashboard.monitoredWebsites.targetNamePlaceholder')}
                 onChange={(e) => {
                   setTargetName(e.target.value)
                   setUpdateError(null)
@@ -230,6 +231,16 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                         <ExternalLink className="w-4 h-4 mr-1" />
                         {url.url}
                       </a>
+                    </div>
+                    {/* Last checked time */}
+                    <div className="mt-2 text-sm text-gray-500">
+                      {url.lastCheckedAt ? (
+                        <>
+                          {t('dashboard.monitoredWebsites.lastChecked')}: {new Date(url.lastCheckedAt).toLocaleString()}
+                        </>
+                      ) : (
+                        t('dashboard.monitoredWebsites.pending')
+                      )}
                     </div>
                   </>
                 </div>

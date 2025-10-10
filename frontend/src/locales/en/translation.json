@@ -20,7 +20,7 @@
     },
     "step3": {
       "title": "Get Notified",
-      "description": "Sit back and relax. We'll monitor your sites 24/7 and alert you instantly."
+      "description": "Sit back and relax. We'll monitor your sites 24/7 and alert you instantly when new offers appear."
     },
     "pricing": {
       "title": "Pricing",
@@ -44,7 +44,8 @@
       "title": "Monitored Websites",
       "description": "Add and manage websites you want to monitor for offers",
       "targetName": "Monitor Name",
-      "targetNameDescription": "Update the name of your scraping target.",
+      "targetNameDescription": "Choose a name to identify this set of monitored websites.",
+      "targetNamePlaceholder": "e.g. Rare lego sets",
       "saving": "Saving...",
       "update": "Update",
       "addWebsite": "Add New Website",
@@ -55,6 +56,8 @@
       "addWebsiteButton": "Add Website",
       "active": "Active",
       "paused": "Paused",
+      "lastChecked": "Last checked",
+      "pending": "Pending",
       "noWebsitesTitle": "No websites added yet",
       "noWebsitesDescription": "Add your first website above to start monitoring offers",
       "supportedWebsites": {
@@ -148,5 +151,8 @@
       "alreadyHaveAccount": "Already have an account?",
       "loginLink": "Log in"
     }
+  },
+  "navbar": {
+    "logout": "Log Out"
   }
 }

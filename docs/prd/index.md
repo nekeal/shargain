@@ -1,0 +1,27 @@
+# Shargain Brownfield Enhancement PRD
+
+## Table of Contents
+
+- [Shargain Brownfield Enhancement PRD](#table-of-contents)
+  - [1. Intro Project Analysis and Context](./1-intro-project-analysis-and-context.md)
+      - [Existing Project Overview](./1-intro-project-analysis-and-context.md#existing-project-overview)
+      - [Available Documentation Analysis](./1-intro-project-analysis-and-context.md#available-documentation-analysis)
+      - [Enhancement Scope Definition](./1-intro-project-analysis-and-context.md#enhancement-scope-definition)
+      - [User Personas](./1-intro-project-analysis-and-context.md#user-personas)
+      - [Goals and Background Context](./1-intro-project-analysis-and-context.md#goals-and-background-context)
+      - [Success Metrics](./1-intro-project-analysis-and-context.md#success-metrics)
+      - [Change Log](./1-intro-project-analysis-and-context.md#change-log)
+  - [2. Requirements](./2-requirements.md)
+      - [Functional Requirements](./2-requirements.md#functional-requirements)
+      - [Non-Functional Requirements](./2-requirements.md#non-functional-requirements)
+      - [Compatibility Requirements](./2-requirements.md#compatibility-requirements)
+  - [3. User Interface Enhancement Goals](./3-user-interface-enhancement-goals.md)
+      - [Integration with Existing UI](./3-user-interface-enhancement-goals.md#integration-with-existing-ui)
+      - [Modified/New Screens and Views](./3-user-interface-enhancement-goals.md#modifiednew-screens-and-views)
+      - [UI Consistency Requirements](./3-user-interface-enhancement-goals.md#ui-consistency-requirements)
+  - [4. Technical Constraints and Integration Requirements](./4-technical-constraints-and-integration-requirements.md)
+      - [Existing Technology Stack](./4-technical-constraints-and-integration-requirements.md#existing-technology-stack)
+      - [Integration Approach](./4-technical-constraints-and-integration-requirements.md#integration-approach)
+  - [5. Epic and Story Structure](./5-epic-and-story-structure.md)
+  - [6. Epic: MVP Public Launch](./6-epic-mvp-public-launch.md)
+    - [Story Sequence](./6-epic-mvp-public-launch.md#story-sequence)

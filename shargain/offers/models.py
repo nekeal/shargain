@@ -38,7 +38,7 @@ class ScrappingTarget(models.Model):
         verbose_name_plural = _("Scrapping targets")
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.id})"
 
 
 class ScrapingUrl(models.Model):
@@ -67,6 +67,20 @@ class ScrapingUrl(models.Model):
 
     def __str__(self):
         return f"{self.id}: {self.name}"
+
+
+class ScrapingCheckin(models.Model):
+    scraping_url = models.ForeignKey("offers.ScrapingUrl", on_delete=models.CASCADE, related_name="checkins")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    offers_count = models.PositiveIntegerField()
+    new_offers_count = models.PositiveIntegerField()
+
+    class Meta:
+        verbose_name = _("Scraping checkin")
+        verbose_name_plural = _("Scraping checkins")
+
+    def __str__(self):
+        return f"Checkin for {self.scraping_url} at {self.timestamp}"
 
 
 class OfferQueryset(QuerySet):

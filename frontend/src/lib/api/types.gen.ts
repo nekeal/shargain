@@ -20,6 +20,10 @@ export type ScrapingUrlResponse = {
      * Isactive
      */
     isActive: boolean;
+    /**
+     * Lastcheckedat
+     */
+    lastCheckedAt?: string | null;
 };
 
 /**
@@ -255,6 +259,10 @@ export type UserSchema = {
      * Email
      */
     email: string;
+    /**
+     * Tier
+     */
+    tier: string;
 };
 
 /**

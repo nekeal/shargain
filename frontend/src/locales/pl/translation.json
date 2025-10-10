@@ -20,7 +20,7 @@
     },
     "step3": {
       "title": "Otrzymuj powiadomienia",
-      "description": "Usiądź wygodnie i się odpręż. Będziemy monitorować Twoje strony 24/7 i natychmiast Cię ostrzegać."
+      "description": "Usiądź wygodnie i się odpręż. Będziemy monitorować Twoje strony 24/7 i natychmiast powiadamiać Cię o nowych ofertach."
     },
     "pricing": {
       "title": "Cennik",
@@ -38,13 +38,14 @@
     "loading": "Ładowanie...",
     "error": "Błąd ładowania danych dashboardu.",
     "noData": "Brak dostępnych danych monitora.",
-    "title": "Dashboard monitora ofert",
+    "title": "Panel monitora ofert",
     "subtitle": "Zarządzaj obserwowanymi stronami i preferencjami powiadomień",
     "monitoredWebsites": {
       "title": "Monitorowane strony",
       "description": "Dodaj i zarządzaj stronami, które chcesz monitorować pod kątem ofert",
       "targetName": "Nazwa Monitora",
-      "targetNameDescription": "Zaktualizuj nazwę swojego celu monitorowania.",
+      "targetNameDescription": "Wybierz nazwę, dzięki której łatwo rozpoznasz ten zestaw monitorowanych stron.",
+      "targetNamePlaceholder": "np. Rzadkie zestawy lego",
       "saving": "Zapisywanie...",
       "update": "Aktualizuj",
       "addWebsite": "Dodaj nową stronę",
@@ -55,6 +56,8 @@
       "addWebsiteButton": "Dodaj stronę",
       "active": "Aktywny",
       "paused": "Wstrzymany",
+      "lastChecked": "Ostatnio sprawdzono",
+      "pending": "Oczekujące",
       "noWebsitesTitle": "Nie dodano jeszcze żadnych stron",
       "noWebsitesDescription": "Dodaj swoją pierwszą stronę powyżej, aby rozpocząć monitorowanie ofert",
       "supportedWebsites": {
@@ -148,5 +151,8 @@
       "alreadyHaveAccount": "Masz już konto?",
       "loginLink": "Zaloguj się"
     }
+  },
+  "navbar": {
+    "logout": "Wyloguj"
   }
 }
