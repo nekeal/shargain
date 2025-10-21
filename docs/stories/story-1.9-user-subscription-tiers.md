@@ -10,7 +10,7 @@
 
 ## Acceptance Criteria
 
-*   **AC1**: A new `OfferQuota` model exists in the `offers` application. It contains fields for `target`, `max_offers_per_period`, `used_offers_count`, `period_start`, and `period_end`.
+*   **AC1**: A new `OfferQuota` model exists in the `offers` application. It contains fields for `target`, `max_offers_per_period` (nullable for unlimited offers), `used_offers_count`, `period_start`, and `period_end` (nullable for indefinite periods).
 *   **AC2**: A new `QuotaService` exists in `offers.services` and acts as a facade for all quota-related operations. It is the sole public interface for the quota system.
 *   **AC3**: The `QuotaService` has a `get_active_quota(target)` method that returns the single currently active quota object for a given target, or `None`.
 *   **AC4**: The `QuotaService` has a `set_new_quota(...)` method that idempotently creates or updates an `OfferQuota` record.
@@ -44,7 +44,8 @@
 #### Relevant Architecture
 *   **Backend:** Django, Celery, PostgreSQL
 *   **Models:** A new `offers.OfferQuota` model will be created.
-*   **Logic:** A new `offers.services.QuotaService` will be created to act as a facade for all quota management. This service encapsulates the business logic for checking, setting, and enforcing offer limits, providing a clean API for the rest of the application. The service supports overlapping quota periods with precedence given to the quota with the latest `period_start`.
+*   **Logic:** A new `offers.services.QuotaService` will be created to act as a facade for all quota management. This service encapsulates the business logic for checking, setting, and enforcing offer limits, providing a clean API for the rest of the application. The service supports overlapping quota periods with precedence given to the quota with the latest `period_start`. The service handles nullable `period_end` for indefinite periods and nullable `max_offers_per_period` for unlimited offers.
+*   **Data classes:** A new `QuotaInfo` data class will be created to represent quota information. This isolates the database model from the rest of the application.
 
 #### Relevant Source Tree
 *   `shargain/offers/models.py` (To add the new `OfferQuota` model)
@@ -66,3 +67,23 @@
 | 2025-10-09 | 2.0     | Refactored to use `OfferQuota` model   | Bob (Scrum Master) |
 | 2025-10-09 | 3.0     | Redesigned to use `QuotaService` facade| Bob (Scrum Master) |
 | 2025-10-20 | 3.1     | Updated to allow overlapping periods with latest period_start precedence | John (Product Manager) |
+| 2025-10-21 | 3.2     | Proposed nullable period_end and max_offers_per_period for indefinite periods and unlimited offers | John (Product Manager) |
+
+## Proposed Changes Requiring SM Team Confirmation
+
+The following changes are proposed to enhance the flexibility of the offer quota system:
+
+1. **Nullable `period_end`**: Allow `period_end` field to be nullable to support indefinite subscription periods
+2. **Nullable `max_offers_per_period`**: Allow `max_offers_per_period` to be nullable to indicate unlimited offers
+
+### Business Justification
+- Enables promotional periods with no fixed end date
+- Allows unlimited offer subscriptions (e.g., enterprise plans)
+- Provides flexibility for special customer arrangements
+
+### Technical Considerations
+- Updated business logic in `QuotaService` to handle nullable fields
+- Updated validation and query logic to account for null values
+- Proper handling of "unlimited" state in the UI
+
+**Next Steps**: Awaiting confirmation from Scrum Master team before implementing these changes.
