@@ -1,7 +1,3 @@
-"""
-Tests for the QuotaService and offer quota functionality.
-"""
-
 from datetime import timedelta
 
 import pytest
@@ -110,7 +106,7 @@ class TestQuotaService:
             used_offers_count=3,
         )
 
-        assert updated_quota.id == original_quota.id  # Same object
+        assert updated_quota.pk == original_quota.pk
         assert updated_quota.max_offers_per_period == 10
         assert updated_quota.used_offers_count == 3
 
@@ -130,7 +126,7 @@ class TestQuotaService:
             max_offers_per_period=3,
             used_offers_count=2,
         )
-        QuotaService.increment_usage(quota.id, 3)
+        QuotaService.increment_usage(quota.pk, 3)
 
         updated_quota = QuotaService.get_active_quota(quota.target)
         assert updated_quota

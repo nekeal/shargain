@@ -29,7 +29,7 @@ class OfferBatchCreateService:
         return [offer.url for offer in new_offers]
 
     @staticmethod
-    def simplify_url(url):  # currently not used
+    def simplify_url(url):
         if "olx.pl" in url:
             return url.rsplit("#")[0]
         return url
@@ -41,14 +41,11 @@ class OfferBatchCreateService:
         for offer_data in validated_data["offers"]:
             offer_url: str = offer_data.pop("url")
             try:
-                # Check if we're creating a new offer and if there's quota available
                 existing_offer = Offer.objects.filter(url=offer_url, target=target).first()
 
                 if existing_offer:
-                    # Offer already exists, just add to results without quota check
                     offers.append((existing_offer, False))
                 else:
-                    # This is a new offer, check quota first
                     if QuotaService.is_quota_available(target):
                         offer, created = Offer.objects.get_or_create(
                             url=offer_url,
@@ -57,16 +54,11 @@ class OfferBatchCreateService:
                         )
 
                         if created:
-                            # Update quota usage
                             quota = QuotaService.get_active_quota(target)
-                            if quota is not None:
-                                # Only increment if there's an active quota
-                                QuotaService.increment_usage(quota.id)
+                            QuotaService.increment_usage(quota.id)
 
                         offers.append((offer, created))
                     else:
-                        # Quota exceeded, skip creating this offer
-                        # We don't add anything to the results list for this offer
                         continue
 
             except Offer.MultipleObjectsReturned:
@@ -76,18 +68,12 @@ class OfferBatchCreateService:
 
     @staticmethod
     def _record_checkins(offers_data: list, created_offers: list[tuple[Offer, bool]], target: ScrappingTarget):
-        """
-        Record checkins for scraping URLs based on the list_url field of offers.
-        """
+        """Record checkins for scraping URLs."""
         offers_count = Counter(offer.get("list_url") for offer in offers_data if offer.get("list_url"))
         new_offers_count = Counter([offer.list_url for offer, created in created_offers if created and offer.list_url])
 
         for list_url, count in offers_count.items():
-            if not (
-                scraping_url := ScrapingUrl.objects.filter(
-                    url=list_url, scraping_target=target
-                ).first()  # it's first instead of get because we don't care if user has duplicated urls
-            ):
+            if not (scraping_url := ScrapingUrl.objects.filter(url=list_url, scraping_target=target).first()):
                 logger.warning("Scraping URL %s does not exist for target %s", list_url, target)
                 continue
             record_checkin(

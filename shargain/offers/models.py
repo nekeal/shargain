@@ -141,10 +141,7 @@ class Offer(TimeStampedModel):
 
 
 class OfferQuota(TimeStampedModel):
-    """
-    Model to track offer quota for targets.
-    This provides a scalable foundation for a future subscription and billing system.
-    """
+    """Model to track offer quota for targets."""
 
     target = models.ForeignKey(
         ScrappingTarget,

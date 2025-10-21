@@ -10,10 +10,7 @@ from shargain.offers.models import OfferQuota, ScrappingTarget
 
 
 class AbstractQuotaInfo(abc.ABC):
-    """
-    Abstract base class for quota information.
-    This isolates the database model from the rest of the application.
-    """
+    """Abstract base class for quota information."""
 
     @property
     @abc.abstractmethod
@@ -30,10 +27,7 @@ class AbstractQuotaInfo(abc.ABC):
 
 @dataclass(frozen=True)
 class QuotaInfo(AbstractQuotaInfo):
-    """
-    Data class representing quota information.
-    This isolates the database model from the rest of the application.
-    """
+    """Data class representing quota information."""
 
     _model: OfferQuota
 
@@ -58,10 +52,6 @@ class QuotaInfo(AbstractQuotaInfo):
 
 @dataclass(frozen=True)
 class InfiniteQuotaInfo(AbstractQuotaInfo):
-    """
-    Data class representing an infinite quota.
-    """
-
     id = None
     remaining_offers: float = float("inf")
     is_exhausted: bool = False
@@ -76,17 +66,9 @@ class QuotaService:
     @staticmethod
     def get_active_quota(target: ScrappingTarget) -> AbstractQuotaInfo:
         """
-        Get the single currently active quota object for a given target.
-
-        Args:
-            target: The target to get quota for
-
-        Returns:
-            The active QuotaInfo if one exists, otherwise None
+        Get the single currently active quota object for a given target
         """
         now = timezone.now()
-        # Get the active quota (one that is within its period or has no end date)
-        # Order by latest period_start first to get the most recent one when multiple active
         active_quota = (
             OfferQuota.objects.filter(target=target, period_start__lte=now)
             .filter(Q(period_end__gt=now) | Q(period_end__isnull=True))
@@ -123,36 +105,24 @@ class QuotaService:
         Raises:
             ValueError: If the new quota period overlaps with an existing one
         """
-        # Check if there's an overlapping quota period for this target
-        # Handle the overlap logic for nullable period_end
         if period_end is not None:
-            # When new quota has a defined end date, check for overlap with existing quotas
             overlapping_quota = (
                 OfferQuota.objects.filter(
                     target=target,
-                    # Check for overlap: new period overlaps with existing if
-                    # (new_start < existing_end AND new_end > existing_start)
-                    # For existing indefinite quotas, they overlap if they started before our end
                     period_start__lt=period_end,
                 )
                 .filter(Q(period_end__gt=period_start) | Q(period_end__isnull=True))
-                .exclude(  # Exclude the case where we're updating the same record
-                    period_start=period_start, period_end=period_end
-                )
+                .exclude(period_start=period_start, period_end=period_end)
                 .first()
             )
         else:
-            # When new quota is indefinite (period_end is None)
-            # Check for any existing quota that would overlap with our indefinite period
             overlapping_quota = (
                 OfferQuota.objects.filter(
                     target=target,
-                    # Any existing quota that starts before our start and is still active
-                    # OR any existing indefinite quota that starts before our start
                     period_start__lt=period_start,
                 )
                 .filter(Q(period_end__gt=period_start) | Q(period_end__isnull=True))
-                .exclude(period_start=period_start, period_end__isnull=True)  # Exclude updating same indefinite record
+                .exclude(period_start=period_start, period_end__isnull=True)
                 .first()
             )
 
@@ -166,10 +136,8 @@ class QuotaService:
                 f"from {overlapping_quota.period_start} to {overlap_end_str}"
             )
 
-        # Get or create the quota record for this target
         quota, created = OfferQuota.objects.update_or_create(
             target=target,
-            # Only match by target when updating, since we're checking for overlaps by date separately
             defaults={
                 "max_offers_per_period": max_offers_per_period,
                 "period_start": period_start,
@@ -184,13 +152,6 @@ class QuotaService:
     def increment_usage(quota_id: int | None, increment_by: int = 1) -> bool:
         """
         Increment the used offers count for the given quota.
-
-        Args:
-            quota_id: The ID of the quota to increment usage for
-            increment_by: Number of offers to increment by (default: 1)
-
-        Returns:
-            True if increment was successful, False if quota is exhausted
         """
         if quota_id is None:
             return True
@@ -201,18 +162,10 @@ class QuotaService:
     def is_quota_available(target: ScrappingTarget) -> bool:
         """
         Check if the target has available quota.
-
-        Args:
-            target: The target to check quota for
-
-        Returns:
-            True if quota is available or no quota exists (unlimited), False otherwise
         """
         quota = QuotaService.get_active_quota(target)
 
-        # If no quota exists, offers can be created freely (unlimited)
         if quota is None:
             return True
 
-        # If quota exists, check if it's not exhausted
         return not quota.is_exhausted
