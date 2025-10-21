@@ -12,7 +12,7 @@ from shargain.offers.serializers import (
     OfferSerializer,
     ScrappingTargetSerializer,
 )
-from shargain.offers.services import OfferBatchCreateService
+from shargain.offers.services.offers_batch_create import OfferBatchCreateService
 
 
 class OfferViewSet(viewsets.ModelViewSet):

@@ -138,3 +138,59 @@ class Offer(TimeStampedModel):
     @property
     def domain(self):
         return urlparse(self.url).netloc
+
+
+class OfferQuota(TimeStampedModel):
+    """
+    Model to track offer quota for targets.
+    This provides a scalable foundation for a future subscription and billing system.
+    """
+
+    target = models.ForeignKey(
+        ScrappingTarget,
+        verbose_name=_("Target"),
+        on_delete=models.CASCADE,
+        related_name="offer_quotas",
+    )
+    max_offers_per_period = models.PositiveIntegerField(
+        verbose_name=_("Max offers per period"),
+        help_text=_("Maximum number of offers allowed in the period"),
+        null=True,
+        blank=True,
+    )
+    used_offers_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name=_("Used offers count"),
+        help_text=_("Number of offers used in the current period"),
+    )
+    period_start = models.DateTimeField(
+        verbose_name=_("Period start"),
+        help_text=_("Start of the current quota period"),
+    )
+    period_end = models.DateTimeField(
+        verbose_name=_("Period end"),
+        help_text=_("End of the current quota period"),
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Offer quota")
+        verbose_name_plural = _("Offer quotas")
+
+    def __str__(self):
+        return f"Quota for {self.target.name}"
+
+    @property
+    def remaining_offers(self):
+        """Number of offers that can still be created in the current period."""
+        if self.max_offers_per_period is None:  # Unlimited offers
+            return float("inf")
+        return max(0, self.max_offers_per_period - self.used_offers_count)
+
+    @property
+    def is_exhausted(self):
+        """Whether the quota limit has been reached."""
+        if self.max_offers_per_period is None:  # Unlimited offers
+            return False
+        return self.used_offers_count >= self.max_offers_per_period

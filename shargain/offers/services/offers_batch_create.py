@@ -5,6 +5,7 @@ from shargain.notifications.services.notifications import NewOfferNotificationSe
 from shargain.offers.application.commands.record_checkin import record_checkin
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
+from shargain.offers.services.quota import QuotaService
 
 logger = logging.getLogger(__name__)
 
@@ -35,20 +36,42 @@ class OfferBatchCreateService:
 
     def create(self, validated_data) -> list[tuple[Offer, bool]]:
         offers: list[tuple[Offer, bool]] = []
+        target: ScrappingTarget = validated_data["target"]
+
         for offer_data in validated_data["offers"]:
-            offer_url = offer_data.pop("url")
+            offer_url: str = offer_data.pop("url")
             try:
-                offer, created = Offer.objects.get_or_create(
-                    url=offer_url,
-                    target=validated_data["target"],
-                    defaults=offer_data,
-                )
+                # Check if we're creating a new offer and if there's quota available
+                existing_offer = Offer.objects.filter(url=offer_url, target=target).first()
+
+                if existing_offer:
+                    # Offer already exists, just add to results without quota check
+                    offers.append((existing_offer, False))
+                else:
+                    # This is a new offer, check quota first
+                    if QuotaService.is_quota_available(target):
+                        offer, created = Offer.objects.get_or_create(
+                            url=offer_url,
+                            target=target,
+                            defaults=offer_data,
+                        )
+
+                        if created:
+                            # Update quota usage
+                            quota = QuotaService.get_active_quota(target)
+                            if quota is not None:
+                                # Only increment if there's an active quota
+                                QuotaService.increment_usage(quota.id)
+
+                        offers.append((offer, created))
+                    else:
+                        # Quota exceeded, skip creating this offer
+                        # We don't add anything to the results list for this offer
+                        continue
+
             except Offer.MultipleObjectsReturned:
-                offer, created = (
-                    Offer.objects.filter(url=offer_url, target=validated_data["target"]).first(),  # type: ignore[assignment]
-                    False,
-                )
-            offers.append((offer, created))
+                if existing_offer := Offer.objects.filter(url=offer_url, target=target).first():
+                    offers.append((offer, False))
         return offers
 
     @staticmethod
