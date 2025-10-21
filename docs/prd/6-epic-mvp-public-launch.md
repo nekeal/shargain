@@ -39,11 +39,15 @@
     *   **AC2**: Clicking the link takes the user to a page where they can enter their registered email address.
     *   **AC3**: Upon submitting their email, the user receives an email with a unique, time-sensitive link to a password reset page.
     *   **AC4**: On the reset page, the user can securely enter and confirm a new password.
-9.  **Story 1.9: Backend Tier Enforcement**: As the System, I need to track the number of notifications sent per user per calendar month, so that I can enforce the free tier limit.
-    *   **AC1**: A user's notification count resets to 0 at the beginning of each billing period.
-    *   **AC2**: The system stops sending notifications to a user when their count for the month reaches 100.
-    *   **AC3**: The scraping microservice should not be able to fetch urls from scraping targets that are deactivated due to the exceeded limit.
-    *   **AC4**: The user's notification count is periodically recalculated based on the number of offers in the databse
+9.  **Story 1.9: Refactor to Offer Quota Model**: As a developer, I want to refactor the offer limiting mechanism to use a dedicated `OfferQuota` model, so that we establish a scalable foundation for a future subscription and billing system.
+    *   **AC1**: A new `OfferQuota` model exists in the `offers` application. It contains fields for `target`, `max_offers_per_period`, `used_offers_count`, `period_start`, and `period_end`.
+    *   **AC2**: A new `QuotaService` exists in `offers.services` and acts as a facade for all quota-related operations. It is the sole public interface for the quota system.
+    *   **AC3**: The `QuotaService` has a `get_active_quota(target)` method that returns the single currently active quota object for a given target, or `None`.
+    *   **AC4**: The `QuotaService` has a `set_new_quota(...)` method that idempotently creates or updates an `OfferQuota` record.
+    *   **AC5**: The offer creation logic is refactored to use `QuotaService.get_active_quota()` to check if a target can have new offers created.
+    *   **AC6**: If an active quota exists and the limit has been reached, the offer is discarded. Otherwise, the `used_offers_count` is incremented upon successful creation.
+    *   **AC7**: If no active quota is found, the check passes by default, allowing offer creation to proceed.
+    *   **AC8**: New quotas can be created even if periods overlap with existing quotas for a given target. When multiple quotas are active for a target, the one with the latest `period_start` takes precedence.
 10. **Story 1.10: Frontend Usage/Tier Display**: As an authenticated user, I want to see my current monthly notification usage on the dashboard, so that I understand my limits.
     *   **AC1**: The dashboard displays the user's current notification count for the month (e.g., "Monthly Usage: 75/100 notifications").
     *   **AC2**: When the user reaches the limit, the dashboard clearly indicates that notifications are paused until the next billing period.
