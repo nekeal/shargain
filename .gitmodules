@@ -1,3 +1,6 @@
 [submodule ".bmad-core"]
 	path = .bmad-core
 	url = ./.bmad-core
+[submodule "_bmad"]
+	path = _bmad
+	url = ./_bmad
