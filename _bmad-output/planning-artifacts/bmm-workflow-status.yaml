@@ -1,0 +1,151 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2026-01-14"
+project: "shargain"
+project_type: "Brownfield Enhancement - Offer Notification System"
+selected_track: "method"
+field_type: "brownfield"
+workflow_path: "_bmad/bmm/workflows/workflow-status/paths/method-brownfield.yaml"
+
+workflow_status:
+  # Phase 0: Documentation (Prerequisite for brownfield)
+  phase_0_documentation:
+    name: "Documentation"
+    status: "completed"
+    conditional: "if_undocumented"
+    note: "Prerequisite for brownfield without docs"
+    workflows:
+      - id: "document-project"
+        status: "_bmad-output/planning-artifacts/project-documentation/project-architecture.md"
+        required: true
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:document-project"
+        output: "Comprehensive project documentation"
+        purpose: "Understand existing codebase before planning"
+
+  # Phase 1: Analysis (Optional - User Selected)
+  phase_1_analysis:
+    name: "Analysis (Optional)"
+    status: "completed"
+    optional: true
+    note: "User-selected discovery workflows"
+    workflows:
+      - id: "brainstorm-project"
+        status: "_bmad-output/planning-artifacts/brainstorm/token_strategy_brainstorm.md"
+        optional: true
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:brainstorming"
+        note: "Creative exploration completed"
+      - id: "research"
+        status: "skipped"
+        optional: true
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:research"
+        note: "Not performed"
+      - id: "product-brief"
+        status: "_bmad-output/planning-artifacts/product-brief/project-brief.md"
+        optional: true
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:create-product-brief"
+        note: "Strategic product planning completed"
+
+  # Phase 2: Planning
+  phase_2_planning:
+    name: "Planning"
+    status: "completed"
+    required: true
+    workflows:
+      - id: "prd"
+        status: "_bmad-output/planning-artifacts/prd/"
+        required: true
+        agent: "pm"
+        command: "/bmad:bmm:workflows:prd"
+        output: "Product Requirements Document with FRs and NFRs"
+        note: "Brownfield Enhancement PRD completed - includes index.md and 8 section files"
+      - id: "create-ux-design"
+        status: "partial - docs/tasks-login-form-ux-improvements.md"
+        conditional: "if_has_ui"
+        agent: "ux-designer"
+        command: "/bmad:bmm:workflows:create-ux-design"
+        note: "UX tasks identified but comprehensive design may be needed"
+
+  # Phase 3: Solutioning
+  phase_3_solutioning:
+    name: "Solutioning"
+    status: "in_progress"
+    required: true
+    current_phase: true
+    workflows:
+      - id: "create-architecture"
+        status: "_bmad-output/planning-artifacts/architecture/"
+        required: true
+        agent: "architect"
+        command: "/bmad:bmm:workflows:create-architecture"
+        output: "System architecture document"
+        note: "Multiple architecture documents completed - 22 files including backend, frontend, deployment, security"
+      - id: "create-epics-and-stories"
+        status: "in_progress - _bmad-output/implementation-artifacts/epics/epic-1-mvp-public-launch.md + _bmad-output/implementation-artifacts/stories/story-1.9-user-subscription-tiers.md"
+        required: true
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-epics-and-stories"
+        note: "Epic 1 and Story 1.9 created - continue creating remaining stories from Epic 1"
+        next_action: "Complete all stories from Epic 1 (MVP Public Launch) - currently only story 1.9 exists"
+      - id: "test-design"
+        status: "optional"
+        optional: true
+        agent: "tea"
+        command: "/bmad:bmm:workflows:testarch-test-design"
+        output: "System-level testability review"
+        note: "Testability assessment - recommended before implementation"
+      - id: "implementation-readiness"
+        status: "required"
+        required: true
+        agent: "architect"
+        command: "/bmad:bmm:workflows:check-implementation-readiness"
+        note: "GATE CHECK - Validates PRD + Architecture + Epics before implementation"
+        next_action: "Run after completing all epics and stories"
+
+  # Phase 4: Implementation
+  phase_4_implementation:
+    name: "Implementation"
+    status: "not_started"
+    required: true
+    note: "Subsequent work tracked in sprint-status.yaml"
+    workflows:
+      - id: "sprint-planning"
+        status: "required"
+        required: true
+        agent: "sm"
+        command: "/bmad:bmm:workflows:sprint-planning"
+        note: "Creates sprint-status.yaml for implementation tracking"
+        prerequisite: "Must complete implementation-readiness check first"
+
+# Current Status Summary
+current_status:
+  current_phase: "Phase 3 - Solutioning"
+  current_workflow: "create-epics-and-stories"
+  completion_percentage: 70
+  next_immediate_action: "Continue creating epics and stories from PRD requirements"
+  next_gate_check: "implementation-readiness (after completing all epics/stories)"
+
+# Notes
+notes:
+  - "Project is in active development - brownfield enhancement for public launch"
+  - "Strong foundation: PRD, Architecture, and initial stories exist"
+  - "Next milestone: Complete epic/story breakdown and pass implementation-readiness gate"
+  - "Implementation phase will use sprint-status.yaml for tracking"
