@@ -50,7 +50,7 @@
 #### Relevant Source Tree
 *   `shargain/offers/models.py` (To add the new `OfferQuota` model)
 *   `shargain/offers/services/quota.py` (New file for the `QuotaService` facade)
-*   `shargain/offers/services/offer_creation.py` (Or similar existing service to be refactored)
+*   `shargain/offers/services/offers_batch_create.py` (Or similar existing service to be refactored)
 *   `docs/architecture/` (To be updated with the new service)
 
 #### Testing
