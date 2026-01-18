@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { OfferMonitor } from "@/types/dashboard";
-import { activateScrapingUrl, addUrlToTarget, deactivateScrapingUrl, deleteTargetUrl, getMyTarget } from "@/lib/api/sdk.gen";
+import type { FiltersConfigSchema } from "@/lib/api/types.gen";
+import { activateScrapingUrl, addUrlToTarget, deactivateScrapingUrl, deleteTargetUrl, getMyTarget, updateScrapingUrlFilters } from "@/lib/api/sdk.gen";
 
 export const useGetMyTarget = () => {
     return useQuery<OfferMonitor>({
@@ -18,9 +19,6 @@ export const useAddUrlMutation = (
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myTarget'] });
         },
-        onError(error) {
-            console.error("Error adding URL:", error);
-        },
     });
 };
 
@@ -31,9 +29,6 @@ export const useRemoveUrlMutation = (targetId: number) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myTarget'] });
         },
-        onError: (err) => {
-            console.error("Error removing URL:", err);
-        }
     });
 };
 
@@ -49,8 +44,20 @@ export const useToggleUrlActiveMutation = (targetId: number) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myTarget'] });
         },
-        onError: (err) => {
-            console.error("Error toggling URL active state:", err);
-        }
     });
 };
+
+export const useUpdateFiltersMutation = (targetId: number, urlId: number) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (filters: FiltersConfigSchema | null) => {
+            return updateScrapingUrlFilters({
+                path: { target_id: targetId, url_id: urlId },
+                body: { filters },
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+        },
+    });
+}

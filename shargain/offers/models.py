@@ -54,6 +54,14 @@ class ScrapingUrl(models.Model):
         default=True,
     )
 
+    filters = models.JSONField(
+        verbose_name=_("Notification filters"),
+        help_text=_("Filter rules to apply before sending notifications"),
+        blank=True,
+        null=True,
+        default=None,
+    )
+
     scraping_target = models.ForeignKey(
         ScrappingTarget,
         verbose_name=_("Scraping target"),

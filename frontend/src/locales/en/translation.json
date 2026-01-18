@@ -154,5 +154,50 @@
   },
   "navbar": {
     "logout": "Log Out"
+  },
+  "filters": {
+    "title": "Smart Filters",
+    "noFilters": "All offers will notify",
+    "rulesCount": "{{count}} active rule(s)",
+    "group": "Group {{index}}",
+    "matchLabel": "Match",
+    "all": "ALL",
+    "any": "ANY",
+    "ofTheFollowing": "of the following:",
+    "valuePlaceholder": "Enter text...",
+    "expand": "Expand filters",
+    "collapse": "Collapse filters",
+    "toggleLogic": "Toggle logic from {{current}} to opposite",
+    "deleteGroup": "Delete filter group {{index}}",
+    "deleteRule": "Delete filter rule",
+    "logic": {
+      "and": "AND",
+      "or": "OR",
+      "andNext": "AND with next",
+      "orNext": "OR with next"
+    },
+    "field": {
+      "title": "Title"
+    },
+    "operator": {
+      "contains": "contains",
+      "not_contains": "does not contain"
+    },
+    "addRule": "Add rule",
+    "addGroup": "Add group",
+    "save": "Save",
+    "errors": {
+      "valueEmpty": "Filter value cannot be empty",
+      "valueOnlyWhitespace": "Filter value cannot be only whitespace",
+      "valueTooLong": "Filter value too long (max {{maxLength}} characters)",
+      "tooManyGroups": "Maximum {{maxGroups}} rule groups allowed",
+      "tooManyRules": "Maximum {{maxRules}} rules per group allowed",
+      "groupMustHaveRules": "Each group must have at least one rule",
+      "invalidOperator": "Invalid filter operator",
+      "invalidField": "Invalid filter field",
+      "invalidLogic": "Invalid logic operator",
+      "noGroups": "At least one rule group is required",
+      "saveFailed": "Failed to save filters. Please try again."
+    }
   }
 }

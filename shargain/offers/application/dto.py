@@ -20,11 +20,19 @@ class ScrapingUrlDTO:
     name: str
     is_active: bool
     last_checked_at: str | None = None
+    filters: dict | None = None
 
     @classmethod
     def from_orm(cls, url: ScrapingUrl, last_checked_at: str | None = None) -> Self:
         """Create a DTO from a ScrapingUrl model instance."""
-        return cls(id=url.id, url=url.url, name=url.name, is_active=url.is_active, last_checked_at=last_checked_at)
+        return cls(
+            id=url.id,
+            url=url.url,
+            name=url.name,
+            is_active=url.is_active,
+            last_checked_at=last_checked_at,
+            filters=url.filters,
+        )
 
 
 @dataclasses.dataclass(frozen=True)

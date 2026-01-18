@@ -2,6 +2,7 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../../../LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +18,6 @@ import {
 import cn from '@/lib/utils';
 import { useAuth } from '@/context/auth';
 import { shargainPublicApiAuthLogoutView } from '@/lib/api/sdk.gen';
-import { useTranslation } from 'react-i18next';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
