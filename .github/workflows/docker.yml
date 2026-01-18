@@ -23,9 +23,8 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Build & Publish Backend Image
         uses: docker/build-push-action@v4
-        env:
-          BUILDKIT_CONTEXT_SUBMODULES: false
         with:
+          context: .
           push: true
           provenance: false # try to set it to true later on
           cache-from: |
