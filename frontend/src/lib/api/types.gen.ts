@@ -32,10 +32,6 @@ export type FiltersConfigSchema = {
      * Rulegroups
      */
     ruleGroups: Array<RuleGroupSchema>;
-    /**
-     * Logic
-     */
-    logic?: string;
 };
 
 /**
@@ -51,6 +47,10 @@ export type RuleGroupSchema = {
      * Logic
      */
     logic?: string;
+    /**
+     * Logicwithnext
+     */
+    logicWithNext?: string | null;
 };
 
 /**

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CheckCircle, ChevronDown, Filter, Plus, Save, X } from "lucide-react";
 import { createFilterSchemas } from "./filterValidation";
 import { useUpdateFiltersMutation } from "./useMonitors";
-import type { FiltersConfigSchema } from "@/lib/api/types.gen";
+import type { FiltersConfigSchema, RuleGroupSchema } from "@/lib/api/types.gen";
 import type { ZodIssue, z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,9 +28,9 @@ interface OfferFiltersProps {
   initialFilters: FiltersConfigSchema | null;
 }
 
-const createEmptyGroup = () => ({
-  logic: "and" as const,
-  rules: [{ field: "title" as const, operator: "contains" as const, value: "", caseSensitive: false }],
+const createEmptyGroup = (): RuleGroupSchema => ({
+  logic: "and",
+  rules: [{ field: "title", operator: "contains", value: "", caseSensitive: false }],
 });
 
 export function OfferFilters({
@@ -52,7 +52,7 @@ export function OfferFilters({
   const { filtersConfigSchema } = useMemo(() => createFilterSchemas(t), [t]);
 
   const validateFilters = (currentFilters: FiltersConfigSchema | null): boolean => {
-    if (!currentFilters || !currentFilters.ruleGroups || currentFilters.ruleGroups.length === 0) {
+    if (!currentFilters || currentFilters.ruleGroups.length === 0) {
       setValidationErrors(null);
       return true;
     }
@@ -92,20 +92,20 @@ export function OfferFilters({
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     // Auto-create first group when opening if no filters exist
-    if (open && (!filters || !filters.ruleGroups || filters.ruleGroups.length === 0)) {
+    if (open && (!filters || filters.ruleGroups.length === 0)) {
       handleFiltersChange({ ruleGroups: [createEmptyGroup()] });
     }
   };
 
   // Only count rules that have actual values (not empty placeholders)
-  const activeRulesCount = filters?.ruleGroups?.reduce(
+  const activeRulesCount = filters?.ruleGroups.reduce(
     (acc, g) => acc + g.rules.filter(r => r.value.trim().length > 0).length,
     0
   ) ?? 0;
 
   // Normalize filters for comparison and saving - empty filters become null
   const normalizeFilters = (f: FiltersConfigSchema | null): FiltersConfigSchema | null => {
-    if (!f || !f.ruleGroups || f.ruleGroups.length === 0) return null;
+    if (!f || f.ruleGroups.length === 0) return null;
 
     // Filter out rules with empty values, then filter out empty groups
     const cleanedGroups = f.ruleGroups
@@ -391,7 +391,7 @@ export function OfferFilters({
           <Alert variant="destructive" className="mt-3 py-2">
             <AlertTitle className="text-sm">{t("filters.errors.saveFailed")}</AlertTitle>
             <AlertDescription className="text-xs">
-              {(mutation.error as Error).message || "An error occurred."}
+              {mutation.error.message || "An error occurred."}
             </AlertDescription>
           </Alert>
         )}
