@@ -48,4 +48,30 @@
     *   **AC1**: The dashboard displays the user's current notification count for the month (e.g., "Monthly Usage: 75/100 notifications").
     *   **AC2**: When the user reaches the limit, the dashboard clearly indicates that notifications are paused until the next billing period.
     *   **AC3**: On the dashboard the user sees the button to upgrade to a higher tier when he's close (90%) to the limit of notifications
-    *   **AC4**: On the dashboard the user sees the button to upgrade to a higher tier when he reaches limit of links added for scraping. 
+    *   **AC4**: On the dashboard the user sees the button to upgrade to a higher tier when he reaches limit of links added for scraping.
+11. **Story 1.11: Webhook Notification Channel**: As a developer or power user, I want to configure a webhook URL as a notification channel, so that I can integrate new offer alerts into my own automation systems (e.g., Slack, Discord bots, custom dashboards).
+    *   **AC1: Webhook Channel Option**: When creating or editing a notification configuration, the user can select "Webhook" as the channel type.
+    *   **AC2: Webhook URL Configuration**: When webhook channel is selected, the user can enter a valid HTTPS URL where notifications will be sent.
+    *   **AC3: Webhook URL Validation**: The system validates that the webhook URL is a valid HTTPS URL before saving.
+    *   **AC4: Webhook Notification Delivery**: When a new offer is detected, the system sends a POST request to the configured webhook URL with the offer data in JSON format.
+    *   **AC5: Webhook Payload Schema Documentation**: The webhook payload schema is documented in an accessible location (API docs or dedicated page) so users know how to parse incoming notifications.
+    *   **AC6: Webhook Error Handling**: If a webhook delivery fails (timeout, 4xx/5xx response), the system logs the error but does not retry (MVP behavior).
+    *   **AC7: Backend Integration**: The webhook sender integrates with the existing notification system architecture (BaseNotificationSender pattern).
+12. **Story 1.12: Google Social Login**: As a new or returning user, I want to log in or register using my Google account, so that I can access the application quickly without creating a separate password.
+    *   **AC1: Google Login Button**: The login page displays a "Continue with Google" button that redirects to Google OAuth.
+    *   **AC2: Google Signup Button**: The signup page displays a "Sign up with Google" button that redirects to Google OAuth.
+    *   **AC3: New User Registration**: When a user authenticates with Google for the first time, a new account is automatically created using their Google email.
+    *   **AC4: Existing User Login**: When a user authenticates with Google and an account with that email already exists, they are logged into that existing account.
+    *   **AC5: Session Creation**: Upon successful Google authentication, a Django session is created.
+    *   **AC6: Error Handling**: If Google authentication fails or is cancelled, user is redirected back with appropriate error state.
+    *   **AC7: Dashboard Redirect**: After successful authentication, the user is redirected to frontend `/dashboard`.
+    *   **AC8: Conditional Button Display**: Google login/signup buttons are only displayed if backend has Google OAuth configured (client ID/secret present).
+13. **Story 1.13: UX/UI Accessibility & Usability Fixes**: As a user with disabilities or using mobile devices, I want the application to be fully accessible and usable across all devices, so that I can effectively manage my offer monitoring without barriers.
+    *   **AC1: Icon-Only Buttons Have Accessible Labels**: All icon-only buttons have appropriate `aria-label` attributes for screen reader users.
+    *   **AC2: Destructive Actions Require Confirmation**: Delete actions display a confirmation dialog before executing.
+    *   **AC3: Touch Targets Meet WCAG Minimum**: All interactive elements have minimum 44x44px touch targets on mobile.
+    *   **AC4: Console Logs Removed**: No `console.log` statements in production builds that expose user data.
+    *   **AC5: Error Handling is Type-Safe**: Error messages use proper TypeScript types with fallback messages.
+    *   **AC6: Mobile Filter UI is Usable**: Filter rules don't overflow or cramp on mobile screens.
+    *   **AC7: Dead Code Removed**: Unused components (Header.tsx, AppHeader.tsx) removed from codebase.
+    *   **AC8: Loading States Show Visual Feedback**: Dashboard loading state displays spinner with consistent indicators.

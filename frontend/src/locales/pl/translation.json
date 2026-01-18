@@ -154,5 +154,50 @@
   },
   "navbar": {
     "logout": "Wyloguj"
+  },
+  "filters": {
+    "title": "Inteligentne filtry",
+    "noFilters": "Wszystkie oferty będą powiadamiać",
+    "rulesCount": "{{count}} aktywna reguła/reguł",
+    "group": "Grupa {{index}}",
+    "matchLabel": "Dopasuj",
+    "all": "WSZYSTKIE",
+    "any": "DOWOLNE",
+    "ofTheFollowing": "z poniższych:",
+    "valuePlaceholder": "Wprowadź tekst...",
+    "expand": "Rozwiń filtry",
+    "collapse": "Zwiń filtry",
+    "toggleLogic": "Przełącz logikę z {{current}} na przeciwną",
+    "deleteGroup": "Usuń grupę filtrów {{index}}",
+    "deleteRule": "Usuń regułę filtra",
+    "logic": {
+      "and": "I",
+      "or": "LUB",
+      "andNext": "I z następną",
+      "orNext": "LUB z następną"
+    },
+    "field": {
+      "title": "Tytuł"
+    },
+    "operator": {
+      "contains": "zawiera",
+      "not_contains": "nie zawiera"
+    },
+    "addRule": "Dodaj regułę",
+    "addGroup": "Dodaj grupę",
+    "save": "Zapisz",
+    "errors": {
+      "valueEmpty": "Wartość filtra nie może być pusta",
+      "valueOnlyWhitespace": "Wartość filtra nie może składać się tylko z białych znaków",
+      "valueTooLong": "Wartość filtra zbyt długa (max {{maxLength}} znaków)",
+      "tooManyGroups": "Maksymalnie {{maxGroups}} grup reguł dozwolone",
+      "tooManyRules": "Maksymalnie {{maxRules}} reguł na grupę dozwolone",
+      "groupMustHaveRules": "Każda grupa musi mieć przynajmniej jedną regułę",
+      "invalidOperator": "Nieprawidłowy operator filtra",
+      "invalidField": "Nieprawidłowe pole filtra",
+      "invalidLogic": "Nieprawidłowy operator logiczny",
+      "noGroups": "Wymagana jest przynajmniej jedna grupa reguł",
+      "saveFailed": "Nie udało się zapisać filtrów. Spróbuj ponownie."
+    }
   }
 }

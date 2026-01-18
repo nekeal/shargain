@@ -12,7 +12,7 @@ repos:
       - id: ruff-format
         name: ruff-format
         entry: uv run ruff format
-        require_serial: true
+        priority: 2
         language: system
         types: [ python ]
       - id: ruff
@@ -20,6 +20,7 @@ repos:
         # Remove --fix, in case you want it to disable autofix when this hook runs
         entry: uv run ruff check --fix --force-exclude
         require_serial: true
+        priority: 5
         language: system
         types: [ python ]
       - id: migrations-check
@@ -28,14 +29,16 @@ repos:
         entry: uv run python manage.py makemigrations --check --dry-run
         files: "(models\\.py$|(migrations/.+\\.py))"
         pass_filenames: false
-        stages: [ commit ]
+        stages: [ pre-commit ]
+        priority: 5
         require_serial: true
       - id: mypy-check
         language: system
         name: Check for mypy
         entry: uv run mypy shargain
-        stages: [ commit ]
+        stages: [ pre-commit ]
         files: ".+\\.py$"
+        priority: 5
         pass_filenames: false
         require_serial: true
   - repo: https://github.com/adamchainz/django-upgrade
@@ -44,3 +47,4 @@ repos:
     -   id: django-upgrade
         language_version: python3.12
         args: ["--target-version", "5.1"]
+        priority: 5

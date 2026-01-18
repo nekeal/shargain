@@ -48,6 +48,8 @@ from shargain.offers.application.queries.get_target import (
     get_target,
     get_target_by_user,
 )
+from shargain.offers.models import ScrapingUrl
+from shargain.offers.schemas.offer_filter import validate_filters
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
     generate_telegram_token,
@@ -108,12 +110,36 @@ class TargetWithConfigResponse(BaseSchema):
     notification_config_id: int | None
 
 
+class FilterRuleSchema(BaseSchema):
+    """API schema for a single filter rule."""
+
+    field: str  # "title" for MVP, extensible to "description", "price", etc.
+    operator: str  # "contains" or "not_contains" for MVP
+    value: str
+    case_sensitive: bool = False
+
+
+class RuleGroupSchema(BaseSchema):
+    """API schema for a group of filter rules with configurable logic."""
+
+    rules: list[FilterRuleSchema]
+    logic: str = "and"  # "and" or "or" - how to combine rules within this group
+    logic_with_next: str | None = None  # "and" or "or" - how this group connects to next group
+
+
+class FiltersConfigSchema(BaseSchema):
+    """API schema for complete filter configuration with configurable logic."""
+
+    rule_groups: list[RuleGroupSchema]
+
+
 class ScrapingUrlResponse(BaseSchema):
     id: int
     url: str
     name: str
     is_active: bool
     last_checked_at: str | None = None
+    filters: FiltersConfigSchema | None = None
 
 
 class TargetResponse(BaseSchema):
@@ -201,6 +227,11 @@ def update_scraping_target_notification_config(
 class AddUrlRequest(BaseSchema):
     url: HttpUrl
     name: str | None = None
+    filters: FiltersConfigSchema | None = None
+
+
+class UpdateFiltersRequest(BaseSchema):
+    filters: FiltersConfigSchema | None = None
 
 
 @router.post(
@@ -211,8 +242,16 @@ class AddUrlRequest(BaseSchema):
 )
 def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlRequest):
     actor = get_actor(request)
+    filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
+
+    # Validate filter structure before saving
     try:
-        return add_scraping_url(actor, str(payload.url), target_id, name=payload.name)
+        validated_filters = validate_filters(filters_dict)
+    except ValueError as e:
+        raise HttpError(400, str(e)) from e
+
+    try:
+        return add_scraping_url(actor, str(payload.url), target_id, name=payload.name, filters=validated_filters)
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
 
@@ -227,6 +266,35 @@ def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
     delete_scraping_url(actor, url_id)
     return 204, None
+
+
+@router.patch(
+    "/targets/{target_id}/urls/{url_id}/filters",
+    operation_id="update_scraping_url_filters",
+    by_alias=True,
+    response={200: ScrapingUrlResponse, 400: ErrorSchema, 404: ErrorSchema},
+)
+def update_scraping_url_filters(request: HttpRequest, target_id: int, url_id: int, payload: UpdateFiltersRequest):
+    """Update filters for an existing scraping URL."""
+    actor = get_actor(request)
+    filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
+
+    # Get the scraping URL and verify ownership
+    try:
+        scraping_url = ScrapingUrl.objects.get(
+            id=url_id, scraping_target_id=target_id, scraping_target__owner_id=actor.user_id
+        )
+    except ScrapingUrl.DoesNotExist as exc:
+        raise HttpError(404, "Scraping URL not found") from exc
+
+    # Update filters
+    scraping_url.filters = filters_dict
+    scraping_url.save()
+
+    # Import DTO for proper response
+    from shargain.offers.application.dto import ScrapingUrlDTO
+
+    return ScrapingUrlDTO.from_orm(scraping_url)
 
 
 @router.post(
