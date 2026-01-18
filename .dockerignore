@@ -8,3 +8,6 @@ htmlcov
 .pytest_cache
 media
 logs
+_bmad
+.claude
+.agent
