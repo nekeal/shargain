@@ -13,7 +13,8 @@
       "DOM.Iterable"
     ],
     "types": [
-      "vite/client"
+      "vite/client",
+      "@testing-library/jest-dom"
     ],
     /* Bundler mode */
     "moduleResolution": "bundler",
