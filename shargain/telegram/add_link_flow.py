@@ -1,7 +1,7 @@
 """Handles the interactive add link flow in the Telegram bot."""
 
 import logging
-from enum import Enum
+from enum import StrEnum
 
 from django.utils.translation import gettext as _
 from telebot import TeleBot
@@ -18,7 +18,7 @@ olx_validator = OlxWebsiteValidator()
 bot = TelegramBot.get_bot()
 
 
-class AddLinkCallback(str, Enum):
+class AddLinkCallback(StrEnum):
     SKIP_NAME = "CMD_SKIP_NAME"
 
 

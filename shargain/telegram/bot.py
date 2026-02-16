@@ -1,6 +1,6 @@
 import logging
 import re
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from django.conf import settings
@@ -287,7 +287,7 @@ def delete_link_handler(message: Message) -> None:
         _ask_for_link_to_delete(message)
 
 
-class MenuCallback(str, Enum):
+class MenuCallback(StrEnum):
     """Callback data for menu actions."""
 
     ADD_LINK = "CMD_ADD_LINK"
