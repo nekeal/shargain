@@ -3,8 +3,9 @@ import pytest
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.dto import ScrapingUrlDTO
-from shargain.offers.application.exceptions import TargetDoesNotExist
+from shargain.offers.application.exceptions import QuotaExceeded, TargetDoesNotExist
 from shargain.offers.application.queries.get_target import get_target
+from shargain.quotas.tests.factories import ScrapingUrlQuotaFactory
 
 
 @pytest.mark.django_db
@@ -52,4 +53,11 @@ class TestAddScrapingUrl:
         actor = Actor(user_id=scraping_target.owner_id + 1)
 
         with pytest.raises(TargetDoesNotExist):
+            add_scraping_url(actor=actor, target_id=scraping_target.id, url="https://example.com")
+
+    def test_add_scraping_url_raises_when_url_quota_reached(self, scraping_target):
+        actor = Actor(user_id=scraping_target.owner_id)
+        ScrapingUrlQuotaFactory(user=scraping_target.owner, max_urls=0)
+
+        with pytest.raises(QuotaExceeded):
             add_scraping_url(actor=actor, target_id=scraping_target.id, url="https://example.com")

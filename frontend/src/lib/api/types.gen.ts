@@ -118,6 +118,10 @@ export type ErrorSchema = {
      * Detail
      */
     detail: string;
+    /**
+     * Code
+     */
+    code?: string | null;
 };
 
 /**
@@ -169,6 +173,50 @@ export type AddUrlRequest = {
      */
     name?: string | null;
     filters?: FiltersConfigSchema | null;
+};
+
+/**
+ * QuotaStatusItemResponse
+ */
+export type QuotaStatusItemResponse = {
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Used
+     */
+    used: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Targetid
+     */
+    targetId?: number | null;
+    /**
+     * Targetname
+     */
+    targetName?: string | null;
+    /**
+     * Periodend
+     */
+    periodEnd?: string | null;
+    /**
+     * Isfreetier
+     */
+    isFreeTier?: boolean | null;
+};
+
+/**
+ * QuotaStatusResponse
+ */
+export type QuotaStatusResponse = {
+    /**
+     * Quotas
+     */
+    quotas: Array<QuotaStatusItemResponse>;
 };
 
 /**
@@ -450,9 +498,17 @@ export type AddUrlToTargetData = {
 
 export type AddUrlToTargetErrors = {
     /**
+     * Bad Request
+     */
+    400: ErrorSchema;
+    /**
      * Not Found
      */
     404: ErrorSchema;
+    /**
+     * Conflict
+     */
+    409: ErrorSchema;
 };
 
 export type AddUrlToTargetError = AddUrlToTargetErrors[keyof AddUrlToTargetErrors];
@@ -465,6 +521,22 @@ export type AddUrlToTargetResponses = {
 };
 
 export type AddUrlToTargetResponse = AddUrlToTargetResponses[keyof AddUrlToTargetResponses];
+
+export type GetQuotaStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/public/quota/status';
+};
+
+export type GetQuotaStatusResponses = {
+    /**
+     * OK
+     */
+    200: QuotaStatusResponse;
+};
+
+export type GetQuotaStatusResponse = GetQuotaStatusResponses[keyof GetQuotaStatusResponses];
 
 export type DeleteTargetUrlData = {
     body?: never;

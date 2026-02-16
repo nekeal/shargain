@@ -5,6 +5,8 @@ from shargain.notifications.services.notifications import NewOfferNotificationSe
 from shargain.offers.application.commands.record_checkin import record_checkin
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
+from shargain.offers.signals import offers_batch_created
+from shargain.quotas.services.quota import QuotaService
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +21,22 @@ class OfferBatchCreateService:
     def run(self):
         serializer = self.serializer_class(**self._serializer_kwargs)
         serializer.is_valid(raise_exception=True)
+        target = serializer.validated_data["target"]
+        if target.owner_id and not QuotaService.check_can_create_offers(user_id=target.owner_id, target_id=target.id):
+            return []
+
         offers: list[tuple[Offer, bool]] = self.create(serializer.validated_data)
         new_offers = [r[0] for r in filter(lambda x: x[1], offers)]
-        self._notify(new_offers, serializer.validated_data["target"])
+        self._notify(new_offers, target)
 
-        self._record_checkins(serializer.validated_data["offers"], offers, serializer.validated_data["target"])
+        self._record_checkins(serializer.validated_data["offers"], offers, target)
+        if target.owner_id and new_offers:
+            offers_batch_created.send(
+                sender=self.__class__,
+                user_id=target.owner_id,
+                target_id=target.id,
+                count=len(new_offers),
+            )
 
         return [offer.url for offer in new_offers]
 

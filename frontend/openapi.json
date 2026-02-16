@@ -1,0 +1,1562 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NinjaAPI",
+    "version": "1.0.0",
+    "description": ""
+  },
+  "paths": {
+    "/api/public/targets/my-target": {
+      "get": {
+        "operationId": "get_my_target",
+        "summary": "Get My Target",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/targets/{target_id}": {
+      "get": {
+        "operationId": "get_single_target",
+        "summary": "Get Single Target",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/notification-config": {
+      "post": {
+        "operationId": "update_target_notification_config",
+        "summary": "Update Scraping Target Notification Config",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetWithConfigResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationConfigRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/add-url": {
+      "post": {
+        "operationId": "add_url_to_target",
+        "summary": "Add Url To Target",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrapingUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddUrlRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/public/quota/status": {
+      "get": {
+        "operationId": "get_quota_status",
+        "summary": "Get Quota Status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotaStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/urls/{url_id}": {
+      "delete": {
+        "operationId": "delete_target_url",
+        "summary": "Delete Target Url",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "url_id",
+            "schema": {
+              "title": "Url Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/urls/{url_id}/filters": {
+      "patch": {
+        "operationId": "update_scraping_url_filters",
+        "summary": "Update Scraping Url Filters",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "url_id",
+            "schema": {
+              "title": "Url Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrapingUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Update filters for an existing scraping URL.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFiltersRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/urls/{url_id}/activate": {
+      "post": {
+        "operationId": "activate_scraping_url",
+        "summary": "Activate Scraping Url",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "url_id",
+            "schema": {
+              "title": "Url Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrapingUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/urls/{url_id}/deactivate": {
+      "post": {
+        "operationId": "deactivate_scraping_url",
+        "summary": "Deactivate Scraping Url",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "url_id",
+            "schema": {
+              "title": "Url Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrapingUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/toggle-notifications": {
+      "post": {
+        "operationId": "toggle_target_notifications",
+        "summary": "Toggle Notifications",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleNotificationsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleNotificationsRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/send-test-notification": {
+      "post": {
+        "operationId": "send_target_test_notification",
+        "summary": "Send Test Notification Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/targets/{target_id}/update-name": {
+      "patch": {
+        "operationId": "update_target_name",
+        "summary": "Update Target Name",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTargetNameRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/public/notifications/telegram/generate-token": {
+      "post": {
+        "operationId": "generate_telegram_token",
+        "summary": "Generate Telegram Token Endpoint",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateTokenResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/notifications": {
+      "post": {
+        "operationId": "create_notification_config",
+        "summary": "Create Notification Config Endpoint",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationConfigResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationConfigRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      },
+      "get": {
+        "operationId": "list_notification_configs",
+        "summary": "List Notification Configs Endpoint",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationConfigListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/notifications/{config_id}": {
+      "put": {
+        "operationId": "update_notification_config",
+        "summary": "Update Notification Config Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "schema": {
+              "title": "Config Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationConfigResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationConfigRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      },
+      "delete": {
+        "operationId": "delete_notification_config",
+        "summary": "Delete Notification Config Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "schema": {
+              "title": "Config Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "get_notification_config",
+        "summary": "Get Notification Config Endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "config_id",
+            "schema": {
+              "title": "Config Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationConfigResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/auth/csrf": {
+      "get": {
+        "operationId": "shargain_public_api_auth_get_csrf_token",
+        "summary": "Get Csrf Token",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfTokenResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Get CSRF token for login requests"
+      }
+    },
+    "/api/public/auth/login": {
+      "post": {
+        "operationId": "shargain_public_api_auth_login_view",
+        "summary": "Login View",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Login endpoint that sets session cookie",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/public/auth/signup": {
+      "post": {
+        "operationId": "shargain_public_api_auth_signup_view",
+        "summary": "Signup View",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Signup endpoint that creates a user and logs them in",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/public/auth/logout": {
+      "post": {
+        "operationId": "shargain_public_api_auth_logout_view",
+        "summary": "Logout View",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Logout endpoint that clears session"
+      }
+    },
+    "/api/public/me": {
+      "get": {
+        "operationId": "get_me",
+        "summary": "Get Current User",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Return the currently authenticated user",
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FilterRuleSchema": {
+        "description": "API schema for a single filter rule.",
+        "properties": {
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "operator": {
+            "title": "Operator",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          },
+          "caseSensitive": {
+            "default": false,
+            "title": "Casesensitive",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "field",
+          "operator",
+          "value"
+        ],
+        "title": "FilterRuleSchema",
+        "type": "object"
+      },
+      "FiltersConfigSchema": {
+        "description": "API schema for complete filter configuration with configurable logic.",
+        "properties": {
+          "ruleGroups": {
+            "items": {
+              "$ref": "#/components/schemas/RuleGroupSchema"
+            },
+            "title": "Rulegroups",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ruleGroups"
+        ],
+        "title": "FiltersConfigSchema",
+        "type": "object"
+      },
+      "RuleGroupSchema": {
+        "description": "API schema for a group of filter rules with configurable logic.",
+        "properties": {
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/FilterRuleSchema"
+            },
+            "title": "Rules",
+            "type": "array"
+          },
+          "logic": {
+            "default": "and",
+            "title": "Logic",
+            "type": "string"
+          },
+          "logicWithNext": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logicwithnext"
+          }
+        },
+        "required": [
+          "rules"
+        ],
+        "title": "RuleGroupSchema",
+        "type": "object"
+      },
+      "ScrapingUrlResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "isActive": {
+            "title": "Isactive",
+            "type": "boolean"
+          },
+          "lastCheckedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lastcheckedat"
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiltersConfigSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "name",
+          "isActive"
+        ],
+        "title": "ScrapingUrlResponse",
+        "type": "object"
+      },
+      "TargetResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "enableNotifications": {
+            "title": "Enablenotifications",
+            "type": "boolean"
+          },
+          "notificationConfigId": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notificationconfigid"
+          },
+          "isActive": {
+            "title": "Isactive",
+            "type": "boolean"
+          },
+          "urls": {
+            "items": {
+              "$ref": "#/components/schemas/ScrapingUrlResponse"
+            },
+            "title": "Urls",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "enableNotifications",
+          "notificationConfigId",
+          "isActive",
+          "urls"
+        ],
+        "title": "TargetResponse",
+        "type": "object"
+      },
+      "ErrorSchema": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorSchema",
+        "type": "object"
+      },
+      "TargetWithConfigResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "isActive": {
+            "title": "Isactive",
+            "type": "boolean"
+          },
+          "enableNotifications": {
+            "title": "Enablenotifications",
+            "type": "boolean"
+          },
+          "notificationConfigId": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notificationconfigid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive",
+          "enableNotifications",
+          "notificationConfigId"
+        ],
+        "title": "TargetWithConfigResponse",
+        "type": "object"
+      },
+      "NotificationConfigRequest": {
+        "properties": {
+          "notificationConfigId": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notificationconfigid"
+          }
+        },
+        "title": "NotificationConfigRequest",
+        "type": "object"
+      },
+      "AddUrlRequest": {
+        "properties": {
+          "url": {
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "title": "Url",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiltersConfigSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "AddUrlRequest",
+        "type": "object"
+      },
+      "QuotaStatusItemResponse": {
+        "properties": {
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "used": {
+            "title": "Used",
+            "type": "integer"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "targetId": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targetid"
+          },
+          "targetName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targetname"
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Periodend"
+          },
+          "isFreeTier": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isfreetier"
+          }
+        },
+        "required": [
+          "slug",
+          "used",
+          "limit"
+        ],
+        "title": "QuotaStatusItemResponse",
+        "type": "object"
+      },
+      "QuotaStatusResponse": {
+        "properties": {
+          "quotas": {
+            "items": {
+              "$ref": "#/components/schemas/QuotaStatusItemResponse"
+            },
+            "title": "Quotas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "quotas"
+        ],
+        "title": "QuotaStatusResponse",
+        "type": "object"
+      },
+      "UpdateFiltersRequest": {
+        "properties": {
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiltersConfigSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "UpdateFiltersRequest",
+        "type": "object"
+      },
+      "ToggleNotificationsResponse": {
+        "properties": {
+          "enableNotifications": {
+            "title": "Enablenotifications",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enableNotifications"
+        ],
+        "title": "ToggleNotificationsResponse",
+        "type": "object"
+      },
+      "ToggleNotificationsRequest": {
+        "properties": {
+          "enable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enable"
+          }
+        },
+        "title": "ToggleNotificationsRequest",
+        "type": "object"
+      },
+      "UpdateTargetNameRequest": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "UpdateTargetNameRequest",
+        "type": "object"
+      },
+      "GenerateTokenResponse": {
+        "properties": {
+          "telegramBotUrl": {
+            "title": "Telegramboturl",
+            "type": "string"
+          }
+        },
+        "required": [
+          "telegramBotUrl"
+        ],
+        "title": "GenerateTokenResponse",
+        "type": "object"
+      },
+      "NotificationConfigResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
+          "chatId": {
+            "title": "Chatid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "channel",
+          "chatId"
+        ],
+        "title": "NotificationConfigResponse",
+        "type": "object"
+      },
+      "CreateNotificationConfigRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "chatId": {
+            "title": "Chatid",
+            "type": "string"
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationChannelChoices"
+              }
+            ],
+            "default": "telegram"
+          }
+        },
+        "required": [
+          "chatId"
+        ],
+        "title": "CreateNotificationConfigRequest",
+        "type": "object"
+      },
+      "NotificationChannelChoices": {
+        "enum": [
+          "discord",
+          "telegram"
+        ],
+        "title": "NotificationChannelChoices",
+        "type": "string"
+      },
+      "NotificationConfigListResponse": {
+        "properties": {
+          "configs": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationConfigResponse"
+            },
+            "title": "Configs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "configs"
+        ],
+        "title": "NotificationConfigListResponse",
+        "type": "object"
+      },
+      "UpdateNotificationConfigRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "UpdateNotificationConfigRequest",
+        "type": "object"
+      },
+      "CsrfTokenResponse": {
+        "properties": {
+          "csrfToken": {
+            "title": "Csrftoken",
+            "type": "string"
+          }
+        },
+        "required": [
+          "csrfToken"
+        ],
+        "title": "CsrfTokenResponse",
+        "type": "object"
+      },
+      "LoginResponse": {
+        "properties": {
+          "success": {
+            "title": "Success",
+            "type": "boolean"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "user": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "LoginResponse",
+        "type": "object"
+      },
+      "UserSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email"
+        ],
+        "title": "UserSchema",
+        "type": "object"
+      },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "type": "object"
+      },
+      "SignupRequest": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "SignupRequest",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "SessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionid"
+      }
+    }
+  },
+  "servers": []
+}

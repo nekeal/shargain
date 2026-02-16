@@ -2,14 +2,14 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, HelpCircle, Plus, Save, Trash2 } from "lucide-react"
 import { z } from "zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
 import { SupportedWebsitesModal } from "./supported-websites-modal"
 import { OfferFilters } from "./OfferFilters"
 import type { OfferMonitor } from "@/types/dashboard"
 import type { FiltersConfigSchema } from "@/lib/api/types.gen"
 import cn from "@/lib/utils"
-import { updateTargetName } from "@/lib/api/sdk.gen"
+import { getQuotaStatus, updateTargetName } from "@/lib/api/sdk.gen"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,6 +38,17 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   const addUrlMutation = useAddUrlMutation(offerMonitor.id)
   const removeUrlMutation = useRemoveUrlMutation(offerMonitor.id)
   const toggleUrlActiveMutation = useToggleUrlActiveMutation(offerMonitor.id)
+  const { data: quotaStatus } = useQuery({
+    queryKey: ['quotaStatus'],
+    queryFn: () => getQuotaStatus(),
+    staleTime: 30_000,
+  })
+  const currentTargetUrlQuota = quotaStatus?.data.quotas.find(
+    (row) => row.slug === "scraping_urls" && row.targetId === offerMonitor.id,
+  )
+  const isUrlQuotaExceeded =
+    !!currentTargetUrlQuota &&
+    (currentTargetUrlQuota.limit <= 0 || currentTargetUrlQuota.used >= currentTargetUrlQuota.limit)
 
   const updateNameMutation = useMutation({
     mutationFn: (newMonitorName: string) => {
@@ -87,6 +98,20 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
 
   const handleChangeUrlName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewName(e.target.value)
+  }
+
+  const getAddUrlErrorMessage = (error: unknown): string => {
+    const fallbackMessage = t('dashboard.monitoredWebsites.addError')
+    if (!error || typeof error !== "object") {
+      return fallbackMessage
+    }
+
+    const apiError = error as { code?: string }
+    if (apiError.code === "quota_exceeded") {
+      return t('dashboard.monitoredWebsites.quotaExceeded')
+    }
+
+    return fallbackMessage
   }
 
   return (
@@ -190,13 +215,19 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           </Button>
 
           {addUrlMutation.isError && (
-            <div className="text-red-500 text-sm mt-2">{(addUrlMutation.error as any)?.detail[0].msg}</div>
+            <div className="text-red-500 text-sm mt-2">{getAddUrlErrorMessage(addUrlMutation.error)}</div>
+          )}
+          {isUrlQuotaExceeded && (
+            <div className="flex items-start gap-2 text-amber-700 text-sm mt-2">
+              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>{t('dashboard.monitoredWebsites.quotaExceededAction')}</span>
+            </div>
           )}
           {addUrlMutation.isSuccess && <div className="text-green-500 text-sm mt-2">{t('dashboard.monitoredWebsites.addSuccess')}</div>}
 
           <Button
             type="submit"
-            disabled={!newUrl || addUrlMutation.isPending}
+            disabled={!newUrl || addUrlMutation.isPending || isUrlQuotaExceeded}
             className="mt-4"
           >
             <Plus className="w-4 h-4 mr-2" />

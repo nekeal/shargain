@@ -53,6 +53,9 @@
       "name": "Nazwa",
       "namePlaceholder": "np. Amazon Deals",
       "addSuccess": "Adres URL został pomyślnie dodany!",
+      "addError": "Nie udało się dodać strony. Spróbuj ponownie.",
+      "quotaExceeded": "Osiągnięto limit adresów URL dla Twojego planu.",
+      "quotaExceededAction": "Osiągnięto limit URL dla tego celu. Usuń jedną z istniejących stron poniżej, aby dodać nową.",
       "addWebsiteButton": "Dodaj stronę",
       "active": "Aktywny",
       "paused": "Wstrzymany",
@@ -105,6 +108,13 @@
       "quickActions": {
         "title": "Szybkie działania",
         "testNotifications": "Testuj powiadomienia"
+      },
+      "quotas": {
+        "title": "Status limitów",
+        "scrapingUrls": "Adresy URL",
+        "scrapingUrlsAction": "Aby dodać kolejny URL, usuń jeden z tego celu.",
+        "offers": "Oferty",
+        "offersAction": "Limit ofert osiągnięty. Reset nastąpi"
       },
       "testNotification": {
         "success": "Powiadomienie zostało wysłane pomyślnie!",

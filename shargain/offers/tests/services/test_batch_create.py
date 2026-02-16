@@ -5,8 +5,10 @@ from unittest.mock import patch
 import pytest
 
 from shargain.notifications.tests.factories import NotificationConfigFactory
+from shargain.offers.models import Offer
 from shargain.offers.services.batch_create import OfferBatchCreateService
 from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
+from shargain.quotas.tests.factories import OfferQuotaFactory
 
 
 @pytest.mark.django_db
@@ -110,3 +112,56 @@ class TestOfferBatchCreateService:
 
             # Verify run() was called on the instance
             mock_instance.run.assert_called_once()
+
+    def test_offer_batch_create_returns_empty_when_quota_is_reached(self):
+        scraping_target = ScrappingTargetFactory()
+        OfferQuotaFactory(
+            user=scraping_target.owner,
+            target=scraping_target,
+            max_offers_per_period=1,
+            used_offers_count=1,
+        )
+
+        offer_data = {
+            "target": scraping_target.id,
+            "offers": [
+                {
+                    "url": "https://example.com/quota-limit-offer",
+                    "title": "Will not be created",
+                }
+            ],
+        }
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+
+        created_urls = service.run()
+
+        assert created_urls == []
+        assert Offer.objects.filter(target=scraping_target).count() == 0
+
+    def test_offer_batch_create_records_usage_via_signal_receiver(self):
+        scraping_target = ScrappingTargetFactory()
+        quota = OfferQuotaFactory(
+            user=scraping_target.owner,
+            target=scraping_target,
+            max_offers_per_period=10,
+            used_offers_count=0,
+        )
+        offer_data = {
+            "target": scraping_target.id,
+            "offers": [
+                {
+                    "url": "https://example.com/new-offer-1",
+                    "title": "new offer 1",
+                },
+                {
+                    "url": "https://example.com/new-offer-2",
+                    "title": "new offer 2",
+                },
+            ],
+        }
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+
+        service.run()
+
+        quota.refresh_from_db()
+        assert quota.used_offers_count == 2

@@ -33,3 +33,10 @@ class ScrapingUrlDoesNotExist(ApplicationException):
 
     code: str = "scraping_url_does_not_exist"
     message: str = "Scraping URL does not exist."
+
+
+class QuotaExceeded(ApplicationException):
+    """Raised when a quota limit is reached."""
+
+    code: str = "quota_exceeded"
+    message: str = "Quota limit reached."

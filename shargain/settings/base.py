@@ -48,6 +48,7 @@ LOCAL_APPS = [
     "shargain.offers.apps.OffersConfig",
     "shargain.telegram",
     "shargain.notifications.apps.NotificationsConfig",
+    "shargain.quotas.apps.QuotasConfig",
     "shargain.scrapper",
 ]
 
@@ -168,3 +169,8 @@ CSRF_COOKIE_HTTPONLY = False
 TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_WEBHOOK_URL = env("TELEGRAM_WEBHOOK_URL", "")
 TELEGRAM_SETUP_BOT = env.bool("TELEGRAM_SETUP_BOT", False)
+
+# ------------- QUOTAS -------------
+QUOTA_FREE_TIER_OFFERS_PER_TARGET = env.int("QUOTA_FREE_TIER_OFFERS_PER_TARGET", 50)
+QUOTA_FREE_TIER_MAX_URLS = env.int("QUOTA_FREE_TIER_MAX_URLS", 3)
+QUOTA_PERIOD_DAYS = env.int("QUOTA_PERIOD_DAYS", 30)

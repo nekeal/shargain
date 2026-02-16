@@ -53,6 +53,9 @@
       "name": "Name",
       "namePlaceholder": "e.g. Amazon Deals",
       "addSuccess": "URL added successfully!",
+      "addError": "Could not add website. Please try again.",
+      "quotaExceeded": "You reached your URL limit for this plan.",
+      "quotaExceededAction": "You reached the URL limit for this target. Remove one of the existing websites below to add a new one.",
       "addWebsiteButton": "Add Website",
       "active": "Active",
       "paused": "Paused",
@@ -105,6 +108,13 @@
       "quickActions": {
         "title": "Quick Actions",
         "testNotifications": "Test Notifications"
+      },
+      "quotas": {
+        "title": "Quota Status",
+        "scrapingUrls": "Scraping URLs",
+        "scrapingUrlsAction": "To add another URL, remove one from this target.",
+        "offers": "Offers",
+        "offersAction": "Offer limit reached. Resets on"
       },
       "testNotification": {
         "success": "Notification sent successfully!",

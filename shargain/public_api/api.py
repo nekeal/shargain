@@ -41,6 +41,7 @@ from shargain.offers.application.commands.update_scraping_target_name import (
 )
 from shargain.offers.application.exceptions import (
     ApplicationException,
+    QuotaExceeded,
     ScrapingUrlDoesNotExist,
     TargetDoesNotExist,
 )
@@ -50,6 +51,7 @@ from shargain.offers.application.queries.get_target import (
 )
 from shargain.offers.models import ScrapingUrl
 from shargain.offers.schemas.offer_filter import validate_filters
+from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
     generate_telegram_token,
@@ -69,6 +71,7 @@ router.add_router("/", protected_router)
 
 class ErrorSchema(Schema):
     detail: str
+    code: str | None = None
 
 
 class BaseSchema(Schema):
@@ -172,6 +175,20 @@ class VerifyTokenResponse(BaseSchema):
     success: bool
 
 
+class QuotaStatusItemResponse(BaseSchema):
+    slug: str
+    used: int
+    limit: int
+    target_id: int | None = None
+    target_name: str | None = None
+    period_end: str | None = None
+    is_free_tier: bool | None = None
+
+
+class QuotaStatusResponse(BaseSchema):
+    quotas: list[QuotaStatusItemResponse]
+
+
 def get_actor(request: HttpRequest) -> Actor:
     if not request.user or not request.user.id:
         raise HttpError(401, "Authentication required")
@@ -238,7 +255,7 @@ class UpdateFiltersRequest(BaseSchema):
     "/targets/{target_id}/add-url",
     operation_id="add_url_to_target",
     by_alias=True,
-    response={200: ScrapingUrlResponse, 404: ErrorSchema},
+    response={200: ScrapingUrlResponse, 404: ErrorSchema, 400: ErrorSchema, 409: ErrorSchema},
 )
 def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlRequest):
     actor = get_actor(request)
@@ -254,6 +271,22 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
         return add_scraping_url(actor, str(payload.url), target_id, name=payload.name, filters=validated_filters)
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
+    except QuotaExceeded as e:
+        return 409, ErrorSchema(
+            detail="You reached your scraping URL quota. Remove an existing URL or upgrade your quota.",
+            code=e.code,
+        )
+
+
+@router.get(
+    "/quota/status",
+    operation_id="get_quota_status",
+    by_alias=True,
+    response={200: QuotaStatusResponse},
+)
+def get_quota_status(request: HttpRequest):
+    actor = get_actor(request)
+    return QuotaService.get_quota_status(actor.user_id)
 
 
 @router.delete(
