@@ -39,6 +39,7 @@
     "error": "Error loading dashboard data.",
     "noData": "No monitor data available.",
     "title": "Offer Monitor Dashboard",
+    "greeting": "Welcome back, {{name}}",
     "subtitle": "Manage your watched websites and notification preferences",
     "monitoredWebsites": {
       "title": "Monitored Websites",

@@ -1,5 +1,4 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { AppHeader } from '@/components/app-header'
 import {NotificationListPage} from "@/components/notifications";
 
 export const Route = createFileRoute('/notifications')({
@@ -16,7 +15,6 @@ export const Route = createFileRoute('/notifications')({
 function NotificationsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-50">
-      <AppHeader />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-4">

@@ -1,8 +1,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
+import { Link } from '@tanstack/react-router';
 import LanguageSwitcher from '../../../LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +16,7 @@ import {
 } from '@/components/ui/popover';
 import cn from '@/lib/utils';
 import { useAuth } from '@/context/auth';
-import { shargainPublicApiAuthLogoutView } from '@/lib/api/sdk.gen';
+import { UserMenu } from '@/components/auth/user-menu';
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -86,10 +85,18 @@ export interface Navbar01NavLink {
   active?: boolean;
 }
 
+export interface Navbar01User {
+  id: string;
+  name: string;
+  email: string;
+  provider: string | null;
+}
+
 export interface Navbar01Props extends React.HTMLAttributes<HTMLElement> {
   logo?: React.ReactNode;
   logoHref?: string;
   navigationLinks?: Array<Navbar01NavLink>;
+  user?: Navbar01User | null;
   signInText?: string;
   signInHref?: string;
   ctaText?: string;
@@ -123,6 +130,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       logo = <Logo />,
       logoHref = '#',
       navigationLinks = [],
+      user = null,
       signInText = '',
       signInHref = '',
       ctaText = '',
@@ -133,21 +141,9 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
     },
     ref
   ) => {
-    const { t } = useTranslation();
     const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
-    const { isAuthenticated, logout } = useAuth();
-    const navigate = useNavigate();
-
-    const handleLogout = async () => {
-      try {
-        await shargainPublicApiAuthLogoutView();
-        logout();
-        navigate({ to: '/auth/signin' });
-      } catch (error) {
-        console.error("Logout failed", error);
-      }
-    };
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
       const checkWidth = () => {
@@ -248,9 +244,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
               </Popover>
             )}
             {isAuthenticated ? (
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                {t('navbar.logout')}
-              </Button>
+              <UserMenu user={user} />
             ) : (
               <>
                 {signInText && signInHref && (
