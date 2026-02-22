@@ -49,6 +49,7 @@ LOCAL_APPS = [
     "shargain.telegram",
     "shargain.notifications.apps.NotificationsConfig",
     "shargain.quotas.apps.QuotasConfig",
+    "shargain.subscriptions.apps.SubscriptionsConfig",
     "shargain.scrapper",
 ]
 

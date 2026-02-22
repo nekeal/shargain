@@ -52,6 +52,7 @@ from shargain.offers.application.queries.get_target import (
 from shargain.offers.models import ScrapingUrl
 from shargain.offers.schemas.offer_filter import validate_filters
 from shargain.quotas.services.quota import QuotaService
+from shargain.subscriptions.services.subscription import SubscriptionService
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
     generate_telegram_token,
@@ -189,6 +190,15 @@ class QuotaStatusResponse(BaseSchema):
     quotas: list[QuotaStatusItemResponse]
 
 
+class SubscriptionCurrentResponse(BaseSchema):
+    plan_name: str
+    plan_slug: str
+    max_urls: int
+    max_offers_per_target: int
+    started_at: str
+    expires_at: str | None = None
+
+
 def get_actor(request: HttpRequest) -> Actor:
     if not request.user or not request.user.id:
         raise HttpError(401, "Authentication required")
@@ -287,6 +297,34 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
 def get_quota_status(request: HttpRequest):
     actor = get_actor(request)
     return QuotaService.get_quota_status(actor.user_id)
+
+
+@router.get(
+    "/subscription/current",
+    operation_id="get_subscription_current",
+    by_alias=True,
+    response={200: SubscriptionCurrentResponse},
+)
+def get_subscription_current(request: HttpRequest):
+    actor = get_actor(request)
+    subscription = SubscriptionService.get_user_subscription(user_id=actor.user_id)
+    if not subscription:
+        SubscriptionService.assign_plan(user_id=actor.user_id, plan_slug="free")
+        subscription = SubscriptionService.get_user_subscription(user_id=actor.user_id)
+        if not subscription:
+            raise HttpError(500, "Subscription could not be initialized")
+
+    limits = SubscriptionService.get_user_plan_limits(user_id=actor.user_id)
+    started_at = subscription.started_at.isoformat()
+    expires_at = subscription.expires_at.isoformat() if subscription.expires_at else None
+    return SubscriptionCurrentResponse(
+        plan_name=subscription.plan.name,
+        plan_slug=limits.plan_slug,
+        max_urls=limits.max_urls,
+        max_offers_per_target=limits.max_offers_per_target,
+        started_at=started_at,
+        expires_at=expires_at,
+    )
 
 
 @router.delete(

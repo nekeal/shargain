@@ -33,17 +33,24 @@ class QuotaService:
         return period_start, period_end
 
     @staticmethod
-    def _create_free_offer_quota(user_id: int, target_id: int, start: datetime | None = None) -> OfferQuota:
+    def _create_offer_quota_from_subscription(
+        user_id: int,
+        target_id: int,
+        start: datetime | None = None,
+    ) -> OfferQuota:
+        from shargain.subscriptions.services.subscription import SubscriptionService
+
+        limits = SubscriptionService.get_user_plan_limits(user_id=user_id)
         period_start, period_end = QuotaService._period_bounds(start=start)
         return OfferQuota.objects.create(
             user_id=user_id,
             target_id=target_id,
-            max_offers_per_period=settings.QUOTA_FREE_TIER_OFFERS_PER_TARGET,
+            max_offers_per_period=limits.max_offers_per_target,
             used_offers_count=0,
             period_start=period_start,
             period_end=period_end,
             auto_renew=True,
-            is_free_tier=True,
+            is_free_tier=limits.plan_slug == "free",
         )
 
     @staticmethod
@@ -59,7 +66,7 @@ class QuotaService:
             .first()
         )
         if not latest:
-            return QuotaService._create_free_offer_quota(user_id=user_id, target_id=target_id, start=now)
+            return QuotaService._create_offer_quota_from_subscription(user_id=user_id, target_id=target_id, start=now)
 
         period_start, period_end = QuotaService._period_bounds(start=now)
         if latest.auto_renew:
@@ -74,13 +81,16 @@ class QuotaService:
                 is_free_tier=latest.is_free_tier,
             )
 
-        return QuotaService._create_free_offer_quota(user_id=user_id, target_id=target_id, start=now)
+        return QuotaService._create_offer_quota_from_subscription(user_id=user_id, target_id=target_id, start=now)
 
     @staticmethod
     def _get_or_create_url_quota(user_id: int) -> ScrapingUrlQuota:
+        from shargain.subscriptions.services.subscription import SubscriptionService
+
+        limits = SubscriptionService.get_user_plan_limits(user_id=user_id)
         quota, _ = ScrapingUrlQuota.objects.get_or_create(
             user_id=user_id,
-            defaults={"max_urls": settings.QUOTA_FREE_TIER_MAX_URLS},
+            defaults={"max_urls": limits.max_urls},
         )
         return quota
 

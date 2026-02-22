@@ -10,6 +10,7 @@ from pydantic.alias_generators import to_camel
 
 from shargain.accounts.models import CustomUser
 from shargain.offers.models import ScrappingTarget
+from shargain.subscriptions.services.subscription import SubscriptionService
 
 # Create a separate router for auth endpoints (without requiring authentication)
 auth_router = Router()
@@ -74,10 +75,10 @@ def signup_view(request: HttpRequest, payload: SignupRequest):
     """Signup endpoint that creates a user and logs them in"""
     if CustomUser.objects.filter(email=payload.email).exists():
         return LoginResponse(success=False, message="User with this email already exists", user=None)
-    print(payload)
     user = CustomUser.objects.create_user(username=payload.email, email=payload.email, password=payload.password)
 
     ScrappingTarget.objects.create(owner=user)
+    SubscriptionService.assign_plan(user_id=user.id, plan_slug="free")
 
     login(request, user)
 

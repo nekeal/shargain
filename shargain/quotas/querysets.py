@@ -9,3 +9,6 @@ class OfferQuotaQuerySet(QuerySet):
 
     def for_user_target(self, user_id: int, target_id: int):
         return self.filter(user_id=user_id, target_id=target_id)
+
+    def for_user(self, user_id: int):
+        return self.filter(user_id=user_id)
