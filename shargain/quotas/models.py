@@ -16,7 +16,7 @@ class OfferQuota(TimeStampedModel):
     auto_renew = models.BooleanField(default=True)
     is_free_tier = models.BooleanField(default=True)
 
-    objects = OfferQuotaQuerySet.as_manager()
+    objects = OfferQuotaQuerySet.as_manager()  # type: ignore[django-manager-missing]
 
     class Meta:
         verbose_name = _("Offer quota")

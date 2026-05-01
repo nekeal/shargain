@@ -20,7 +20,7 @@ def seed_default_free_plan_and_backfill(apps, schema_editor):
             "max_offers_per_target": settings.QUOTA_FREE_TIER_OFFERS_PER_TARGET,
             "is_default": True,
             "is_active": True,
-            "display_order": 0,
+            "display_order": 100,
         },
     )
 
@@ -28,8 +28,8 @@ def seed_default_free_plan_and_backfill(apps, schema_editor):
     if not free_plan.is_default:
         free_plan.is_default = True
         fields_to_update.append("is_default")
-    if free_plan.display_order != 0:
-        free_plan.display_order = 0
+    if free_plan.display_order != 100:
+        free_plan.display_order = 100
         fields_to_update.append("display_order")
     if not free_plan.is_active:
         free_plan.is_active = True

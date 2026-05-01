@@ -309,10 +309,7 @@ def get_subscription_current(request: HttpRequest):
     actor = get_actor(request)
     subscription = SubscriptionService.get_user_subscription(user_id=actor.user_id)
     if not subscription:
-        SubscriptionService.assign_plan(user_id=actor.user_id, plan_slug="free")
-        subscription = SubscriptionService.get_user_subscription(user_id=actor.user_id)
-        if not subscription:
-            raise HttpError(500, "Subscription could not be initialized")
+        raise HttpError(404, "No active subscription found")
 
     limits = SubscriptionService.get_user_plan_limits(user_id=actor.user_id)
     started_at = subscription.started_at.isoformat()
