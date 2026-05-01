@@ -165,3 +165,22 @@ class TestOfferBatchCreateService:
 
         quota.refresh_from_db()
         assert quota.used_offers_count == 2
+
+    def test_offer_batch_create_saves_metadata(self):
+        scraping_target = ScrappingTargetFactory()
+        offer_data = {
+            "target": scraping_target.id,
+            "offers": [
+                {
+                    "url": "https://example.com/metadata-offer",
+                    "title": "Offer with metadata",
+                    "metadata": {"extra": {"foo": "bar"}},
+                }
+            ],
+        }
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+
+        service.run()
+
+        offer = Offer.objects.get(url="https://example.com/metadata-offer")
+        assert offer.metadata == {"extra": {"foo": "bar"}}

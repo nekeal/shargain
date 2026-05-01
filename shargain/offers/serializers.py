@@ -4,10 +4,24 @@ from rest_framework.exceptions import ValidationError
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 
 
+class OfferMetadataSerializer(serializers.Serializer):
+    extra = serializers.DictField(child=serializers.JSONField(), default=dict)
+
+
 class OfferBasicSerializer(serializers.ModelSerializer):
+    metadata = OfferMetadataSerializer(required=False)
+
     class Meta:
         model = Offer
-        fields = ("url", "title", "price", "published_at", "main_image_url", "list_url")
+        fields = (
+            "url",
+            "title",
+            "price",
+            "published_at",
+            "main_image_url",
+            "list_url",
+            "metadata",
+        )
 
 
 class OfferBatchCreateSerializer(serializers.Serializer):

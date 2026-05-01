@@ -1,3 +1,4 @@
+from typing import Any, TypedDict
 from urllib.parse import urlparse
 
 from django.db import models
@@ -113,6 +114,14 @@ def get_offer_source_html_path(instance: "Offer", filename: str):
     return f"offer_sources/{_date.year}/{_date.month:02}/{_date.day:02}/{slugify(instance.title)}_{instance.id}.html"
 
 
+def get_default_metadata():
+    return {"extra": {}}
+
+
+class OfferMetadata(TypedDict, total=False):
+    extra: dict[str, Any]
+
+
 class Offer(TimeStampedModel):
     url = models.URLField(max_length=1024)
     title = models.CharField(verbose_name=_("Title"), max_length=200)
@@ -128,6 +137,16 @@ class Offer(TimeStampedModel):
     )
 
     target = models.ForeignKey(verbose_name=_("Target"), to="ScrappingTarget", on_delete=models.PROTECT)
+
+    metadata = models.JSONField(
+        verbose_name=_("Metadata"),
+        default=get_default_metadata,
+        blank=True,
+        help_text=_(
+            "Metadata for the offer. Use 'extra' key for unstructured scraper data. "
+            "Root level is reserved for official contract fields."
+        ),
+    )
 
     published_at = models.DateTimeField(verbose_name=_("Published at"), blank=True, null=True)
     closed_at = models.DateTimeField(verbose_name=_("Closed at"), blank=True, null=True)
