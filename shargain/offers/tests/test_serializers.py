@@ -25,6 +25,12 @@ class TestOfferMetadataSerializer:
         assert "foo" not in serializer.validated_data
         assert serializer.validated_data == {"extra": {"baz": 1}}
 
+    def test_null_values_in_extra_are_allowed(self):
+        data = {"extra": {"salary": None, "externalUrl": None}}
+        serializer = OfferMetadataSerializer(data=data)
+        assert serializer.is_valid(), serializer.errors
+        assert serializer.validated_data == data
+
 
 class TestOfferBasicSerializer:
     @pytest.mark.django_db

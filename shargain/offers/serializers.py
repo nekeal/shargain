@@ -5,7 +5,7 @@ from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 
 
 class OfferMetadataSerializer(serializers.Serializer):
-    extra = serializers.DictField(child=serializers.JSONField(), default=dict)
+    extra = serializers.DictField(child=serializers.JSONField(allow_null=True), default=dict)
 
 
 class OfferBasicSerializer(serializers.ModelSerializer):
