@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle, ChevronDown, Filter, Plus, Save, X } from "lucide-react";
 import { createFilterSchemas } from "./filterValidation";
-import { useUpdateFiltersMutation } from "./useMonitors";
+import { useUpdateUrlMutation } from "./useMonitors";
 import type { FiltersConfigSchema, RuleGroupSchema } from "@/lib/api/types.gen";
 import type { ZodIssue, z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,7 @@ export function OfferFilters({
   const [isOpen, setIsOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<z.ZodError | null>(null);
 
-  const mutation = useUpdateFiltersMutation(targetId, urlId);
+  const mutation = useUpdateUrlMutation(targetId, urlId);
 
   useEffect(() => {
     setFilters(initialFilters);
@@ -85,7 +85,7 @@ export function OfferFilters({
   const handleSave = () => {
     const normalizedFilters = normalizeFilters(filters);
     if (validateFilters(normalizedFilters)) {
-      mutation.mutate(normalizedFilters);
+      mutation.mutate({ filters: normalizedFilters });
     }
   };
 

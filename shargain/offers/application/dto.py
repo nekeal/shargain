@@ -21,6 +21,7 @@ class ScrapingUrlDTO:
     is_active: bool
     last_checked_at: str | None = None
     filters: dict | None = None
+    show_location_map_in_notifications: bool = False
 
     @classmethod
     def from_orm(cls, url: ScrapingUrl, last_checked_at: str | None = None) -> Self:
@@ -32,6 +33,7 @@ class ScrapingUrlDTO:
             is_active=url.is_active,
             last_checked_at=last_checked_at,
             filters=url.filters,
+            show_location_map_in_notifications=url.show_location_map_in_notifications,
         )
 
 

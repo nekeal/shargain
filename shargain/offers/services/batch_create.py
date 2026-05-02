@@ -24,7 +24,6 @@ class OfferBatchCreateService:
         target = serializer.validated_data["target"]
         if target.owner_id and not QuotaService.check_can_create_offers(user_id=target.owner_id, target_id=target.id):
             return []
-
         offers: list[tuple[Offer, bool]] = self.create(serializer.validated_data)
         new_offers = [r[0] for r in filter(lambda x: x[1], offers)]
         self._notify(new_offers, target)
@@ -87,48 +86,63 @@ class OfferBatchCreateService:
             )
 
     def _notify(self, new_offers, scrapping_target):
-        if new_offers and scrapping_target.notification_config and scrapping_target.enable_notifications:
-            # Apply filters per scraping URL
-            filtered_offers = self._apply_filters_by_url(new_offers, scrapping_target)
+        if not (new_offers and scrapping_target.notification_config and scrapping_target.enable_notifications):
+            return
 
-            if filtered_offers:
-                self.notification_service_class(filtered_offers, scrapping_target).run()
-
-    def _apply_filters_by_url(self, offers: list[Offer], scrapping_target: ScrappingTarget) -> list[Offer]:
-        """Apply filters grouped by scraping URL.
-
-        Args:
-            offers: List of offers to filter
-            scrapping_target: The scrapping target containing the offers
-
-        Returns:
-            List of filtered offers that pass all configured filters
-        """
+        from shargain.notifications.services.notifications import NotificationMessageContext
         from shargain.offers.services.filter_service import OfferFilterService
+        from shargain.offers.services.location_parsers import LocationParserFactory
 
         # Group offers by their list_url (the scraping URL)
         offers_by_url: dict[str, list[Offer]] = {}
-        for offer in offers:
-            if offer.list_url not in offers_by_url:
-                offers_by_url[offer.list_url] = []
-            offers_by_url[offer.list_url].append(offer)
+        for offer in new_offers:
+            offers_by_url.setdefault(offer.list_url, []).append(offer)
+
+        # Log to verify if all offers have the same list_url
+        unique_urls = list(offers_by_url.keys())
+        logger.info(
+            "BatchCreateService._notify received offers with %s unique list_urls: %s",
+            len(unique_urls),
+            unique_urls,
+        )
 
         # Fetch all relevant ScrapingUrl objects in a single query (prevents N+1)
-        urls_to_fetch = offers_by_url.keys()
-        scraping_urls = ScrapingUrl.objects.filter(url__in=urls_to_fetch, scraping_target=scrapping_target)
-        url_to_filters_map = {sc_url.url: sc_url.filters for sc_url in scraping_urls}
+        scraping_urls = ScrapingUrl.objects.filter(url__in=unique_urls, scraping_target=scrapping_target)
+        url_to_config_map = {sc_url.url: sc_url for sc_url in scraping_urls}
 
-        # Apply filters per URL
-        filtered_offers = []
+        # Apply filters and send notifications per URL
         for list_url, url_offers in offers_by_url.items():
-            filters = url_to_filters_map.get(list_url)
+            scraping_url = url_to_config_map.get(list_url)
 
-            if filters:
-                # Filters configured - apply them
-                filter_service = OfferFilterService(filters)
-                filtered_offers.extend(filter_service.apply_filters(url_offers))
-            else:
-                # No filters configured = include all offers
-                filtered_offers.extend(url_offers)
+            # Apply filters
+            filtered_offers = url_offers
+            if scraping_url and scraping_url.filters:
+                filter_service = OfferFilterService(scraping_url.filters)
+                filtered_offers = filter_service.apply_filters(url_offers)
 
-        return filtered_offers
+            if not filtered_offers:
+                continue
+
+            # Parse location if opted-in
+            message_contexts = []
+            show_location = scraping_url.show_location_map_in_notifications if scraping_url else False
+
+            for offer in filtered_offers:
+                map_url, location_name, is_exact = None, None, False
+                if show_location:
+                    parser = LocationParserFactory.get_parser(offer.domain, offer.metadata)
+                    map_url = parser.get_map_url()
+                    location_name = parser.get_location_name()
+                    is_exact = parser.is_location_exact()
+
+                message_contexts.append(
+                    NotificationMessageContext(
+                        offer=offer,
+                        map_url=map_url,
+                        location_name=location_name,
+                        is_exact_location=is_exact,
+                    )
+                )
+
+            # Call notification service per group
+            self.notification_service_class(message_contexts, scrapping_target).run()

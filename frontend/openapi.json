@@ -250,12 +250,10 @@
             }
           }
         }
-      }
-    },
-    "/api/public/targets/{target_id}/urls/{url_id}/filters": {
+      },
       "patch": {
-        "operationId": "update_scraping_url_filters",
-        "summary": "Update Scraping Url Filters",
+        "operationId": "update_scraping_url",
+        "summary": "Update Scraping Url View",
         "parameters": [
           {
             "in": "path",
@@ -308,12 +306,12 @@
             }
           }
         },
-        "description": "Update filters for an existing scraping URL.",
+        "description": "Update an existing scraping URL.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateFiltersRequest"
+                "$ref": "#/components/schemas/UpdateScrapingUrlRequest"
               }
             }
           },
@@ -1006,6 +1004,11 @@
                 "type": "null"
               }
             ]
+          },
+          "showLocationMapInNotifications": {
+            "default": false,
+            "title": "Showlocationmapinnotifications",
+            "type": "boolean"
           }
         },
         "required": [
@@ -1175,6 +1178,11 @@
                 "type": "null"
               }
             ]
+          },
+          "showLocationMapInNotifications": {
+            "default": false,
+            "title": "Showlocationmapinnotifications",
+            "type": "boolean"
           }
         },
         "required": [
@@ -1266,7 +1274,7 @@
         "title": "QuotaStatusResponse",
         "type": "object"
       },
-      "UpdateFiltersRequest": {
+      "UpdateScrapingUrlRequest": {
         "properties": {
           "filters": {
             "anyOf": [
@@ -1277,9 +1285,20 @@
                 "type": "null"
               }
             ]
+          },
+          "showLocationMapInNotifications": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Showlocationmapinnotifications"
           }
         },
-        "title": "UpdateFiltersRequest",
+        "title": "UpdateScrapingUrlRequest",
         "type": "object"
       },
       "ToggleNotificationsResponse": {

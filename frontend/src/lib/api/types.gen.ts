@@ -78,6 +78,10 @@ export type ScrapingUrlResponse = {
      */
     lastCheckedAt?: string | null;
     filters?: FiltersConfigSchema | null;
+    /**
+     * Showlocationmapinnotifications
+     */
+    showLocationMapInNotifications?: boolean;
 };
 
 /**
@@ -173,6 +177,10 @@ export type AddUrlRequest = {
      */
     name?: string | null;
     filters?: FiltersConfigSchema | null;
+    /**
+     * Showlocationmapinnotifications
+     */
+    showLocationMapInNotifications?: boolean;
 };
 
 /**
@@ -220,10 +228,14 @@ export type QuotaStatusResponse = {
 };
 
 /**
- * UpdateFiltersRequest
+ * UpdateScrapingUrlRequest
  */
-export type UpdateFiltersRequest = {
+export type UpdateScrapingUrlRequest = {
     filters?: FiltersConfigSchema | null;
+    /**
+     * Showlocationmapinnotifications
+     */
+    showLocationMapInNotifications?: boolean | null;
 };
 
 /**
@@ -572,8 +584,8 @@ export type DeleteTargetUrlResponses = {
 
 export type DeleteTargetUrlResponse = DeleteTargetUrlResponses[keyof DeleteTargetUrlResponses];
 
-export type UpdateScrapingUrlFiltersData = {
-    body: UpdateFiltersRequest;
+export type UpdateScrapingUrlData = {
+    body: UpdateScrapingUrlRequest;
     path: {
         /**
          * Target Id
@@ -585,10 +597,10 @@ export type UpdateScrapingUrlFiltersData = {
         url_id: number;
     };
     query?: never;
-    url: '/api/public/targets/{target_id}/urls/{url_id}/filters';
+    url: '/api/public/targets/{target_id}/urls/{url_id}';
 };
 
-export type UpdateScrapingUrlFiltersErrors = {
+export type UpdateScrapingUrlErrors = {
     /**
      * Bad Request
      */
@@ -599,16 +611,16 @@ export type UpdateScrapingUrlFiltersErrors = {
     404: ErrorSchema;
 };
 
-export type UpdateScrapingUrlFiltersError = UpdateScrapingUrlFiltersErrors[keyof UpdateScrapingUrlFiltersErrors];
+export type UpdateScrapingUrlError = UpdateScrapingUrlErrors[keyof UpdateScrapingUrlErrors];
 
-export type UpdateScrapingUrlFiltersResponses = {
+export type UpdateScrapingUrlResponses = {
     /**
      * OK
      */
     200: ScrapingUrlResponse;
 };
 
-export type UpdateScrapingUrlFiltersResponse = UpdateScrapingUrlFiltersResponses[keyof UpdateScrapingUrlFiltersResponses];
+export type UpdateScrapingUrlResponse = UpdateScrapingUrlResponses[keyof UpdateScrapingUrlResponses];
 
 export type ActivateScrapingUrlData = {
     body?: never;

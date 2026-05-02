@@ -12,7 +12,7 @@ from shargain.accounts.models import CustomUser
 from shargain.commons.models import TimeStampedModel
 
 
-class ScrappingTarget(models.Model):
+class ScrappingTarget(models.Model):  # type: ignore[django-manager-missing]
     name = models.CharField(verbose_name=_("Name"), max_length=100)
     url = ArrayField(models.URLField(max_length=1024), default=list, blank=True)
     enable_notifications = models.BooleanField(_("Enable notifications"), default=True)
@@ -61,6 +61,11 @@ class ScrapingUrl(models.Model):
         blank=True,
         null=True,
         default=None,
+    )
+    show_location_map_in_notifications = models.BooleanField(
+        _("Show location map in notifications"),
+        help_text=_("If True, a Google Maps link will be appended to Telegram notifications for offers from this URL."),
+        default=False,
     )
 
     scraping_target = models.ForeignKey(

@@ -25,6 +25,7 @@ class TestAddScrapingUrl:
             url=url,
             is_active=True,
             name=name,
+            show_location_map_in_notifications=False,
         )
 
     def test_add_scraping_url_with_no_name_defaults_to_url(self, scraping_target):
@@ -41,6 +42,7 @@ class TestAddScrapingUrl:
             url=url,
             is_active=True,
             name="",
+            show_location_map_in_notifications=False,
         )
 
     def test_add_scraping_url_to_non_existent_target_raises_error(self):
@@ -61,3 +63,15 @@ class TestAddScrapingUrl:
 
         with pytest.raises(QuotaExceeded):
             add_scraping_url(actor=actor, target_id=scraping_target.id, url="https://example.com")
+
+    def test_add_scraping_url_with_location_map_enabled(self, scraping_target):
+        actor = Actor(user_id=scraping_target.owner_id)
+        url = "https://example.com"
+
+        result_dto = add_scraping_url(
+            actor=actor, target_id=scraping_target.id, url=url, show_location_map_in_notifications=True
+        )
+
+        assert result_dto.show_location_map_in_notifications is True
+        target_dto = get_target(actor=actor, target_id=scraping_target.id)
+        assert target_dto.urls[0].show_location_map_in_notifications is True

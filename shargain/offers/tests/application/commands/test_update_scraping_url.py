@@ -26,7 +26,27 @@ class TestUpdateScrapingUrl:
             url=scraping_url.url,
             is_active=scraping_url.is_active,
             name=new_name,
+            show_location_map_in_notifications=scraping_url.show_location_map_in_notifications,
         )
+
+    def test_update_scraping_url_filters_succeeds(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target)
+        actor = Actor(user_id=scraping_target.owner_id)
+        new_filters = {
+            "ruleGroups": [{"logic": "and", "rules": [{"field": "title", "operator": "contains", "value": "test"}]}]
+        }
+
+        result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, filters=new_filters)
+
+        assert result_dto.filters == new_filters
+
+    def test_update_scraping_url_location_map_succeeds(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, show_location_map_in_notifications=False)
+        actor = Actor(user_id=scraping_target.owner_id)
+
+        result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, show_location_map_in_notifications=True)
+
+        assert result_dto.show_location_map_in_notifications is True
 
     def test_update_scraping_url_for_non_existent_url_raises_error(self):
         actor = Actor(user_id=1)

@@ -13,6 +13,7 @@ def add_scraping_url(
     target_id: int,
     name: str | None = None,
     filters: dict | None = None,
+    show_location_map_in_notifications: bool = False,
 ) -> ScrapingUrlDTO:
     """
     Adds a new scraping URL to the specified target.
@@ -32,5 +33,11 @@ def add_scraping_url(
     if not QuotaService.check_can_add_url(user_id=actor.user_id, target_id=target.id):
         raise QuotaExceeded()
 
-    scraping_url = ScrapingUrl.objects.create(url=url, scraping_target=target, name=name or "", filters=filters)
+    scraping_url = ScrapingUrl.objects.create(
+        url=url,
+        scraping_target=target,
+        name=name or "",
+        filters=filters,
+        show_location_map_in_notifications=show_location_map_in_notifications,
+    )
     return ScrapingUrlDTO.from_orm(scraping_url)

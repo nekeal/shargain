@@ -63,7 +63,7 @@ class TestOfferBatchCreateService:
             mock_notification_service_class.assert_called_once()
             filtered_offers = mock_notification_service_class.call_args[0][0]
             assert len(filtered_offers) == 1
-            assert filtered_offers[0].title == "Beautiful apartment in city center"
+            assert filtered_offers[0].offer.title == "Beautiful apartment in city center"
 
             # Verify run() was called on the instance
             mock_instance.run.assert_called_once()

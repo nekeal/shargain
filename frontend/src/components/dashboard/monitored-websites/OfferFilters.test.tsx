@@ -37,10 +37,10 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-// Mock the useUpdateFiltersMutation hook
+// Mock the useUpdateUrlMutation hook
 const mockMutate = vi.fn()
 vi.mock('./useMonitors', () => ({
-  useUpdateFiltersMutation: () => ({
+  useUpdateUrlMutation: () => ({
     mutate: mockMutate,
     isPending: false,
     isError: false,

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { OfferMonitor } from "@/types/dashboard";
 import type { FiltersConfigSchema } from "@/lib/api/types.gen";
-import { activateScrapingUrl, addUrlToTarget, deactivateScrapingUrl, deleteTargetUrl, getMyTarget, updateScrapingUrlFilters } from "@/lib/api/sdk.gen";
+import { activateScrapingUrl, addUrlToTarget, deactivateScrapingUrl, deleteTargetUrl, getMyTarget, updateScrapingUrl } from "@/lib/api/sdk.gen";
 
 export const useGetMyTarget = () => {
     return useQuery<OfferMonitor>({
@@ -15,7 +15,7 @@ export const useAddUrlMutation = (
 ) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newUrl: { url: string, name?: string }) => addUrlToTarget({ path: { target_id: targetId }, body: { url: newUrl.url, name: newUrl.name } }).then(response => response.data),
+        mutationFn: (newUrl: { url: string, name?: string, showLocationMapInNotifications?: boolean }) => addUrlToTarget({ path: { target_id: targetId }, body: { url: newUrl.url, name: newUrl.name, showLocationMapInNotifications: newUrl.showLocationMapInNotifications } }).then(response => response.data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['myTarget'] });
         },
@@ -47,13 +47,13 @@ export const useToggleUrlActiveMutation = (targetId: number) => {
     });
 };
 
-export const useUpdateFiltersMutation = (targetId: number, urlId: number) => {
+export const useUpdateUrlMutation = (targetId: number, urlId: number) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (filters: FiltersConfigSchema | null) => {
-            return updateScrapingUrlFilters({
+        mutationFn: (payload: { filters?: FiltersConfigSchema | null, showLocationMapInNotifications?: boolean }) => {
+            return updateScrapingUrl({
                 path: { target_id: targetId, url_id: urlId },
-                body: { filters },
+                body: payload,
             });
         },
         onSuccess: () => {

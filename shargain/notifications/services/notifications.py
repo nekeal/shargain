@@ -1,18 +1,28 @@
+from dataclasses import dataclass
+
 from shargain.notifications.models import NotificationChannelChoices
 from shargain.notifications.senders import TelegramNotificationSender
 from shargain.offers.models import Offer, ScrappingTarget
 
 
+@dataclass
+class NotificationMessageContext:
+    offer: Offer
+    map_url: str | None = None
+    location_name: str | None = None
+    is_exact_location: bool = False
+
+
 class NewOfferNotificationService:
-    def __init__(self, offers: list[Offer], scrapping_target: ScrappingTarget):
+    def __init__(self, message_contexts: list[NotificationMessageContext], scrapping_target: ScrappingTarget):
         assert scrapping_target.notification_config_id, "Scrapping target has no notification_config"  # noqa: S101
-        self.offers = offers
+        self.message_contexts = message_contexts
         self._scrapping_target = scrapping_target
 
     def run(self):
         message = self.get_message_header()
-        for offer in self.offers:
-            offer_message = self.get_message_for_offer(offer)
+        for context in self.message_contexts:
+            offer_message = self.get_message_for_offer(context)
             if len(message + offer_message) > self.get_maximum_message_length(
                 self._scrapping_target.notification_config.channel  # type: ignore
             ):
@@ -39,8 +49,20 @@ class NewOfferNotificationService:
     def get_notification_sender_class(notification_channel):
         return {NotificationChannelChoices.TELEGRAM: TelegramNotificationSender}[notification_channel]
 
-    def get_message_for_offer(self, offer):
-        return f"{offer.title} ({offer.published_at.time()}) za {offer.price}zł\n{offer.url}\n\n"
+    def get_message_for_offer(self, context: NotificationMessageContext) -> str:
+        base_msg = (
+            f"{context.offer.title} ({context.offer.published_at and context.offer.published_at.time()})\n"
+            f"za {context.offer.price}zł\n{context.offer.url}"
+        )
+
+        if context.map_url:
+            icon = "📍" if context.is_exact_location else "🗺️"
+            base_msg += f"\n{icon} {context.map_url}"
+        if context.location_name:
+            base_msg += f"\n🏙️ {context.location_name}"
+
+        base_msg += "\n\n"
+        return base_msg
 
     def get_message_header(self):
         return f"{self._scrapping_target.name.upper()}\n\n"

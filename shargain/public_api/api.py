@@ -39,6 +39,7 @@ from shargain.offers.application.commands.toggle_target_notifications import (
 from shargain.offers.application.commands.update_scraping_target_name import (
     update_scraping_target_name,
 )
+from shargain.offers.application.commands.update_scraping_url import update_scraping_url
 from shargain.offers.application.exceptions import (
     ApplicationException,
     QuotaExceeded,
@@ -49,7 +50,6 @@ from shargain.offers.application.queries.get_target import (
     get_target,
     get_target_by_user,
 )
-from shargain.offers.models import ScrapingUrl
 from shargain.offers.schemas.offer_filter import validate_filters
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
@@ -143,6 +143,7 @@ class ScrapingUrlResponse(BaseSchema):
     is_active: bool
     last_checked_at: str | None = None
     filters: FiltersConfigSchema | None = None
+    show_location_map_in_notifications: bool = False
 
 
 class TargetResponse(BaseSchema):
@@ -245,10 +246,12 @@ class AddUrlRequest(BaseSchema):
     url: HttpUrl
     name: str | None = None
     filters: FiltersConfigSchema | None = None
+    show_location_map_in_notifications: bool = False
 
 
-class UpdateFiltersRequest(BaseSchema):
+class UpdateScrapingUrlRequest(BaseSchema):
     filters: FiltersConfigSchema | None = None
+    show_location_map_in_notifications: bool | None = None
 
 
 @router.post(
@@ -268,7 +271,14 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
         raise HttpError(400, str(e)) from e
 
     try:
-        return add_scraping_url(actor, str(payload.url), target_id, name=payload.name, filters=validated_filters)
+        return add_scraping_url(
+            actor,
+            str(payload.url),
+            target_id,
+            name=payload.name,
+            filters=validated_filters,
+            show_location_map_in_notifications=payload.show_location_map_in_notifications,
+        )
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
     except QuotaExceeded as e:
@@ -302,32 +312,25 @@ def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
 
 
 @router.patch(
-    "/targets/{target_id}/urls/{url_id}/filters",
-    operation_id="update_scraping_url_filters",
+    "/targets/{target_id}/urls/{url_id}",
+    operation_id="update_scraping_url",
     by_alias=True,
     response={200: ScrapingUrlResponse, 400: ErrorSchema, 404: ErrorSchema},
 )
-def update_scraping_url_filters(request: HttpRequest, target_id: int, url_id: int, payload: UpdateFiltersRequest):
-    """Update filters for an existing scraping URL."""
+def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, payload: UpdateScrapingUrlRequest):
+    """Update an existing scraping URL."""
     actor = get_actor(request)
     filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
 
-    # Get the scraping URL and verify ownership
     try:
-        scraping_url = ScrapingUrl.objects.get(
-            id=url_id, scraping_target_id=target_id, scraping_target__owner_id=actor.user_id
+        return update_scraping_url(
+            actor=actor,
+            url_id=url_id,
+            filters=filters_dict,
+            show_location_map_in_notifications=payload.show_location_map_in_notifications,
         )
-    except ScrapingUrl.DoesNotExist as exc:
+    except ScrapingUrlDoesNotExist as exc:
         raise HttpError(404, "Scraping URL not found") from exc
-
-    # Update filters
-    scraping_url.filters = filters_dict
-    scraping_url.save()
-
-    # Import DTO for proper response
-    from shargain.offers.application.dto import ScrapingUrlDTO
-
-    return ScrapingUrlDTO.from_orm(scraping_url)
 
 
 @router.post(

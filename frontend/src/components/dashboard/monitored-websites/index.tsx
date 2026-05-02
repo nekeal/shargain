@@ -6,8 +6,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAddUrlMutation, useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
 import { SupportedWebsitesModal } from "./supported-websites-modal"
 import { OfferFilters } from "./OfferFilters"
+import { UrlNotificationSettings } from "./UrlNotificationSettings"
 import type { OfferMonitor } from "@/types/dashboard"
-import type { FiltersConfigSchema } from "@/lib/api/types.gen"
 import cn from "@/lib/utils"
 import { getQuotaStatus, updateTargetName } from "@/lib/api/sdk.gen"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -301,7 +301,14 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
               <OfferFilters
                 targetId={offerMonitor.id}
                 urlId={url.id}
-                initialFilters={url.filters as FiltersConfigSchema | null}
+                initialFilters={url.filters ?? null}
+              />
+
+              {/* Notification Settings Component */}
+              <UrlNotificationSettings
+                targetId={offerMonitor.id}
+                urlId={url.id}
+                initialShowLocationMap={url.showLocationMapInNotifications ?? false}
               />
             </div>
           ))}
