@@ -67,14 +67,16 @@ function WaypointRow({ waypoint, index, onUpdate, onRemove, onPaste }: WaypointR
             onChange={(e) => onUpdate(index, "lat", parseFloat(e.target.value) || 0)}
             className="h-8 text-xs px-2 flex-1"
           />
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => onPaste(index)}
             aria-label={t("filters.pasteFromClipboard")}
-            className="p-1.5 text-gray-400 hover:text-violet-600 transition-colors shrink-0 rounded"
+            className="h-7 w-7 shrink-0"
           >
             <MapPin className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500 w-8 shrink-0">
@@ -88,14 +90,16 @@ function WaypointRow({ waypoint, index, onUpdate, onRemove, onPaste }: WaypointR
             onChange={(e) => onUpdate(index, "lon", parseFloat(e.target.value) || 0)}
             className="h-8 text-xs px-2 flex-1"
           />
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => onRemove(index)}
             aria-label={t("filters.removeWaypoint")}
-            className="p-1.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+            className="h-7 w-7 shrink-0"
           >
             <X className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>

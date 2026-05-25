@@ -3,6 +3,7 @@ from collections import Counter
 
 from shargain.notifications.services.notifications import NewOfferNotificationService
 from shargain.offers.application.commands.record_checkin import record_checkin
+from shargain.offers.application.dto import WaypointData
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
 from shargain.offers.services.geo_utils import haversine
@@ -128,7 +129,7 @@ class OfferBatchCreateService:
             message_contexts = []
             show_location = scraping_url.show_location_map_in_notifications if scraping_url else False
 
-            waypoints = scraping_url.waypoints if scraping_url else None
+            waypoints: list[WaypointData] | None = scraping_url.waypoints if scraping_url else None  # type: ignore[assignment]
 
             for offer in filtered_offers:
                 map_url, location_name, is_exact = None, None, False
