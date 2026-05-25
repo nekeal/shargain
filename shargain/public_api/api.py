@@ -40,6 +40,7 @@ from shargain.offers.application.commands.update_scraping_target_name import (
     update_scraping_target_name,
 )
 from shargain.offers.application.commands.update_scraping_url import update_scraping_url
+from shargain.offers.application.dto import WaypointData
 from shargain.offers.application.exceptions import (
     ApplicationException,
     QuotaExceeded,
@@ -136,6 +137,12 @@ class FiltersConfigSchema(BaseSchema):
     rule_groups: list[RuleGroupSchema]
 
 
+class WaypointSchema(BaseSchema):
+    name: str
+    lat: float
+    lon: float
+
+
 class ScrapingUrlResponse(BaseSchema):
     id: int
     url: str
@@ -144,6 +151,7 @@ class ScrapingUrlResponse(BaseSchema):
     last_checked_at: str | None = None
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool = False
+    waypoints: list[WaypointSchema] | None = None
 
 
 class TargetResponse(BaseSchema):
@@ -247,11 +255,13 @@ class AddUrlRequest(BaseSchema):
     name: str | None = None
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool = False
+    waypoints: list[WaypointSchema] | None = None
 
 
 class UpdateScrapingUrlRequest(BaseSchema):
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool | None = None
+    waypoints: list[WaypointSchema] | None = None
 
 
 @router.post(
@@ -271,6 +281,9 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
         raise HttpError(400, str(e)) from e
 
     try:
+        waypoints_list = (
+            [WaypointData(name=w.name, lat=w.lat, lon=w.lon) for w in payload.waypoints] if payload.waypoints else None
+        )
         return add_scraping_url(
             actor,
             str(payload.url),
@@ -278,6 +291,7 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
             name=payload.name,
             filters=validated_filters,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
+            waypoints=waypoints_list,
         )
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
@@ -323,11 +337,15 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
     filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
 
     try:
+        waypoints_list = (
+            [WaypointData(name=w.name, lat=w.lat, lon=w.lon) for w in payload.waypoints] if payload.waypoints else None
+        )
         return update_scraping_url(
             actor=actor,
             url_id=url_id,
             filters=filters_dict,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
+            waypoints=waypoints_list,
         )
     except ScrapingUrlDoesNotExist as exc:
         raise HttpError(404, "Scraping URL not found") from exc

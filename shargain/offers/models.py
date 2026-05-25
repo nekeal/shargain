@@ -67,6 +67,13 @@ class ScrapingUrl(models.Model):
         help_text=_("If True, a Google Maps link will be appended to Telegram notifications for offers from this URL."),
         default=False,
     )
+    waypoints = models.JSONField(
+        verbose_name=_("Waypoints"),
+        help_text=_('List of waypoints. Format: [{"name": ..., "lat": ..., "lon": ...}]'),
+        blank=True,
+        null=True,
+        default=None,
+    )
 
     scraping_target = models.ForeignKey(
         ScrappingTarget,

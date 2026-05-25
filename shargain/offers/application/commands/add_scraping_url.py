@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from shargain.commons.application.actor import Actor
-from shargain.offers.application.dto import ScrapingUrlDTO
+from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
 from shargain.offers.application.exceptions import QuotaExceeded, TargetDoesNotExist
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
 from shargain.quotas.services.quota import QuotaService
@@ -14,6 +14,7 @@ def add_scraping_url(
     name: str | None = None,
     filters: dict | None = None,
     show_location_map_in_notifications: bool = False,
+    waypoints: list[WaypointData] | None = None,
 ) -> ScrapingUrlDTO:
     """
     Adds a new scraping URL to the specified target.
@@ -39,5 +40,6 @@ def add_scraping_url(
         name=name or "",
         filters=filters,
         show_location_map_in_notifications=show_location_map_in_notifications,
+        waypoints=waypoints,
     )
     return ScrapingUrlDTO.from_orm(scraping_url)

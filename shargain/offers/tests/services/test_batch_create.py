@@ -184,3 +184,55 @@ class TestOfferBatchCreateService:
 
         offer = Offer.objects.get(url="https://example.com/metadata-offer")
         assert offer.metadata == {"extra": {"foo": "bar"}}
+
+    def test_offer_batch_create_with_waypoints(self):
+        """Test that distances to waypoints are computed and passed to the notification service."""
+        notification_config = NotificationConfigFactory()
+        scraping_target = ScrappingTargetFactory(
+            notification_config=notification_config,
+            enable_notifications=True,
+        )
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            show_location_map_in_notifications=True,
+            waypoints=[
+                {"name": "Metro Centrum", "lat": 52.23, "lon": 21.00},
+                {"name": "Office", "lat": 52.19, "lon": 21.04},
+            ],
+        )
+        offer_data = {
+            "target": scraping_url.scraping_target.id,
+            "offers": [
+                {
+                    "url": "https://olx.pl/offer-with-coords",
+                    "title": "Apartment near metro",
+                    "list_url": scraping_url.url,
+                    "metadata": {
+                        "extra": {
+                            "map": {"lat": 52.22, "lon": 21.01},
+                            "location": {"cityName": "Warsaw", "districtName": "Centrum"},
+                        }
+                    },
+                },
+            ],
+        }
+
+        with patch(
+            "shargain.offers.services.batch_create.NewOfferNotificationService"
+        ) as mock_notification_service_class:
+            mock_instance = mock_notification_service_class.return_value
+            mock_instance.run.return_value = None
+
+            service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+            service.notification_service_class = mock_notification_service_class
+            service.run()
+
+            mock_notification_service_class.assert_called_once()
+            contexts = mock_notification_service_class.call_args[0][0]
+            assert len(contexts) == 1
+            ctx = contexts[0]
+            assert ctx.distances is not None
+            assert len(ctx.distances) == 2
+            # Verify distances are sensible (offer 52.22,21.01 to metro 52.23,21.00 ~ 1.2 km)
+            metro_dist = ctx.distances[0][1]
+            assert metro_dist == pytest.approx(1.2, abs=0.5)
