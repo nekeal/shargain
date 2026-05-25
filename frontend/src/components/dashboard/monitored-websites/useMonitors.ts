@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { OfferMonitor } from "@/types/dashboard";
-import type { FiltersConfigSchema } from "@/lib/api/types.gen";
+import type { FiltersConfigSchema, WaypointSchema } from "@/lib/api/types.gen";
 import { activateScrapingUrl, addUrlToTarget, deactivateScrapingUrl, deleteTargetUrl, getMyTarget, updateScrapingUrl } from "@/lib/api/sdk.gen";
 
 export const useGetMyTarget = () => {
@@ -50,7 +50,7 @@ export const useToggleUrlActiveMutation = (targetId: number) => {
 export const useUpdateUrlMutation = (targetId: number, urlId: number) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (payload: { filters?: FiltersConfigSchema | null, showLocationMapInNotifications?: boolean }) => {
+        mutationFn: (payload: { filters?: FiltersConfigSchema | null, showLocationMapInNotifications?: boolean, waypoints?: Array<WaypointSchema> | null }) => {
             return updateScrapingUrl({
                 path: { target_id: targetId, url_id: urlId },
                 body: payload,

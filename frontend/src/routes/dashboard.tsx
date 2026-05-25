@@ -11,7 +11,6 @@ import { useGetMyTarget } from '@/components/dashboard/monitored-websites/useMon
 export const Route = createFileRoute('/dashboard')({
     component: DashboardContent,
     beforeLoad: ({ context }) => {
-        console.log("RENDERING DASHBOARD", context.auth.user?.username)
         if (!context.auth.isAuthenticated) {
             throw redirect({
                 to: '/auth/signin',
