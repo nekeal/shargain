@@ -309,6 +309,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                 targetId={offerMonitor.id}
                 urlId={url.id}
                 initialShowLocationMap={url.showLocationMapInNotifications ?? false}
+                initialWaypoints={url.waypoints ?? []}
               />
             </div>
           ))}

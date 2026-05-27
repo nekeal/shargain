@@ -6,9 +6,15 @@ and the presentation layer (e.g., API views).
 """
 
 import dataclasses
-from typing import Self
+from typing import Self, TypedDict
 
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
+
+
+class WaypointData(TypedDict):
+    name: str
+    lat: float
+    lon: float
 
 
 @dataclasses.dataclass(frozen=True)
@@ -22,6 +28,7 @@ class ScrapingUrlDTO:
     last_checked_at: str | None = None
     filters: dict | None = None
     show_location_map_in_notifications: bool = False
+    waypoints: list[WaypointData] | None = None
 
     @classmethod
     def from_orm(cls, url: ScrapingUrl, last_checked_at: str | None = None) -> Self:
@@ -34,6 +41,7 @@ class ScrapingUrlDTO:
             last_checked_at=last_checked_at,
             filters=url.filters,
             show_location_map_in_notifications=url.show_location_map_in_notifications,
+            waypoints=url.waypoints,
         )
 
 

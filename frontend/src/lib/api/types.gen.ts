@@ -54,6 +54,24 @@ export type RuleGroupSchema = {
 };
 
 /**
+ * WaypointSchema
+ */
+export type WaypointSchema = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Lat
+     */
+    lat: number;
+    /**
+     * Lon
+     */
+    lon: number;
+};
+
+/**
  * ScrapingUrlResponse
  */
 export type ScrapingUrlResponse = {
@@ -82,6 +100,10 @@ export type ScrapingUrlResponse = {
      * Showlocationmapinnotifications
      */
     showLocationMapInNotifications?: boolean;
+    /**
+     * Waypoints
+     */
+    waypoints?: Array<WaypointSchema> | null;
 };
 
 /**
@@ -181,6 +203,10 @@ export type AddUrlRequest = {
      * Showlocationmapinnotifications
      */
     showLocationMapInNotifications?: boolean;
+    /**
+     * Waypoints
+     */
+    waypoints?: Array<WaypointSchema> | null;
 };
 
 /**
@@ -236,6 +262,10 @@ export type UpdateScrapingUrlRequest = {
      * Showlocationmapinnotifications
      */
     showLocationMapInNotifications?: boolean | null;
+    /**
+     * Waypoints
+     */
+    waypoints?: Array<WaypointSchema> | null;
 };
 
 /**
