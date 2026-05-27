@@ -7,6 +7,7 @@ from shargain.offers.services.location_parsers import (
     Coordinates,
     DummyLocationParser,
     OlxLocationParser,
+    OtodomLocationParser,
 )
 
 
@@ -48,3 +49,61 @@ class TestDummyLocationParser:
     def test_get_coordinates_returns_none(self):
         parser = DummyLocationParser({})
         assert parser.get_coordinates() is None
+
+
+class TestOtodomLocationParser:
+    def test_get_coordinates_returns_none(self):
+        parser = OtodomLocationParser({"extra": {"location": {"address": {"city": {"name": "Kraków"}}}}})
+        assert parser.get_coordinates() is None
+
+    def test_get_map_url_returns_none_for_empty_metadata(self):
+        parser = OtodomLocationParser({})
+        assert parser.get_map_url() is None
+
+    def test_get_map_url_returns_search_query_for_city_and_street(self):
+        parser = OtodomLocationParser(
+            {
+                "extra": {
+                    "location": {
+                        "address": {
+                            "city": {"name": "Kraków"},
+                            "street": {"name": "ul. Jana Dekerta"},
+                        }
+                    }
+                }
+            }
+        )
+        assert parser.get_map_url() == "https://maps.google.com/?q=Krak%C3%B3w%2C%20ul.%20Jana%20Dekerta"
+
+    def test_is_location_exact_returns_false(self):
+        parser = OtodomLocationParser({"extra": {"location": {"address": {"city": {"name": "Kraków"}}}}})
+        assert parser.is_location_exact() is False
+
+    def test_get_location_name_city_and_street(self):
+        parser = OtodomLocationParser(
+            {
+                "extra": {
+                    "location": {
+                        "address": {
+                            "city": {"name": "Kraków"},
+                            "street": {"name": "ul. Jana Dekerta"},
+                        }
+                    }
+                }
+            }
+        )
+        assert parser.get_location_name() == "Kraków, ul. Jana Dekerta"
+
+    def test_get_location_name_city_only_when_street_missing(self):
+        parser = OtodomLocationParser(
+            {
+                "extra": {
+                    "location": {
+                        "address": {
+                            "city": {"name": "Kraków"},
+                        }
+                    }
+                }
+            }
+        )
+        assert parser.get_location_name() == "Kraków"

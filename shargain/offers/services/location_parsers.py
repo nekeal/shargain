@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import NamedTuple
+from urllib.parse import quote
 
 
 class Coordinates(NamedTuple):
@@ -83,6 +84,30 @@ class DummyLocationParser(BaseLocationParser):
         return False
 
 
+class OtodomLocationParser(BaseLocationParser):
+    def get_coordinates(self) -> Coordinates | None:
+        return None
+
+    def get_map_url(self) -> str | None:
+        location_name = self.get_location_name()
+        if location_name:
+            return f"https://maps.google.com/?q={quote(location_name)}"
+        return None
+
+    def get_location_name(self) -> str | None:
+        try:
+            address = self.extra["location"]["address"]
+            city_name = address["city"]["name"]
+            if street_name := address.get("street", {}).get("name"):
+                return f"{city_name}, {street_name}"
+            return city_name
+        except (KeyError, TypeError):
+            return None
+
+    def is_location_exact(self) -> bool:
+        return False
+
+
 class OtomotoLocationParser(DummyLocationParser):
     """Placeholder for Otomoto location parser once the format is known."""
 
@@ -94,6 +119,8 @@ class LocationParserFactory:
     def get_parser(domain: str, metadata: dict) -> BaseLocationParser:
         if "olx" in domain:
             return OlxLocationParser(metadata)
+        elif "otodom" in domain:
+            return OtodomLocationParser(metadata)
         elif "otomoto" in domain:
             return OtomotoLocationParser(metadata)
 
