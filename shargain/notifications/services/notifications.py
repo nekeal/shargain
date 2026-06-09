@@ -12,6 +12,7 @@ class NotificationMessageContext:
     location_name: str | None = None
     is_exact_location: bool = False
     distances: list[tuple[str, float]] = field(default_factory=list)  # (waypoint_name, distance_km)
+    extra_lines: list[str] = field(default_factory=list)
 
     def get_distances(self) -> str:
         result = ""
@@ -65,13 +66,16 @@ class NewOfferNotificationService:
             f"za {context.offer.price}zł\n{context.offer.url}"
         )
 
-        if context.map_url:
-            icon = "📍" if context.is_exact_location else "🗺️"
-            base_msg += f"\n{icon} {context.map_url}"
-        if context.location_name:
-            base_msg += f"\n🏙️ {context.location_name}"
-
-        base_msg += context.get_distances()
+        if context.extra_lines:
+            for line in context.extra_lines:
+                base_msg += f"\n{line}"
+        else:
+            if context.map_url:
+                icon = "📍" if context.is_exact_location else "🗺️"
+                base_msg += f"\n{icon} {context.map_url}"
+            if context.location_name:
+                base_msg += f"\n🏙️ {context.location_name}"
+            base_msg += context.get_distances()
 
         return base_msg + "\n\n"
 

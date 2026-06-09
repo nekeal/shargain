@@ -12,6 +12,24 @@ from shargain.quotas.tests.factories import OfferQuotaFactory
 
 
 @pytest.mark.django_db
+class TestNoLegacyParserImports:
+    def test_batch_create_does_not_import_location_parser_factory(self):
+        import importlib
+        import sys
+
+        # Remove cached module to force re-import
+        if "shargain.offers.services.batch_create" in sys.modules:
+            del sys.modules["shargain.offers.services.batch_create"]
+
+        importlib.import_module("shargain.offers.services.batch_create")
+        source = importlib.util.find_spec("shargain.offers.services.batch_create").loader.get_source(
+            "shargain.offers.services.batch_create"
+        )
+        assert "LocationParserFactory" not in source
+        assert "location_parsers" not in source
+
+
+@pytest.mark.django_db
 class TestOfferBatchCreateService:
     """Tests for the OfferBatchCreateService class."""
 
@@ -209,7 +227,7 @@ class TestOfferBatchCreateService:
                     "list_url": scraping_url.url,
                     "metadata": {
                         "extra": {
-                            "map": {"lat": 52.22, "lon": 21.01},
+                            "map": {"lat": 52.22, "lon": 21.01, "show_detailed": True},
                             "location": {"cityName": "Warsaw", "districtName": "Centrum"},
                         }
                     },
@@ -231,8 +249,8 @@ class TestOfferBatchCreateService:
             contexts = mock_notification_service_class.call_args[0][0]
             assert len(contexts) == 1
             ctx = contexts[0]
-            assert ctx.distances is not None
-            assert len(ctx.distances) == 2
-            # Verify distances are sensible (offer 52.22,21.01 to metro 52.23,21.00 ~ 1.2 km)
-            metro_dist = ctx.distances[0][1]
-            assert metro_dist == pytest.approx(1.2, abs=0.5)
+            assert ctx.extra_lines is not None
+            assert any("Metro Centrum" in line for line in ctx.extra_lines)
+            assert any("Office" in line for line in ctx.extra_lines)
+            assert any("📍" in line for line in ctx.extra_lines)
+            assert any("🏙️ Warsaw" in line for line in ctx.extra_lines)

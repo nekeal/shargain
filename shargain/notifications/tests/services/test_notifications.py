@@ -11,6 +11,44 @@ from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
 
 
 @pytest.mark.django_db
+class TestGetMessageForOfferExtraLines:
+    @staticmethod
+    def _make_service():
+        config = NotificationConfigFactory()
+        target = ScrappingTargetFactory(notification_config=config)
+        return NewOfferNotificationService([], target)
+
+    def test_extra_lines_rendered_below_shared_header(self):
+        offer = OfferFactory.build()
+        context = NotificationMessageContext(
+            offer=offer,
+            extra_lines=[
+                "📍 https://maps.google.com/?q=52.0,21.0",
+                "🏙️ Warsaw, Śródmieście",
+                "📏 1.2 km from Home",
+            ],
+        )
+        service = self._make_service()
+        msg = service.get_message_for_offer(context)
+
+        assert offer.title in msg
+        assert f"za {offer.price}zł" in msg
+        assert "📍 https://maps.google.com/?q=52.0,21.0" in msg
+        assert "🏙️ Warsaw, Śródmieście" in msg
+        assert "📏 1.2 km from Home" in msg
+
+    def test_no_extra_lines_still_renders_header(self):
+        offer = OfferFactory.build()
+        context = NotificationMessageContext(offer=offer)
+        service = self._make_service()
+        msg = service.get_message_for_offer(context)
+
+        assert offer.title in msg
+        assert f"za {offer.price}zł" in msg
+        assert offer.url in msg
+
+
+@pytest.mark.django_db
 class TestGetMessageForOffer:
     @staticmethod
     def _make_service():

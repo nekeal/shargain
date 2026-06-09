@@ -3,10 +3,8 @@ from collections import Counter
 
 from shargain.notifications.services.notifications import NewOfferNotificationService
 from shargain.offers.application.commands.record_checkin import record_checkin
-from shargain.offers.application.dto import WaypointData
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
-from shargain.offers.services.geo_utils import haversine
 from shargain.offers.signals import offers_batch_created
 from shargain.quotas.services.quota import QuotaService
 
@@ -91,9 +89,8 @@ class OfferBatchCreateService:
         if not (new_offers and scrapping_target.notification_config and scrapping_target.enable_notifications):
             return
 
-        from shargain.notifications.services.notifications import NotificationMessageContext
         from shargain.offers.services.filter_service import OfferFilterService
-        from shargain.offers.services.location_parsers import LocationParserFactory
+        from shargain.offers.services.source_plugins.builder import SourceNotificationContextBuilder
 
         # Group offers by their list_url (the scraping URL)
         offers_by_url: dict[str, list[Offer]] = {}
@@ -113,6 +110,7 @@ class OfferBatchCreateService:
         url_to_config_map = {sc_url.url: sc_url for sc_url in scraping_urls}
 
         # Apply filters and send notifications per URL
+        builder = SourceNotificationContextBuilder()
         for list_url, url_offers in offers_by_url.items():
             scraping_url = url_to_config_map.get(list_url)
 
@@ -125,40 +123,8 @@ class OfferBatchCreateService:
             if not filtered_offers:
                 continue
 
-            # Parse location if opted-in
-            message_contexts = []
-            show_location = scraping_url.show_location_map_in_notifications if scraping_url else False
-
-            waypoints: list[WaypointData] | None = scraping_url.waypoints if scraping_url else None  # type: ignore[assignment]
-
-            for offer in filtered_offers:
-                map_url, location_name, is_exact = None, None, False
-                distances: list[tuple[str, float]] = []
-                if show_location:
-                    parser = LocationParserFactory.get_parser(offer.domain, offer.metadata)
-                    map_url = parser.get_map_url()
-                    location_name = parser.get_location_name()
-                    is_exact = parser.is_location_exact()
-
-                    coords = parser.get_coordinates()
-                    if coords and waypoints:
-                        distances = [
-                            (
-                                str(wp["name"]),
-                                haversine(coords.lat, coords.lon, wp["lat"], wp["lon"]),
-                            )
-                            for wp in waypoints
-                        ]
-
-                message_contexts.append(
-                    NotificationMessageContext(
-                        offer=offer,
-                        map_url=map_url,
-                        location_name=location_name,
-                        is_exact_location=is_exact,
-                        distances=distances,
-                    )
-                )
+            # Build notification contexts using source plugin system
+            message_contexts = builder.build_contexts(filtered_offers, scraping_url)
 
             # Call notification service per group
             self.notification_service_class(message_contexts, scrapping_target).run()
