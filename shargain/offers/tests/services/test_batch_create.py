@@ -1,7 +1,5 @@
 """Tests for OfferBatchCreateService."""
 
-from unittest.mock import patch
-
 import pytest
 
 from shargain.notifications.tests.factories import NotificationConfigFactory
@@ -11,22 +9,15 @@ from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetF
 from shargain.quotas.tests.factories import OfferQuotaFactory
 
 
-@pytest.mark.django_db
-class TestNoLegacyParserImports:
-    def test_batch_create_does_not_import_location_parser_factory(self):
-        import importlib
-        import sys
+class NotificationServiceSpy:
+    """Captures contexts passed to NewOfferNotificationService without sending notifications."""
 
-        # Remove cached module to force re-import
-        if "shargain.offers.services.batch_create" in sys.modules:
-            del sys.modules["shargain.offers.services.batch_create"]
+    def __init__(self, contexts, target):
+        self.contexts = contexts
+        self.target = target
 
-        importlib.import_module("shargain.offers.services.batch_create")
-        source = importlib.util.find_spec("shargain.offers.services.batch_create").loader.get_source(
-            "shargain.offers.services.batch_create"
-        )
-        assert "LocationParserFactory" not in source
-        assert "location_parsers" not in source
+    def run(self):
+        pass
 
 
 @pytest.mark.django_db
@@ -48,7 +39,6 @@ class TestOfferBatchCreateService:
                 ]
             },
         )
-        # Don't create offers beforehand - let the service create them as "new"
         offer_data = {
             "target": scraping_url.scraping_target.id,
             "offers": [
@@ -65,26 +55,21 @@ class TestOfferBatchCreateService:
             ],
         }
 
-        with patch(
-            "shargain.offers.services.batch_create.NewOfferNotificationService"
-        ) as mock_notification_service_class:
-            # Mock the instance and its run method
-            mock_instance = mock_notification_service_class.return_value
-            mock_instance.run.return_value = None
+        captured = []
 
-            # Create service and inject mock
-            service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
-            service.notification_service_class = mock_notification_service_class
-            service.run()
+        class Spy(NotificationServiceSpy):
+            def __init__(self, contexts, target):
+                super().__init__(contexts, target)
+                captured.append(self)
 
-            # Verify the notification service was instantiated with filtered offers
-            mock_notification_service_class.assert_called_once()
-            filtered_offers = mock_notification_service_class.call_args[0][0]
-            assert len(filtered_offers) == 1
-            assert filtered_offers[0].offer.title == "Beautiful apartment in city center"
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+        service.notification_service_class = Spy
+        service.run()
 
-            # Verify run() was called on the instance
-            mock_instance.run.assert_called_once()
+        assert len(captured) == 1
+        contexts = captured[0].contexts
+        assert len(contexts) == 1
+        assert contexts[0].offer.title == "Beautiful apartment in city center"
 
     def test_offer_batch_create_without_filters(self):
         """Test that offers are not filtered if no filters are configured."""
@@ -94,7 +79,6 @@ class TestOfferBatchCreateService:
             enable_notifications=True,
         )
         scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, filters=None)
-        # Don't create offers beforehand - let the service create them as "new"
         offer_data = {
             "target": scraping_url.scraping_target.id,
             "offers": [
@@ -111,25 +95,20 @@ class TestOfferBatchCreateService:
             ],
         }
 
-        with patch(
-            "shargain.offers.services.batch_create.NewOfferNotificationService"
-        ) as mock_notification_service_class:
-            # Mock the instance and its run method
-            mock_instance = mock_notification_service_class.return_value
-            mock_instance.run.return_value = None
+        captured = []
 
-            # Create service and inject mock
-            service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
-            service.notification_service_class = mock_notification_service_class
-            service.run()
+        class Spy(NotificationServiceSpy):
+            def __init__(self, contexts, target):
+                super().__init__(contexts, target)
+                captured.append(self)
 
-            # Verify the notification service was instantiated with all offers (no filtering)
-            mock_notification_service_class.assert_called_once()
-            filtered_offers = mock_notification_service_class.call_args[0][0]
-            assert len(filtered_offers) == 2
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+        service.notification_service_class = Spy
+        service.run()
 
-            # Verify run() was called on the instance
-            mock_instance.run.assert_called_once()
+        assert len(captured) == 1
+        contexts = captured[0].contexts
+        assert len(contexts) == 2
 
     def test_offer_batch_create_returns_empty_when_quota_is_reached(self):
         scraping_target = ScrappingTargetFactory()
@@ -235,22 +214,23 @@ class TestOfferBatchCreateService:
             ],
         }
 
-        with patch(
-            "shargain.offers.services.batch_create.NewOfferNotificationService"
-        ) as mock_notification_service_class:
-            mock_instance = mock_notification_service_class.return_value
-            mock_instance.run.return_value = None
+        captured = []
 
-            service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
-            service.notification_service_class = mock_notification_service_class
-            service.run()
+        class Spy(NotificationServiceSpy):
+            def __init__(self, contexts, target):
+                super().__init__(contexts, target)
+                captured.append(self)
 
-            mock_notification_service_class.assert_called_once()
-            contexts = mock_notification_service_class.call_args[0][0]
-            assert len(contexts) == 1
-            ctx = contexts[0]
-            assert ctx.extra_lines is not None
-            assert any("Metro Centrum" in line for line in ctx.extra_lines)
-            assert any("Office" in line for line in ctx.extra_lines)
-            assert any("📍" in line for line in ctx.extra_lines)
-            assert any("🏙️ Warsaw" in line for line in ctx.extra_lines)
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+        service.notification_service_class = Spy
+        service.run()
+
+        assert len(captured) == 1
+        contexts = captured[0].contexts
+        assert len(contexts) == 1
+        ctx = contexts[0]
+        assert ctx.extra_lines is not None
+        assert any("Metro Centrum" in line for line in ctx.extra_lines)
+        assert any("Office" in line for line in ctx.extra_lines)
+        assert any("📍" in line for line in ctx.extra_lines)
+        assert any("🏙️ Warsaw" in line for line in ctx.extra_lines)

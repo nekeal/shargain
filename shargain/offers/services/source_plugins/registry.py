@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from urllib.parse import urlparse
 
 from shargain.offers.services.source_plugins.contracts import SourcePlugin, SourceUrlMatcher
 
@@ -8,13 +7,6 @@ from shargain.offers.services.source_plugins.contracts import SourcePlugin, Sour
 class PluginRegistration:
     plugin: SourcePlugin
     matcher: SourceUrlMatcher
-
-
-def _get_domain(url: str) -> str | None:
-    try:
-        return urlparse(url).netloc.lower()
-    except ValueError:
-        return None
 
 
 def select_plugin(

@@ -1,5 +1,6 @@
 import logging
 
+from shargain.notifications.services.notifications import NotificationMessageContext
 from shargain.offers.models import Offer, ScrapingUrl
 from shargain.offers.services.source_plugins import select_plugin
 from shargain.offers.services.source_plugins.contracts import (
@@ -20,8 +21,6 @@ class SourceNotificationContextBuilder:
         registrations = get_registrations()
         waypoints = scraping_url.waypoints if scraping_url else None
         show_location = scraping_url.show_location_map_in_notifications if scraping_url else False
-
-        from shargain.notifications.services.notifications import NotificationMessageContext
 
         contexts: list = []
         for offer in offers:

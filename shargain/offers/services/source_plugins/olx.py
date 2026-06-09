@@ -34,16 +34,16 @@ class OlxSourcePlugin:
             icon = "📍" if is_exact else "🗺️"
             lines.append(f"{icon} https://maps.google.com/?q={coords[0]},{coords[1]}")
 
-            if settings.waypoints:
-                for wp in settings.waypoints:
-                    distance = haversine(coords[0], coords[1], wp["lat"], wp["lon"])
-                    if distance < 1:
-                        lines.append(f"📏 {int(distance * 1000)} m from {wp['name']}")
-                    else:
-                        lines.append(f"📏 {distance:.1f} km from {wp['name']}")
-
         if location_name:
             lines.append(f"🏙️ {location_name}")
+
+        if coords and settings.waypoints:
+            for wp in settings.waypoints:
+                distance = haversine(coords[0], coords[1], wp["lat"], wp["lon"])
+                if distance < 1:
+                    lines.append(f"📏 {int(distance * 1000)} m from {wp['name']}")
+                else:
+                    lines.append(f"📏 {distance:.1f} km from {wp['name']}")
 
         return SourceNotificationDetails(lines=lines)
 
