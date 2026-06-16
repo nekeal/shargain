@@ -2,7 +2,7 @@ import pytest
 
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.queries.list_targets import list_targets
-from shargain.offers.tests.factories import ScrappingTargetFactory
+from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
 
 
 class TestListTargets:
@@ -71,6 +71,17 @@ class TestListTargets:
         # Verify the order is correct (descending IDs)
         assert len(targets) >= 2, "Need at least 2 targets to test ordering"
         assert [x.id_ for x in targets] == sorted((x.id_ for x in targets), reverse=True)
+
+    def test_includes_url_count(self, scraping_target):
+        """
+        Test that list_targets returns url_count for each target.
+        """
+        user = scraping_target.owner
+        ScrapingUrlFactory.create_batch(3, scraping_target=scraping_target)
+
+        result = list_targets(actor=Actor(user_id=user.id))
+        assert len(result) == 1
+        assert result[0].url_count == 3
 
     @pytest.mark.parametrize(
         ("page", "per_page", "expected_count"),

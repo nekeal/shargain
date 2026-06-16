@@ -38,6 +38,10 @@
     "loading": "Loading...",
     "error": "Error loading dashboard data.",
     "noData": "No monitor data available.",
+    "targetSelector": {
+      "urlCount": "{{count}} URL",
+      "urlCount_plural": "{{count}} URLs"
+    },
     "title": "Offer Monitor Dashboard",
     "greeting": "Welcome back, {{name}}",
     "subtitle": "Manage your watched websites and notification preferences",

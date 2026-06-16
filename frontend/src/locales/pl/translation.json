@@ -38,6 +38,10 @@
     "loading": "Ładowanie...",
     "error": "Błąd ładowania danych dashboardu.",
     "noData": "Brak dostępnych danych monitora.",
+    "targetSelector": {
+      "urlCount": "{{count}} URL",
+      "urlCount_plural": "{{count}} URL-e"
+    },
     "title": "Panel monitora ofert",
     "greeting": "Witaj ponownie, {{name}}",
     "subtitle": "Zarządzaj obserwowanymi stronami i preferencjami powiadomień",
