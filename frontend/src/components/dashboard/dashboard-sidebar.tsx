@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { AlertCircle, Bell, CheckCircle, Loader, XCircle } from "lucide-react"
@@ -13,11 +13,22 @@ interface DashboardSidebarProps {
   isVisible: boolean
 }
 
+function getQuotaBadgeClassName(used: number, limit: number) {
+  if (limit <= 0 || used >= limit) {
+    return "bg-red-100 text-red-800 border-0"
+  }
+  if (used / limit >= 0.8) {
+    return "bg-yellow-100 text-yellow-800 border-0"
+  }
+  return "bg-green-100 text-green-800 border-0"
+}
+
 export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarProps) {
   const { t } = useTranslation();
   type Status = 'idle' | 'loading' | 'success' | 'error'
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const { data: quotaStatus } = useQuery({
     queryKey: ['quotaStatus'],
     queryFn: () => getQuotaStatus(),
@@ -30,6 +41,10 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
   const currentTargetOffersQuota = quotaRows.find(
     (row) => row.slug === "offers" && row.targetId === offerMonitor.id,
   )
+
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current);
+  }, []);
 
   const handleTestNotification = async () => {
     setStatus('loading')
@@ -46,20 +61,10 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
       setMessage(t('dashboard.sidebar.testNotification.error'))
     }
 
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       setStatus('idle')
       setMessage('')
     }, 3000)
-  }
-
-  const getQuotaBadgeClassName = (used: number, limit: number) => {
-    if (limit <= 0 || used >= limit) {
-      return "bg-red-100 text-red-800 border-0"
-    }
-    if (used / limit >= 0.8) {
-      return "bg-yellow-100 text-yellow-800 border-0"
-    }
-    return "bg-green-100 text-green-800 border-0"
   }
 
   return (

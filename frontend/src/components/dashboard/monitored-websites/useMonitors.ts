@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { OfferMonitor } from "@/types/dashboard";
 import type { FiltersConfigSchema, TargetSummaryResponse, WaypointSchema } from "@/lib/api/types.gen";
@@ -26,6 +27,25 @@ export const useGetTarget = (targetId: number | null) => {
         enabled: targetId !== null,
         staleTime: 30_000,
     });
+};
+
+export const usePrefetchTargets = (targetList: Array<TargetSummaryResponse> | undefined, skipId?: number | null) => {
+    const queryClient = useQueryClient();
+    const prefetchedRef = useRef(false);
+
+    useEffect(() => {
+        if (!targetList || prefetchedRef.current) return;
+        prefetchedRef.current = true;
+        targetList
+            .filter(target => target.id !== skipId)
+            .forEach((target) => {
+                queryClient.prefetchQuery({
+                    queryKey: ['target', target.id],
+                    queryFn: () => getSingleTarget({ path: { target_id: target.id } }).then(response => response.data as OfferMonitor),
+                    staleTime: 30_000,
+                });
+            });
+    }, [targetList, queryClient, skipId]);
 };
 
 export const useAddUrlMutation = (
@@ -78,4 +98,4 @@ export const useUpdateUrlMutation = (targetId: number, urlId: number) => {
             queryClient.invalidateQueries({ queryKey: ['target'] });
         },
     });
-}
+};

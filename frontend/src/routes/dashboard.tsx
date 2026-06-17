@@ -1,14 +1,15 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useState } from 'react';
 import { AlertCircle, Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { OfferMonitor } from '@/types/dashboard';
+import type { TargetSummaryResponse } from '@/lib/api/types.gen';
 import { useAuth } from '@/context/auth';
 import MonitorSettings from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
 import DashboardSidebar from '@/components/dashboard/dashboard-sidebar';
-import { TargetSelector } from '@/components/dashboard/target-selector';
-import { useGetMyTarget, useGetTarget, useGetTargets } from '@/components/dashboard/monitored-websites/useMonitors';
+import { TargetSelectorInline } from '@/components/dashboard/target-selector-inline';
+import { useGetMyTarget, useGetTarget, useGetTargets, usePrefetchTargets } from '@/components/dashboard/monitored-websites/useMonitors';
 
 const STORAGE_KEY = 'shargain_selected_target_id';
 
@@ -24,14 +25,6 @@ function loadStoredTargetId(): number | null {
 function saveStoredTargetId(targetId: number) {
     try {
         localStorage.setItem(STORAGE_KEY, String(targetId));
-    } catch {
-        // localStorage not available
-    }
-}
-
-function clearStoredTargetId() {
-    try {
-        localStorage.removeItem(STORAGE_KEY);
     } catch {
         // localStorage not available
     }
@@ -114,7 +107,7 @@ function EmptyState() {
     );
 }
 
-function DashboardLayout({ offerMonitor }: { offerMonitor: OfferMonitor }) {
+function DashboardLayout({ offerMonitor, sidebarTop }: { offerMonitor: OfferMonitor; sidebarTop?: React.ReactNode }) {
     const { t } = useTranslation();
     const { user } = useAuth();
     const [isVisible, setIsVisible] = useState(false);
@@ -124,7 +117,7 @@ function DashboardLayout({ offerMonitor }: { offerMonitor: OfferMonitor }) {
     }, []);
 
     return (
-        <div key={offerMonitor.id} className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
+        <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 <div
                     className={`mb-8 transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
@@ -132,42 +125,96 @@ function DashboardLayout({ offerMonitor }: { offerMonitor: OfferMonitor }) {
                     <p className="text-sm text-gray-500">{t('dashboard.subtitle')}</p>
                 </div>
 
+                {sidebarTop ? (
+                    <div className="mb-8 lg:hidden">
+                        {sidebarTop}
+                    </div>
+                ) : null}
+
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
                         <MonitoredWebsites offerMonitor={offerMonitor} isVisible={isVisible} />
                         <MonitorSettings offerMonitor={offerMonitor} isVisible={isVisible} />
                     </div>
-                    <DashboardSidebar offerMonitor={offerMonitor} isVisible={isVisible} />
+                    <div className="space-y-6">
+                        {sidebarTop ? (
+                            <div className="hidden lg:block">
+                                {sidebarTop}
+                            </div>
+                        ) : null}
+                        <DashboardSidebar offerMonitor={offerMonitor} isVisible={isVisible} />
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
-function DashboardContent() {
-    const { t } = useTranslation();
-
+function MultiTargetDashboard({ targets }: { targets: Array<TargetSummaryResponse> }) {
     const [selectedTargetId, setSelectedTargetId] = useState<number | null>(loadStoredTargetId);
-    const storedValidatedRef = useRef(false);
 
-    const { data: targetList, isLoading: listLoading, isError: listError } = useGetTargets();
-    const { data: myTarget, isLoading: myTargetLoading, isError: myTargetError } = useGetMyTarget();
-    const { data: fetchedTarget, isLoading: targetLoading, isError: targetError } = useGetTarget(selectedTargetId);
-
+    const { data: fetchedTarget, isLoading, isError } = useGetTarget(selectedTargetId);
     const handleSelectTarget = useCallback((targetId: number) => {
         saveStoredTargetId(targetId);
         setSelectedTargetId(targetId);
     }, []);
 
-    useEffect(() => {
-        if (!targetList || storedValidatedRef.current) return;
-        storedValidatedRef.current = true;
+    usePrefetchTargets(targets, selectedTargetId);
 
-        if (selectedTargetId !== null && !targetList.some(t => t.id === selectedTargetId)) {
-            clearStoredTargetId();
-            setSelectedTargetId(null);
+    useEffect(() => {
+        if (selectedTargetId === null || !targets.some(t => t.id === selectedTargetId)) {
+            saveStoredTargetId(targets[0].id);
+            setSelectedTargetId(targets[0].id);
         }
-    }, [targetList, selectedTargetId]);
+    }, [targets, selectedTargetId]);
+
+    if (isLoading) {
+        return <LoadingSkeleton />;
+    }
+
+    if (isError || !fetchedTarget) {
+        return <ErrorState message="Failed to load target data" />;
+    }
+
+    return (
+        <DashboardLayout
+            offerMonitor={fetchedTarget}
+            sidebarTop={
+                <div className="p-4 rounded-lg bg-white/80">
+                    <h3 className="font-medium text-gray-900 mb-4 text-lg">Scraping target</h3>
+                    <TargetSelectorInline
+                        targets={targets}
+                        selectedTargetId={selectedTargetId}
+                        onSelect={handleSelectTarget}
+                    />
+                </div>
+            }
+        />
+    );
+}
+
+function SingleTargetDashboard() {
+    const { data: myTarget, isLoading, isError } = useGetMyTarget();
+
+    if (isLoading) {
+        return <LoadingSkeleton />;
+    }
+
+    if (isError) {
+        return <ErrorState message="Failed to load your target" />;
+    }
+
+    if (!myTarget) {
+        return <EmptyState />;
+    }
+
+    return <DashboardLayout offerMonitor={myTarget} />;
+}
+
+function DashboardContent() {
+    const { t } = useTranslation();
+
+    const { data: targetList, isLoading: listLoading, isError: listError } = useGetTargets();
 
     if (listLoading) {
         return <LoadingSkeleton />;
@@ -182,38 +229,8 @@ function DashboardContent() {
     }
 
     if (targetList.length > 1) {
-        if (!selectedTargetId) {
-            return (
-                <TargetSelector
-                    targets={targetList}
-                    selectedTargetId={null}
-                    onSelect={handleSelectTarget}
-                />
-            );
-        }
-
-        if (targetLoading) {
-            return <LoadingSkeleton />;
-        }
-
-        if (targetError || !fetchedTarget) {
-            return <ErrorState message={t('dashboard.error')} />;
-        }
-
-        return <DashboardLayout offerMonitor={fetchedTarget} />;
+        return <MultiTargetDashboard targets={targetList} />;
     }
 
-    if (myTargetLoading) {
-        return <LoadingSkeleton />;
-    }
-
-    if (myTargetError) {
-        return <ErrorState message={t('dashboard.error')} />;
-    }
-
-    if (!myTarget) {
-        return <EmptyState />;
-    }
-
-    return <DashboardLayout offerMonitor={myTarget} />;
+    return <SingleTargetDashboard />;
 }
