@@ -19,7 +19,7 @@ class TargetDto:
     enable_notifications: bool
     is_active: bool
     notification_config_id: int | None
-    url_count: int = 0
+    url_count: int
 
 
 def _get_user_targets(actor: Actor) -> QuerySet[ScrappingTarget]:

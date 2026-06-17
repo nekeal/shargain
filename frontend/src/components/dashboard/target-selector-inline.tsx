@@ -27,7 +27,7 @@ export function TargetSelectorInline({ targets, selectedTargetId, onSelect }: Ta
         >
             <SelectTrigger className="max-w-50 sm:max-w-full border-violet-200 hover:border-violet-300 focus:ring-violet-500">
                 <Globe className="size-4 text-violet-500 shrink-0" />
-                <SelectValue placeholder="Select a target" />
+                <SelectValue placeholder={t('dashboard.targetSelector.selectPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
                 {targets.map((target) => (

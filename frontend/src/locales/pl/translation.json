@@ -40,8 +40,11 @@
     "noData": "Brak dostępnych danych monitora.",
     "targetSelector": {
       "urlCount": "{{count}} URL",
-      "urlCount_plural": "{{count}} URL-e"
+      "urlCount_plural": "{{count}} URL-e",
+      "selectPlaceholder": "Wybierz cel"
     },
+    "scrapingTarget": "Monitorowany cel",
+    "failedToLoadTarget": "Nie udało się załadować danych celu",
     "title": "Panel monitora ofert",
     "greeting": "Witaj ponownie, {{name}}",
     "subtitle": "Zarządzaj obserwowanymi stronami i preferencjami powiadomień",

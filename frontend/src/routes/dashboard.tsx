@@ -16,7 +16,9 @@ const STORAGE_KEY = 'shargain_selected_target_id';
 function loadStoredTargetId(): number | null {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? parseInt(stored, 10) : null;
+        if (stored === null) return null;
+        const parsed = parseInt(stored, 10);
+        return Number.isFinite(parsed) ? parsed : null;
     } catch {
         return null;
     }
@@ -151,6 +153,7 @@ function DashboardLayout({ offerMonitor, sidebarTop }: { offerMonitor: OfferMoni
 }
 
 function MultiTargetDashboard({ targets }: { targets: Array<TargetSummaryResponse> }) {
+    const { t } = useTranslation();
     const [selectedTargetId, setSelectedTargetId] = useState<number | null>(loadStoredTargetId);
 
     const { data: fetchedTarget, isLoading, isError } = useGetTarget(selectedTargetId);
@@ -162,18 +165,22 @@ function MultiTargetDashboard({ targets }: { targets: Array<TargetSummaryRespons
     usePrefetchTargets(targets, selectedTargetId);
 
     useEffect(() => {
-        if (selectedTargetId === null || !targets.some(t => t.id === selectedTargetId)) {
+        if (selectedTargetId === null || !targets.some(target => target.id === selectedTargetId)) {
             saveStoredTargetId(targets[0].id);
             setSelectedTargetId(targets[0].id);
         }
     }, [targets, selectedTargetId]);
+
+    if (selectedTargetId === null) {
+        return <LoadingSkeleton />;
+    }
 
     if (isLoading) {
         return <LoadingSkeleton />;
     }
 
     if (isError || !fetchedTarget) {
-        return <ErrorState message="Failed to load target data" />;
+        return <ErrorState message={t('dashboard.failedToLoadTarget')} />;
     }
 
     return (
@@ -181,7 +188,7 @@ function MultiTargetDashboard({ targets }: { targets: Array<TargetSummaryRespons
             offerMonitor={fetchedTarget}
             sidebarTop={
                 <div className="p-4 rounded-lg bg-white/80">
-                    <h3 className="font-medium text-gray-900 mb-4 text-lg">Scraping target</h3>
+                    <h3 className="font-medium text-gray-900 mb-4 text-lg">{t('dashboard.scrapingTarget')}</h3>
                     <TargetSelectorInline
                         targets={targets}
                         selectedTargetId={selectedTargetId}

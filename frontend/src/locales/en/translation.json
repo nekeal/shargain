@@ -40,8 +40,11 @@
     "noData": "No monitor data available.",
     "targetSelector": {
       "urlCount": "{{count}} URL",
-      "urlCount_plural": "{{count}} URLs"
+      "urlCount_plural": "{{count}} URLs",
+      "selectPlaceholder": "Select a target"
     },
+    "scrapingTarget": "Scraping target",
+    "failedToLoadTarget": "Failed to load target data",
     "title": "Offer Monitor Dashboard",
     "greeting": "Welcome back, {{name}}",
     "subtitle": "Manage your watched websites and notification preferences",
