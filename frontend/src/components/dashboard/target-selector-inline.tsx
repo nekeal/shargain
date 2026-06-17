@@ -29,11 +29,11 @@ export function TargetSelectorInline({ targets, selectedTargetId, onSelect }: Ta
                 <Globe className="size-4 text-violet-500 shrink-0" />
                 <SelectValue placeholder={t('dashboard.targetSelector.selectPlaceholder')} />
             </SelectTrigger>
-            <SelectContent className="w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)]">
+            <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
                 {targets.map((target) => (
                     <SelectItem key={target.id} value={String(target.id)}>
-                        <span className="flex items-center gap-2">
-                            {target.name}
+                        <span className="flex items-center justify-between w-full gap-2">
+                            <span className="truncate">{target.name}</span>
                             <Badge
                                 className={cn(
                                     "border-0",
