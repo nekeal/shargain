@@ -61,7 +61,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
     },
     onSuccess: () => {
       setUpdateSuccess(true);
-      queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+      queryClient.invalidateQueries({ queryKey: ['target'] });
       setTimeout(() => setUpdateSuccess(false), 2000);
     },
     onError: (err: any) => {

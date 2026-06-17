@@ -34,18 +34,18 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
         throwOnError: true
       }),
     onMutate: (newEnableStatus: boolean) => {
-      const previousOfferMonitor = queryClient.getQueryData(['myTarget']);
-      queryClient.setQueryData(['myTarget'], (old: OfferMonitor | undefined) => {
+      const previousOfferMonitor = queryClient.getQueryData(['target', offerMonitor.id]);
+      queryClient.setQueryData(['target', offerMonitor.id], (old: OfferMonitor | undefined) => {
         if (!old) return old;
         return { ...old, enableNotifications: newEnableStatus };
       });
       return { prev: previousOfferMonitor };
     },
     onError: (_err, _newEnableStatus, context) => {
-      queryClient.setQueryData(['myTarget'], context?.prev);
+      queryClient.setQueryData(['target', offerMonitor.id], context?.prev);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+      queryClient.invalidateQueries({ queryKey: ['target'] });
     }
   })
 
@@ -71,7 +71,7 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myTarget'] });
+      queryClient.invalidateQueries({ queryKey: ['target'] });
     },
     onError: (err: any) => {
       console.error("Error updating notification configuration:", err);

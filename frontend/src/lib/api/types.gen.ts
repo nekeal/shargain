@@ -54,24 +54,6 @@ export type RuleGroupSchema = {
 };
 
 /**
- * WaypointSchema
- */
-export type WaypointSchema = {
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Lat
-     */
-    lat: number;
-    /**
-     * Lon
-     */
-    lon: number;
-};
-
-/**
  * ScrapingUrlResponse
  */
 export type ScrapingUrlResponse = {
@@ -137,6 +119,24 @@ export type TargetResponse = {
 };
 
 /**
+ * WaypointSchema
+ */
+export type WaypointSchema = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Lat
+     */
+    lat: number;
+    /**
+     * Lon
+     */
+    lon: number;
+};
+
+/**
  * ErrorSchema
  */
 export type ErrorSchema = {
@@ -148,6 +148,32 @@ export type ErrorSchema = {
      * Code
      */
     code?: string | null;
+};
+
+/**
+ * TargetSummaryResponse
+ */
+export type TargetSummaryResponse = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Isactive
+     */
+    isActive: boolean;
+    /**
+     * Enablenotifications
+     */
+    enableNotifications: boolean;
+    /**
+     * Urlcount
+     */
+    urlCount: number;
 };
 
 /**
@@ -465,6 +491,23 @@ export type GetMyTargetResponses = {
 };
 
 export type GetMyTargetResponse = GetMyTargetResponses[keyof GetMyTargetResponses];
+
+export type ListTargetsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/public/targets';
+};
+
+export type ListTargetsResponses = {
+    /**
+     * Response
+     * OK
+     */
+    200: Array<TargetSummaryResponse>;
+};
+
+export type ListTargetsResponse = ListTargetsResponses[keyof ListTargetsResponses];
 
 export type GetSingleTargetData = {
     body?: never;

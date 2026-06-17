@@ -35,6 +35,29 @@
         }
       }
     },
+    "/api/public/targets": {
+      "get": {
+        "operationId": "list_targets",
+        "summary": "List Targets Endpoint",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TargetSummaryResponse"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/targets/{target_id}": {
       "get": {
         "operationId": "get_single_target",
@@ -1009,6 +1032,20 @@
             "default": false,
             "title": "Showlocationmapinnotifications",
             "type": "boolean"
+          },
+          "waypoints": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/WaypointSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waypoints"
           }
         },
         "required": [
@@ -1068,6 +1105,29 @@
         "title": "TargetResponse",
         "type": "object"
       },
+      "WaypointSchema": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lon": {
+            "title": "Lon",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "lat",
+          "lon"
+        ],
+        "title": "WaypointSchema",
+        "type": "object"
+      },
       "ErrorSchema": {
         "properties": {
           "detail": {
@@ -1090,6 +1150,39 @@
           "detail"
         ],
         "title": "ErrorSchema",
+        "type": "object"
+      },
+      "TargetSummaryResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "isActive": {
+            "title": "Isactive",
+            "type": "boolean"
+          },
+          "enableNotifications": {
+            "title": "Enablenotifications",
+            "type": "boolean"
+          },
+          "urlCount": {
+            "title": "Urlcount",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isActive",
+          "enableNotifications",
+          "urlCount"
+        ],
+        "title": "TargetSummaryResponse",
         "type": "object"
       },
       "TargetWithConfigResponse": {
@@ -1183,6 +1276,20 @@
             "default": false,
             "title": "Showlocationmapinnotifications",
             "type": "boolean"
+          },
+          "waypoints": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/WaypointSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waypoints"
           }
         },
         "required": [
@@ -1296,6 +1403,20 @@
               }
             ],
             "title": "Showlocationmapinnotifications"
+          },
+          "waypoints": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/WaypointSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waypoints"
           }
         },
         "title": "UpdateScrapingUrlRequest",

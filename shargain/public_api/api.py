@@ -51,6 +51,7 @@ from shargain.offers.application.queries.get_target import (
     get_target,
     get_target_by_user,
 )
+from shargain.offers.application.queries.list_targets import list_targets
 from shargain.offers.schemas.offer_filter import validate_filters
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
@@ -112,6 +113,14 @@ class TargetWithConfigResponse(BaseSchema):
     is_active: bool
     enable_notifications: bool
     notification_config_id: int | None
+
+
+class TargetSummaryResponse(BaseSchema):
+    id: int
+    name: str
+    is_active: bool
+    enable_notifications: bool
+    url_count: int
 
 
 class FilterRuleSchema(BaseSchema):
@@ -216,6 +225,27 @@ def get_my_target(request: HttpRequest):
         return get_target_by_user(actor)
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
+
+
+@router.get(
+    "/targets",
+    operation_id="list_targets",
+    by_alias=True,
+    response={200: list[TargetSummaryResponse]},
+)
+def list_targets_endpoint(request: HttpRequest):
+    actor = get_actor(request)
+    dtos = list_targets(actor)
+    return [
+        TargetSummaryResponse(
+            id=dto.id_,
+            name=dto.name,
+            is_active=dto.is_active,
+            enable_notifications=dto.enable_notifications,
+            url_count=dto.url_count,
+        )
+        for dto in dtos
+    ]
 
 
 @router.get(

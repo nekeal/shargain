@@ -6,7 +6,7 @@ This query retrieves a paginated list of scraping targets belonging to the speci
 
 from dataclasses import dataclass
 
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 
 from shargain.commons.application.actor import Actor
 from shargain.offers.models import ScrappingTarget
@@ -19,6 +19,7 @@ class TargetDto:
     enable_notifications: bool
     is_active: bool
     notification_config_id: int | None
+    url_count: int
 
 
 def _get_user_targets(actor: Actor) -> QuerySet[ScrappingTarget]:
@@ -45,7 +46,9 @@ def list_targets(
 
     offset = (page - 1) * per_page
 
-    targets = _get_user_targets(actor).order_by("-id")[offset : offset + per_page]
+    targets = (
+        _get_user_targets(actor).annotate(url_count=Count("scrapingurl")).order_by("-id")[offset : offset + per_page]
+    )
 
     return [
         TargetDto(
@@ -54,6 +57,7 @@ def list_targets(
             enable_notifications=target.enable_notifications,
             is_active=target.is_active,
             notification_config_id=target.notification_config_id,
+            url_count=target.url_count,
         )
         for target in targets
     ]
