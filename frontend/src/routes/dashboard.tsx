@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { OfferMonitor } from '@/types/dashboard';
 import type { TargetSummaryResponse } from '@/lib/api/types.gen';
 import { useAuth } from '@/context/auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import MonitorSettings from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
 import DashboardSidebar from '@/components/dashboard/dashboard-sidebar';
@@ -187,14 +188,18 @@ function MultiTargetDashboard({ targets }: { targets: Array<TargetSummaryRespons
         <DashboardLayout
             offerMonitor={fetchedTarget}
             sidebarTop={
-                <div className="p-4 rounded-lg bg-white/80">
-                    <h3 className="font-medium text-gray-900 mb-4 text-lg">{t('dashboard.scrapingTarget')}</h3>
-                    <TargetSelectorInline
-                        targets={targets}
-                        selectedTargetId={selectedTargetId}
-                        onSelect={handleSelectTarget}
-                    />
-                </div>
+                <Card className="border-0 bg-white/60 backdrop-blur-sm">
+                    <CardHeader>
+                        <CardTitle className="text-lg">{t('dashboard.scrapingTarget')}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <TargetSelectorInline
+                            targets={targets}
+                            selectedTargetId={selectedTargetId}
+                            onSelect={handleSelectTarget}
+                        />
+                    </CardContent>
+                </Card>
             }
         />
     );
