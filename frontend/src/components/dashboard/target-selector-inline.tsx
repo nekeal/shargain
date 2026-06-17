@@ -25,11 +25,11 @@ export function TargetSelectorInline({ targets, selectedTargetId, onSelect }: Ta
             value={selectedTargetId?.toString() ?? ""}
             onValueChange={(val) => onSelect(parseInt(val, 10))}
         >
-            <SelectTrigger className="max-w-50 sm:max-w-full border-violet-200 hover:border-violet-300 focus:ring-violet-500">
+            <SelectTrigger className="w-full border-violet-200 hover:border-violet-300 focus:ring-violet-500">
                 <Globe className="size-4 text-violet-500 shrink-0" />
                 <SelectValue placeholder={t('dashboard.targetSelector.selectPlaceholder')} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)]">
                 {targets.map((target) => (
                     <SelectItem key={target.id} value={String(target.id)}>
                         <span className="flex items-center gap-2">
