@@ -19,4 +19,4 @@
 ## Dependencies
 
 ## Tool Usage Patterns
-- `make autoformatters` is used to format the code using `ruff`.
+- `just autoformatters` is used to format the code using `ruff`.

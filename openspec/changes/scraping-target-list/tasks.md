@@ -4,7 +4,7 @@
 - [x] 1.2 Add `TargetSummaryResponse` schema to `shargain/public_api/api.py` (id, name, is_active, enable_notifications, url_count)
 - [x] 1.3 Add `GET /api/public/targets` endpoint in `shargain/public_api/api.py` calling `list_targets` and returning the summary list
 - [x] 1.4 Add tests for the new list endpoint (happy path, empty list, auth required)
-- [x] 1.5 Run backend tests: `make test`
+- [x] 1.5 Run backend tests: `just test`
 
 ## 2. Backend — Regenerate API SDK
 
@@ -38,5 +38,5 @@
 - [x] 6.1 Add i18n translations for new UI strings (all locale files)
 - [x] 6.2 Run frontend tests: `npm --prefix frontend run test`
 - [x] 6.3 Run frontend lint: `npm --prefix frontend run lint`
-- [x] 6.4 Run backend quality: `make quality-check`
+- [x] 6.4 Run backend quality: `just quality-check`
 - [x] 6.5 Manual smoke test: single-target flow unchanged, multi-target flow works

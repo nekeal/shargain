@@ -28,7 +28,7 @@ create database shargain owner shargain;
 Now you can setup virtualenv and django:
 ```bash
 uv sync
-make bootstrap
+	just bootstrap
 ```
 
 ## Docker way
