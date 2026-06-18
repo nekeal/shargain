@@ -130,6 +130,12 @@ docker-push:
 pipeline-status:
     @gh run list -c `git rev-parse HEAD`
 
+# Run backend and frontend dev servers in parallel
+run:
+    #!/usr/bin/env -S parallel --shebang --ungroup --jobs 2
+    {{ MANAGE }} runserver
+    npm --prefix frontend run dev
+
 # --- Combined Commands ---
 
 # Run all tests (backend + frontend)
