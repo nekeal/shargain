@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CheckCircle, ChevronDown, Filter, Plus, Save, X } from "lucide-react";
 import { createFilterSchemas } from "./filterValidation";
@@ -61,6 +61,7 @@ export function OfferFilters({
   const [validationErrors, setValidationErrors] = useState<z.ZodError | null>(null);
 
   const mutation = useUpdateUrlMutation(targetId, urlId);
+  const savedSnapshot = useRef(initialFilters);
 
   const { filtersConfigSchema } = useMemo(() => createFilterSchemas(t), [t]);
 
@@ -99,7 +100,14 @@ export function OfferFilters({
   const handleSave = () => {
     const normalizedFilters = normalizeFilters(filters);
     if (validateFilters(normalizedFilters)) {
-      mutation.mutate({ filters: normalizedFilters });
+      mutation.mutate(
+        { filters: normalizedFilters },
+        {
+          onSuccess: () => {
+            savedSnapshot.current = normalizedFilters;
+          },
+        },
+      );
     }
   };
 
@@ -132,7 +140,7 @@ export function OfferFilters({
     return cleanedGroups.length > 0 ? { ruleGroups: cleanedGroups } : null;
   };
 
-  const hasChanges = JSON.stringify(initialFilters, stableKeySort) !== JSON.stringify(filters, stableKeySort);
+  const hasChanges = JSON.stringify(savedSnapshot.current, stableKeySort) !== JSON.stringify(filters, stableKeySort);
 
   return (
     <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
