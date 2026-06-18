@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckCircle, ChevronDown, Filter, Plus, Save, X } from "lucide-react";
 import { createFilterSchemas } from "./filterValidation";
 import { useUpdateUrlMutation } from "./useMonitors";
@@ -32,6 +32,21 @@ const createEmptyGroup = (): RuleGroupSchema => ({
   logic: "and",
   rules: [{ field: "title", operator: "contains", value: "", caseSensitive: false }],
 });
+
+const stableKeySort = (_key: string, value: unknown) => {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    return Object.keys(value)
+      .sort()
+      .reduce(
+        (acc, k) => {
+          (acc as Record<string, unknown>)[k] = (value as Record<string, unknown>)[k];
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+  }
+  return value;
+};
 
 export function OfferFilters({
   targetId,
@@ -117,7 +132,7 @@ export function OfferFilters({
     return cleanedGroups.length > 0 ? { ruleGroups: cleanedGroups } : null;
   };
 
-  const hasChanges = JSON.stringify(initialFilters) !== JSON.stringify(filters);
+  const hasChanges = JSON.stringify(initialFilters, stableKeySort) !== JSON.stringify(filters, stableKeySort);
 
   return (
     <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
