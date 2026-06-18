@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CheckCircle, ChevronDown, Filter, Plus, Save, X } from "lucide-react";
 import { createFilterSchemas } from "./filterValidation";
 import { useUpdateUrlMutation } from "./useMonitors";
@@ -39,25 +39,24 @@ export function OfferFilters({
   initialFilters,
 }: OfferFiltersProps) {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState<FiltersConfigSchema | null>(initialFilters);
+  const [filters, setFilters] = useState<FiltersConfigSchema | null>(() =>
+    initialFilters ? JSON.parse(JSON.stringify(initialFilters)) : null
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<z.ZodError | null>(null);
 
   const mutation = useUpdateUrlMutation(targetId, urlId);
 
-  useEffect(() => {
-    setFilters(initialFilters);
-  }, [initialFilters]);
-
   const { filtersConfigSchema } = useMemo(() => createFilterSchemas(t), [t]);
 
   const validateFilters = (currentFilters: FiltersConfigSchema | null): boolean => {
-    if (!currentFilters || currentFilters.ruleGroups.length === 0) {
+    const normalized = normalizeFilters(currentFilters);
+    if (!normalized || normalized.ruleGroups.length === 0) {
       setValidationErrors(null);
       return true;
     }
 
-    const result = filtersConfigSchema.safeParse(currentFilters);
+    const result = filtersConfigSchema.safeParse(normalized);
 
     if (!result.success) {
       setValidationErrors(result.error);
@@ -118,7 +117,7 @@ export function OfferFilters({
     return cleanedGroups.length > 0 ? { ruleGroups: cleanedGroups } : null;
   };
 
-  const hasChanges = JSON.stringify(normalizeFilters(initialFilters)) !== JSON.stringify(normalizeFilters(filters));
+  const hasChanges = JSON.stringify(initialFilters) !== JSON.stringify(filters);
 
   return (
     <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
@@ -168,9 +167,12 @@ export function OfferFilters({
                     <button
                       type="button"
                       onClick={() => {
-                        const newGroups = [...filters.ruleGroups];
-                        newGroups[groupIndex].logic = group.logic === "and" ? "or" : "and";
-                        handleFiltersChange({ ruleGroups: newGroups });
+                        const newGroups = filters.ruleGroups.map((g, idx) =>
+                          idx === groupIndex
+                            ? { ...g, logic: g.logic === "and" ? ("or" as const) : ("and" as const) }
+                            : g
+                        );
+                        handleFiltersChange({ ...filters, ruleGroups: newGroups });
                       }}
                       aria-label={t("filters.toggleLogic", { current: group.logic === "and" ? t("filters.all") : t("filters.any") })}
                       className="inline-flex items-center h-6 p-0.5 bg-gray-200 rounded-md"
@@ -204,9 +206,8 @@ export function OfferFilters({
                     <button
                       type="button"
                       onClick={() => {
-                        const newGroups = [...filters.ruleGroups];
-                        newGroups.splice(groupIndex, 1);
-                        handleFiltersChange({ ruleGroups: newGroups });
+                        const newGroups = filters.ruleGroups.filter((_, idx) => idx !== groupIndex);
+                        handleFiltersChange({ ...filters, ruleGroups: newGroups });
                       }}
                       aria-label={t("filters.deleteGroup", { index: groupIndex + 1 })}
                       className="p-0.5 text-gray-400 hover:text-red-500 transition-colors"
@@ -227,9 +228,16 @@ export function OfferFilters({
                         <Select
                           value={rule.field}
                           onValueChange={(value) => {
-                            const newGroups = [...filters.ruleGroups];
-                            newGroups[groupIndex].rules[ruleIndex].field = value as "title";
-                            handleFiltersChange({ ruleGroups: newGroups });
+                            const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                              if (gIdx !== groupIndex) return g;
+                              const newRules = g.rules.map((r, rIdx) =>
+                                rIdx === ruleIndex
+                                  ? { ...r, field: value as "title" }
+                                  : r
+                              );
+                              return { ...g, rules: newRules };
+                            });
+                            handleFiltersChange({ ...filters, ruleGroups: newGroups });
                           }}
                         >
                           <SelectTrigger className="h-8 w-[90px] text-xs px-2 bg-white">
@@ -245,9 +253,16 @@ export function OfferFilters({
                         <Select
                           value={rule.operator}
                           onValueChange={(value) => {
-                            const newGroups = [...filters.ruleGroups];
-                            newGroups[groupIndex].rules[ruleIndex].operator = value as "contains" | "not_contains";
-                            handleFiltersChange({ ruleGroups: newGroups });
+                            const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                              if (gIdx !== groupIndex) return g;
+                              const newRules = g.rules.map((r, rIdx) =>
+                                rIdx === ruleIndex
+                                  ? { ...r, operator: value as "contains" | "not_contains" }
+                                  : r
+                              );
+                              return { ...g, rules: newRules };
+                            });
+                            handleFiltersChange({ ...filters, ruleGroups: newGroups });
                           }}
                         >
                           <SelectTrigger className="h-8 flex-1 sm:w-[150px] sm:flex-none text-xs px-2 bg-white">
@@ -267,9 +282,12 @@ export function OfferFilters({
                           <button
                             type="button"
                             onClick={() => {
-                              const newGroups = [...filters.ruleGroups];
-                              newGroups[groupIndex].rules.splice(ruleIndex, 1);
-                              handleFiltersChange({ ruleGroups: newGroups });
+                              const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                                if (gIdx !== groupIndex) return g;
+                                const newRules = g.rules.filter((_, rIdx) => rIdx !== ruleIndex);
+                                return { ...g, rules: newRules };
+                              });
+                              handleFiltersChange({ ...filters, ruleGroups: newGroups });
                             }}
                             aria-label={t("filters.deleteRule")}
                             className="p-1.5 text-gray-400 hover:text-red-500 transition-colors sm:hidden"
@@ -284,9 +302,16 @@ export function OfferFilters({
                           value={rule.value}
                           placeholder={t("filters.valuePlaceholder", { defaultValue: "Enter text..." })}
                           onChange={(e) => {
-                            const newGroups = [...filters.ruleGroups];
-                            newGroups[groupIndex].rules[ruleIndex].value = e.target.value;
-                            handleFiltersChange({ ruleGroups: newGroups });
+                            const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                              if (gIdx !== groupIndex) return g;
+                              const newRules = g.rules.map((r, rIdx) =>
+                                rIdx === ruleIndex
+                                  ? { ...r, value: e.target.value }
+                                  : r
+                              );
+                              return { ...g, rules: newRules };
+                            });
+                            handleFiltersChange({ ...filters, ruleGroups: newGroups });
                           }}
                           className={cn(
                             "h-8 text-xs px-2 bg-white flex-1",
@@ -298,9 +323,12 @@ export function OfferFilters({
                           <button
                             type="button"
                             onClick={() => {
-                              const newGroups = [...filters.ruleGroups];
-                              newGroups[groupIndex].rules.splice(ruleIndex, 1);
-                              handleFiltersChange({ ruleGroups: newGroups });
+                              const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                                if (gIdx !== groupIndex) return g;
+                                const newRules = g.rules.filter((_, rIdx) => rIdx !== ruleIndex);
+                                return { ...g, rules: newRules };
+                              });
+                              handleFiltersChange({ ...filters, ruleGroups: newGroups });
                             }}
                             aria-label={t("filters.deleteRule")}
                             className="p-1.5 text-gray-400 hover:text-red-500 transition-colors hidden sm:block"
@@ -323,14 +351,22 @@ export function OfferFilters({
                 <button
                   type="button"
                   onClick={() => {
-                    const newGroups = [...filters.ruleGroups];
-                    newGroups[groupIndex].rules.push({
-                      field: "title",
-                      operator: "contains",
-                      value: "",
-                      caseSensitive: false,
+                    const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                      if (gIdx !== groupIndex) return g;
+                      return {
+                        ...g,
+                        rules: [
+                          ...g.rules,
+                          {
+                            field: "title" as const,
+                            operator: "contains" as const,
+                            value: "",
+                            caseSensitive: false,
+                          },
+                        ],
+                      };
                     });
-                    handleFiltersChange({ ruleGroups: newGroups });
+                    handleFiltersChange({ ...filters, ruleGroups: newGroups });
                   }}
                   className="mt-2 flex items-center gap-1 text-xs text-gray-500 hover:text-violet-600 transition-colors"
                 >
@@ -346,9 +382,12 @@ export function OfferFilters({
                   <Select
                     value={group.logicWithNext || "or"}
                     onValueChange={(value) => {
-                      const newGroups = [...filters.ruleGroups];
-                      newGroups[groupIndex].logicWithNext = value as "and" | "or";
-                      handleFiltersChange({ ruleGroups: newGroups });
+                      const newGroups = filters.ruleGroups.map((g, gIdx) =>
+                        gIdx === groupIndex
+                          ? { ...g, logicWithNext: value as "and" | "or" }
+                          : g
+                      );
+                      handleFiltersChange({ ...filters, ruleGroups: newGroups });
                     }}
                   >
                     <SelectTrigger className="h-6 w-14 mx-2 text-[10px] font-semibold px-2 bg-white border-gray-200 text-gray-600">
@@ -370,14 +409,15 @@ export function OfferFilters({
         <button
           type="button"
           onClick={() => {
+            const currentGroups = filters?.ruleGroups || [];
             const newGroups = [
-              ...(filters?.ruleGroups || []),
+              ...currentGroups.map((g, gIdx) =>
+                gIdx === currentGroups.length - 1
+                  ? { ...g, logicWithNext: "or" as const }
+                  : g
+              ),
               createEmptyGroup(),
             ];
-            // Set logicWithNext on the previous last group
-            if (newGroups.length > 1) {
-              newGroups[newGroups.length - 2].logicWithNext = "or";
-            }
             handleFiltersChange({ ruleGroups: newGroups });
           }}
           className="w-full mt-2 py-1.5 flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-violet-600 border border-dashed border-gray-300 hover:border-violet-400 rounded-md transition-colors"

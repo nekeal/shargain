@@ -369,6 +369,132 @@ describe('OfferFilters', () => {
     expect(saveButton).toBeDisabled()
   })
 
+  it('enables save button when changes are made (e.g. editing value)', async () => {
+    const initialFilters: FiltersConfigSchema = {
+      ruleGroups: [
+        {
+          logic: 'and',
+          rules: [
+            {
+              field: 'title',
+              operator: 'contains',
+              value: 'apartment',
+              caseSensitive: false,
+            },
+          ],
+        },
+      ],
+    }
+
+    renderWithProviders(
+      <OfferFilters
+        targetId={1}
+        urlId={1}
+        initialFilters={initialFilters}
+      />
+    )
+
+    // Expand filters
+    const trigger = screen.getByRole('button', { name: /expand filters/i })
+    fireEvent.click(trigger)
+
+    const saveButton = screen.getByRole('button', { name: /save/i })
+    expect(saveButton).toBeDisabled()
+
+    // Edit the input value
+    const input = screen.getByPlaceholderText('Enter text...')
+    fireEvent.change(input, { target: { value: 'villa' } })
+
+    // Save button should now be enabled
+    await waitFor(() => {
+      expect(saveButton).toBeEnabled()
+    })
+  })
+
+  it('enables save button when adding a new rule and typing a value', async () => {
+    const initialFilters: FiltersConfigSchema = {
+      ruleGroups: [
+        {
+          logic: 'and',
+          rules: [
+            {
+              field: 'title',
+              operator: 'contains',
+              value: 'apartment',
+              caseSensitive: false,
+            },
+          ],
+        },
+      ],
+    }
+
+    renderWithProviders(
+      <OfferFilters
+        targetId={1}
+        urlId={1}
+        initialFilters={initialFilters}
+      />
+    )
+
+    // Expand filters
+    const trigger = screen.getByRole('button', { name: /expand filters/i })
+    fireEvent.click(trigger)
+
+    const saveButton = screen.getByRole('button', { name: /save/i })
+    expect(saveButton).toBeDisabled()
+
+    // Add a rule
+    const addRuleButton = screen.getByText('Add rule')
+    fireEvent.click(addRuleButton)
+
+    // Adding a rule triggers validation, which normalizes (strips empty rules) and passes, so save is enabled
+    // (the empty placeholder rule is filtered out before Zod validation)
+    expect(saveButton).toBeEnabled()
+
+    // Edit the new rule's input value
+    const inputs = screen.getAllByPlaceholderText('Enter text...')
+    expect(inputs).toHaveLength(2)
+    fireEvent.change(inputs[1], { target: { value: 'house' } })
+
+    // Save button should now be enabled
+    await waitFor(() => {
+      expect(saveButton).toBeEnabled()
+    })
+  })
+
+  it('enables save button when opening from scratch (no existing filters) and adding a rule with a value', async () => {
+    renderWithProviders(
+      <OfferFilters
+        targetId={1}
+        urlId={1}
+        initialFilters={null}
+      />
+    )
+
+    // Expand filters (auto-creates first empty group)
+    const trigger = screen.getByRole('button', { name: /expand filters/i })
+    fireEvent.click(trigger)
+
+    // Save button is enabled because normalized filters (empty rules stripped) pass validation
+    const saveButton = screen.getByRole('button', { name: /save/i })
+    expect(saveButton).toBeEnabled()
+
+    // Add a new rule
+    const addRuleButton = screen.getByText('Add rule')
+    fireEvent.click(addRuleButton)
+
+    // Save button stays enabled (empty rules are normalized away before validation)
+    expect(saveButton).toBeEnabled()
+
+    // Type a value in the new rule
+    const inputs = screen.getAllByPlaceholderText('Enter text...')
+    expect(inputs).toHaveLength(2)
+    fireEvent.change(inputs[1], { target: { value: 'house' } })
+
+    // Save button is still enabled
+    expect(saveButton).toBeEnabled()
+  })
+
   it('renders save button', () => {
     renderWithProviders(
       <OfferFilters

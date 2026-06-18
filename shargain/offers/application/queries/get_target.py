@@ -27,7 +27,7 @@ def get_target(actor: Actor, target_id: int) -> TargetDTO:
         }
 
         target = ScrappingTarget.objects.prefetch_related(
-            Prefetch("scrapingurl_set", queryset=ScrapingUrl.objects.all())
+            Prefetch("scrapingurl_set", queryset=ScrapingUrl.objects.all().order_by("id"))
         ).get(id=target_id, owner=actor.user_id)
     except ScrappingTarget.DoesNotExist as e:
         raise TargetDoesNotExist() from e
@@ -52,7 +52,9 @@ def get_target_by_user(actor: Actor) -> TargetDTO:
     url_ids_to_timestamps = {item["scraping_url_id"]: item["latest_timestamp"].isoformat() for item in latest_checkins}
 
     target = (
-        ScrappingTarget.objects.prefetch_related(Prefetch("scrapingurl_set", queryset=ScrapingUrl.objects.all()))
+        ScrappingTarget.objects.prefetch_related(
+            Prefetch("scrapingurl_set", queryset=ScrapingUrl.objects.all().order_by("id"))
+        )
         .filter(owner=actor.user_id)
         .order_by("-id")
         .first()

@@ -33,7 +33,7 @@ export const createFilterSchemas = (t: TFunction) => {
 
   const ruleGroupSchema = z.object({
     logic: z.enum(FILTER_CONSTRAINTS.ALLOWED_LOGIC).default("and"),
-    logicWithNext: z.enum(FILTER_CONSTRAINTS.ALLOWED_LOGIC).optional(),
+    logicWithNext: z.enum(FILTER_CONSTRAINTS.ALLOWED_LOGIC).optional().nullable(),
     rules: z
       .array(filterRuleSchema)
       .min(1, { message: t("filters.errors.groupMustHaveRules") })
@@ -72,7 +72,7 @@ const baseFilterRuleSchema = z.object({
 
 const baseRuleGroupSchema = z.object({
   logic: z.enum(FILTER_CONSTRAINTS.ALLOWED_LOGIC).default("and"),
-  logicWithNext: z.enum(FILTER_CONSTRAINTS.ALLOWED_LOGIC).optional(),
+  logicWithNext: z.enum(FILTER_CONSTRAINTS.ALLOWED_LOGIC).optional().nullable(),
   rules: z.array(baseFilterRuleSchema).min(1).max(FILTER_CONSTRAINTS.MAX_RULES_PER_GROUP),
 });
 
