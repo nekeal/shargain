@@ -28,6 +28,7 @@ router.registry.extend(notifications_router.registry)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("django_prometheus.urls")),
     path("api/", include(router.urls)),
     path("api/public/", ninja_router.urls),
     path("api/doc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),

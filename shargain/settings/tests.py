@@ -6,8 +6,16 @@ SECRET_KEY = "secret_key"
 # ------------- LOGGING -------------
 LOGGING = {}
 
+# ------------- APPS -------------
+INSTALLED_APPS = [app for app in INSTALLED_APPS if app != "django_prometheus"]
+
 # ------------- MIDDLEWARES -------------
-MIDDLEWARE = list(filter(lambda x: "DebugToolbarMiddleware" not in x, MIDDLEWARE))
+MIDDLEWARE = list(
+    filter(
+        lambda x: "DebugToolbarMiddleware" not in x and "Prometheus" not in x,
+        MIDDLEWARE,
+    )
+)
 
 # ------------- PASSWORDS -------------
 PASSWORD_HASHERS = [
