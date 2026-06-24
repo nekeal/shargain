@@ -30,10 +30,6 @@ services:
     restart: always
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
-      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-      OTEL_TRACES_EXPORTER: otlp
-      OTEL_PYTHON_DJANGO_EXCLUDED_URLS: /metrics,/health.*,/readiness.*,/static/.*
-      OTEL_BSP_SCHEDULE_DELAY: "5000"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"

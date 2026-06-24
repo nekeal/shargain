@@ -1,3 +1,5 @@
+import os
+
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.django import DjangoInstrumentor
@@ -12,6 +14,11 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 def post_fork(server, worker):
     if trace.get_tracer_provider().__class__.__name__ != "ProxyTracerProvider":
         return
+
+    os.environ.setdefault("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
+    os.environ.setdefault("OTEL_TRACES_EXPORTER", "otlp")
+    os.environ.setdefault("OTEL_PYTHON_DJANGO_EXCLUDED_URLS", "/metrics,/health.*,/readiness.*,/static/.*")
+    os.environ.setdefault("OTEL_BSP_SCHEDULE_DELAY", "5000")
 
     resource = Resource.create({"service.name": "shargain"})
 

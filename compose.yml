@@ -14,10 +14,6 @@ services:
             TELEGRAM_BOT_TOKEN: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
             POSTGRES_HOST: postgres
             OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
-            OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-            OTEL_TRACES_EXPORTER: otlp
-            OTEL_PYTHON_DJANGO_EXCLUDED_URLS: /metrics,/health.*,/readiness.*,/static/.*
-            OTEL_BSP_SCHEDULE_DELAY: "5000"
         command: "gunicorn shargain.wsgi -c gunicorn.conf.py -w 1 -b 0.0.0.0:8000"
         depends_on:
             - postgres
