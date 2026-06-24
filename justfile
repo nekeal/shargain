@@ -31,6 +31,12 @@ clean-test:
 
 # --- Development Setup ---
 
+# Install all dependencies in parallel
+install-deps:
+    #!/usr/bin/env -S parallel --shebang --ungroup --jobs 2
+    uv sync
+    pnpm -C frontend install
+
 # Bootstrap project (sync + migrate + fixtures)
 bootstrap:
     uv sync
