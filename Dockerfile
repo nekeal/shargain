@@ -28,6 +28,6 @@ RUN apt-get update && \
 	--no-install-recommends &&\
 	rm -rf /var/lib/apt/lists/*
 
-COPY manage.py /app
+COPY manage.py gunicorn.conf.py /app/
 COPY shargain /app/shargain
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
