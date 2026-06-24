@@ -1,51 +1,55 @@
-# This compose file is intended to be for production
-x-common-backend: &common-backend
-  image: ${COMPOSE_DOCKER_IMAGE}
-  user: 1000:1000
-  networks:
-    - traefik
-    - bridge
-  env_file: .env
-
 services:
-  backend:
-    <<: *common-backend
-    restart: always
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik"
-      - "traefik.http.routers.shargain.entrypoints=websecure"
-      - "traefik.http.routers.shargain.rule=Host(`${COMPOSE_DOMAIN_NAME}`)"
-      - "traefik.http.services.shargain.loadbalancer.server.port=8010"
-      - "traefik.http.routers.shargain.tls=true"
-    command: "gunicorn shargain.wsgi -w 4 -b 0.0.0.0:8010"
-    depends_on:
-      - migrations
-  migrations:
-    <<: *common-backend
-    restart: "no"
+    web:
+        restart: always
+        build: .
+        expose:
+            - "8000"
+        ports:
+            - "8000:8000"
+        volumes:
+            - .:/app
+            - venv:/app/.venv # to prevent overwriting the virtual environment in the container
+        environment:
+            DJANGO_SETTINGS_MODULE: shargain.settings.local
+            TELEGRAM_BOT_TOKEN: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+            POSTGRES_HOST: postgres
+            OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+            OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+            OTEL_TRACES_EXPORTER: otlp
+            OTEL_PYTHON_DJANGO_EXCLUDED_URLS: /metrics,/health.*,/readiness.*,/static/.*
+            OTEL_BSP_SCHEDULE_DELAY: "5000"
+        command: "gunicorn shargain.wsgi -c gunicorn.conf.py -w 1 -b 0.0.0.0:8000"
+        depends_on:
+            - postgres
+            - jaeger
 
-    command: "python manage.py migrate"
-  collectstatic:
-    <<: *common-backend
-    restart: "no"
-    command: "python manage.py collectstatic --no-input"
-    volumes:
-      - source: traefik_shared_static_files
-        target: /app/public
-        type: volume
-        volume:
-          subpath: "shargain"
-    depends_on:
-      - backend
+    postgres:
+        restart: always
+        image: postgres:13-alpine
+        environment:
+            POSTGRES_USER: shargain
+            POSTGRES_PASSWORD: shargain
+            POSTGRES_DB: shargain
+        volumes:
+            - pgdata:/var/lib/postgresql/data/
+
+    jaeger:
+        image: jaegertracing/jaeger:2.19.0
+        restart: always
+        ports:
+            - "4318:4318"
+            - "16686:16686"
+
+    prometheus:
+        image: prom/prometheus:latest
+        restart: always
+        volumes:
+            - ./deployment/dev/prometheus.yml:/etc/prometheus/prometheus.yml
+        ports:
+            - "9090:9090"
+        depends_on:
+            - web
 
 volumes:
-  static_files:
-  traefik_shared_static_files:
-    external: true
-
-
-networks:
-  traefik:
-    external: true
-  bridge:
+    pgdata:
+    venv:
