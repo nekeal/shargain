@@ -1,6 +1,8 @@
 import logging
 from collections import Counter
 
+from opentelemetry import trace
+
 from shargain.notifications.services.notifications import NewOfferNotificationService
 from shargain.offers.application.commands.record_checkin import record_checkin
 from shargain.offers.application.dto import WaypointData
@@ -21,25 +23,32 @@ class OfferBatchCreateService:
         self._serializer_kwargs = serializer_kwargs
 
     def run(self):
-        serializer = self.serializer_class(**self._serializer_kwargs)
-        serializer.is_valid(raise_exception=True)
-        target = serializer.validated_data["target"]
-        if target.owner_id and not QuotaService.check_can_create_offers(user_id=target.owner_id, target_id=target.id):
-            return []
-        offers: list[tuple[Offer, bool]] = self.create(serializer.validated_data)
-        new_offers = [r[0] for r in filter(lambda x: x[1], offers)]
-        self._notify(new_offers, target)
+        tracer = trace.get_tracer(__name__)
+        with tracer.start_as_current_span("batch_create.run") as span:
+            serializer = self.serializer_class(**self._serializer_kwargs)
+            serializer.is_valid(raise_exception=True)
+            target = serializer.validated_data["target"]
+            span.set_attribute("target.id", str(target.id))
+            if target.owner_id and not QuotaService.check_can_create_offers(
+                user_id=target.owner_id, target_id=target.id
+            ):
+                return []
+            offers: list[tuple[Offer, bool]] = self.create(serializer.validated_data)
+            new_offers = [r[0] for r in filter(lambda x: x[1], offers)]
+            span.set_attribute("offers.total", len(offers))
+            span.set_attribute("offers.new", len(new_offers))
+            self._notify(new_offers, target)
 
-        self._record_checkins(serializer.validated_data["offers"], offers, target)
-        if target.owner_id and new_offers:
-            offers_batch_created.send(
-                sender=self.__class__,
-                user_id=target.owner_id,
-                target_id=target.id,
-                count=len(new_offers),
-            )
+            self._record_checkins(serializer.validated_data["offers"], offers, target)
+            if target.owner_id and new_offers:
+                offers_batch_created.send(
+                    sender=self.__class__,
+                    user_id=target.owner_id,
+                    target_id=target.id,
+                    count=len(new_offers),
+                )
 
-        return [offer.url for offer in new_offers]
+            return [offer.url for offer in new_offers]
 
     @staticmethod
     def simplify_url(url):  # currently not used
@@ -48,20 +57,24 @@ class OfferBatchCreateService:
         return url
 
     def create(self, validated_data) -> list[tuple[Offer, bool]]:
+        tracer = trace.get_tracer(__name__)
         offers: list[tuple[Offer, bool]] = []
         for offer_data in validated_data["offers"]:
             offer_url = offer_data.pop("url")
-            try:
-                offer, created = Offer.objects.get_or_create(
-                    url=offer_url,
-                    target=validated_data["target"],
-                    defaults=offer_data,
-                )
-            except Offer.MultipleObjectsReturned:
-                offer, created = (
-                    Offer.objects.filter(url=offer_url, target=validated_data["target"]).first(),  # type: ignore[assignment]
-                    False,
-                )
+            with tracer.start_as_current_span("batch_create.create_offer") as child:
+                child.set_attribute("offer.url", offer_url)
+                try:
+                    offer, created = Offer.objects.get_or_create(
+                        url=offer_url,
+                        target=validated_data["target"],
+                        defaults=offer_data,
+                    )
+                except Offer.MultipleObjectsReturned:
+                    offer, created = (
+                        Offer.objects.filter(url=offer_url, target=validated_data["target"]).first(),  # type: ignore[assignment]
+                        False,
+                    )
+                child.set_attribute("offer.created", created)
             offers.append((offer, created))
         return offers
 
