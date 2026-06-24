@@ -28,6 +28,12 @@ services:
   backend:
     <<: *common-backend
     restart: always
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_PYTHON_DJANGO_EXCLUDED_URLS: /metrics,/health.*,/readiness.*,/static/.*
+      OTEL_BSP_SCHEDULE_DELAY: "5000"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
@@ -36,7 +42,7 @@ services:
       - "traefik.http.routers.shargain.priority=2"
       - "traefik.http.services.shargain.loadbalancer.server.port=8010"
       - "traefik.http.routers.shargain.tls=true"
-    command: "gunicorn shargain.wsgi -w 4 -b 0.0.0.0:8010"
+    command: "gunicorn shargain.wsgi -c gunicorn.conf.py -w 4 -b 0.0.0.0:8010"
     depends_on:
       - migrations
   migrations:
