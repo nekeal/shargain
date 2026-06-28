@@ -35,10 +35,3 @@ The system SHALL expose `django_model_inserts_total`, `django_model_updates_tota
 #### Scenario: Middleware order is correct
 - **WHEN** the MIDDLEWARE setting is inspected
 - **THEN** `django_prometheus.middleware.PrometheusBeforeMiddleware` SHALL be at index 0 and `django_prometheus.middleware.PrometheusAfterMiddleware` SHALL be at the last index
-
-### Requirement: Metrics endpoint is excluded from traces
-The OTEL excluded URLs configuration SHALL include `/metrics`, `/health.*`, `/readiness.*`, and `/static/.*` to avoid instrumenting Prometheus scraping and health-check traffic.
-
-#### Scenario: OTEL excludes noisy URLs from tracing
-- **WHEN** the `OTEL_PYTHON_DJANGO_EXCLUDED_URLS` env var is set
-- **THEN** `/metrics` and `/health` SHALL be present in the comma-separated list

@@ -41,12 +41,12 @@ The codebase has a dead Grafana integration (admin iframes pointing to a defunct
 **Chosen:** BatchSpanProcessor exports spans asynchronously in batches, eliminating per-span HTTP latency overhead.
 **Rejected:** SimpleSpanProcessor — makes a synchronous HTTP request per span, destroying request latency.
 
-### 5. Jaeger in monitoring compose over project compose
-**Chosen:** Jaeger belongs in the monitoring compose (alongside existing Prometheus, Grafana, Loki) because it's shared infrastructure. The monitoring compose uses a `traefik` external network — the web container joins that network, allowing Docker DNS to resolve `jaeger:4318` across stacks. Grafana queries Jaeger via the same network on port 16686.
-**Alternative considered:** Jaeger in the project compose — simpler app-side config but duplicates monitoring infrastructure and doesn't allow sharing between stacks.
+### 5. Jaeger in dev compose over monitoring compose
+**Chosen:** Jaeger lives in the development compose (`compose.dev.yml`) alongside Prometheus and Postgres. This keeps the dev environment self-contained with a single `docker compose -f compose.dev.yml up` command. The production compose (`compose.yml`) relies on OTEL env vars to point to an externally managed trace backend.
+**Alternative considered:** Jaeger in a separate monitoring compose — requires `docker compose -f compose.dev.yml -f monitoring.yml up`, harder to discover, doesn't match the dev workflow.
 
-### 6. Jaeger all-in-one over Tempo
-**Chosen:** Jaeger all-in-one runs in ~200MB RAM with in-memory storage — no object store dependency. Can be swapped for Tempo later by changing the OTLP endpoint.
+### 6. Jaeger v2 over Tempo
+**Chosen:** Jaeger v2 (`jaegertracing/jaeger:2.x`) runs the unified all-in-one binary in ~200MB RAM with in-memory storage — no object store dependency. Replaces the legacy `jaegertracing/all-in-one` image. Can be swapped for Tempo later by changing the OTLP endpoint.
 **Rejected:** Tempo — requires object storage (S3/GCS), overkill at current scale.
 
 ### 7. Tracer init in gunicorn post_fork hook (not wsgi.py)
@@ -88,8 +88,8 @@ The codebase has a dead Grafana integration (admin iframes pointing to a defunct
   - **structlog** — adds a new logging dependency and requires code changes across all modules; overkill for trace ID injection alone
   - **No log correlation** — logs are disconnected from traces, making debugging slower when you need to correlate a trace with its log lines
 
-### 14. Local dev monitoring stack in docker-compose.yml
-**Chosen:** Replace the runserver-based dev compose with a gunicorn-based stack that includes Jaeger and Prometheus. This makes all verification tasks (metrics endpoint, Jaeger traces, Sentry+OTel coexistence) reproducible with a single `docker compose up`. The dev compose (`docker-compose.yml`) gets:
+### 14. Local dev monitoring stack in compose.dev.yml
+**Chosen:** Replace the runserver-based dev compose with a gunicorn-based stack that includes Jaeger and Prometheus. This makes all verification tasks (metrics endpoint, Jaeger traces, Sentry+OTel coexistence) reproducible with a single `docker compose -f compose.dev.yml up`. The dev compose (`compose.dev.yml`) gets:
 
   - **web**: runs gunicorn with `gunicorn.conf.py` so OTel init runs, 1 worker for simplicity, OTEL env vars applied
   - **postgres**: unchanged
