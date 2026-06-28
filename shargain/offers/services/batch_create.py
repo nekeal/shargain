@@ -58,25 +58,40 @@ class OfferBatchCreateService:
 
     def create(self, validated_data) -> list[tuple[Offer, bool]]:
         tracer = trace.get_tracer(__name__)
-        offers: list[tuple[Offer, bool]] = []
-        for offer_data in validated_data["offers"]:
-            offer_url = offer_data.pop("url")
-            with tracer.start_as_current_span("batch_create.create_offer") as child:
-                child.set_attribute("offer.url", offer_url)
-                try:
-                    offer, created = Offer.objects.get_or_create(
-                        url=offer_url,
-                        target=validated_data["target"],
-                        defaults=offer_data,
-                    )
-                except Offer.MultipleObjectsReturned:
-                    offer, created = (
-                        Offer.objects.filter(url=offer_url, target=validated_data["target"]).first(),  # type: ignore[assignment]
-                        False,
-                    )
-                child.set_attribute("offer.created", created)
-            offers.append((offer, created))
-        return offers
+        target = validated_data["target"]
+        offers_data_list = validated_data["offers"]
+
+        urls: list[str] = []
+        all_offer_data: list[dict] = []
+        for offer_data in offers_data_list:
+            url = offer_data.pop("url")
+            urls.append(url)
+            all_offer_data.append(offer_data)
+
+        with tracer.start_as_current_span("batch_create.create_offer") as span:
+            existing_urls = set(Offer.objects.filter(url__in=urls, target=target).values_list("url", flat=True))
+
+            new_offers = [
+                Offer(url=url, target=target, **data)
+                for url, data in zip(urls, all_offer_data, strict=True)
+                if url not in existing_urls
+            ]
+            if new_offers:
+                Offer.objects.bulk_create(new_offers, ignore_conflicts=False)
+
+            all_instances = Offer.objects.filter(url__in=urls, target=target)
+            url_to_offer = {o.url: o for o in all_instances}
+
+            results: list[tuple[Offer, bool]] = []
+            for url in urls:
+                offer = url_to_offer[url]
+                created = url not in existing_urls
+                results.append((offer, created))
+
+            span.set_attribute("offers.total", len(results))
+            span.set_attribute("offers.created", sum(1 for _, c in results if c))
+
+        return results
 
     @staticmethod
     def _record_checkins(offers_data: list, created_offers: list[tuple[Offer, bool]], target: ScrappingTarget):

@@ -1,6 +1,7 @@
 from typing import Any, TypedDict
 from urllib.parse import urlparse
 
+from django.contrib.postgres.indexes import HashIndex
 from django.db import models
 from django.db.models import Manager, QuerySet
 from django.utils import timezone
@@ -173,6 +174,9 @@ class Offer(TimeStampedModel):
     class Meta:
         verbose_name = _("Offer")
         verbose_name_plural = _("Offers")
+        indexes = [
+            HashIndex(fields=["url"], name="offer_url_hash_idx"),
+        ]
 
     @property
     def domain(self):
