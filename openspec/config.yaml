@@ -1,0 +1,12 @@
+schema: spec-driven
+
+# context: |
+
+rules:
+    proposal:
+        - use grill-me-with-docs skill to better explore the intention and domain language
+    design:
+        - use codebase-design skill to design maintainable and scalable codebase
+        - include rejected design alternatives and trade-offs in the design documentation
+    tasks:
+        - use tdd skill to split tasks into verifiable and testable vertical slices
