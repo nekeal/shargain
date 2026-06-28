@@ -28,8 +28,6 @@ services:
   backend:
     <<: *common-backend
     restart: always
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
