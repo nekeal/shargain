@@ -10,8 +10,6 @@ services:
             - .:/app
             - venv:/app/.venv # to prevent overwriting the virtual environment in the container
         environment:
-            DJANGO_SETTINGS_MODULE: shargain.settings.local
-            TELEGRAM_BOT_TOKEN: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
             POSTGRES_HOST: postgres
             OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
         command: "gunicorn shargain.wsgi -c gunicorn.conf.py -w 1 -b 0.0.0.0:8000"
