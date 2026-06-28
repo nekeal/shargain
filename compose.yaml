@@ -1,0 +1,49 @@
+services:
+    web:
+        restart: always
+        build: .
+        expose:
+            - "8000"
+        ports:
+            - "8000:8000"
+        volumes:
+            - .:/app
+            - venv:/app/.venv # to prevent overwriting the virtual environment in the container
+        environment:
+            POSTGRES_HOST: postgres
+            OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+        command: "gunicorn shargain.wsgi -c gunicorn.conf.py -w 1 -b 0.0.0.0:8000"
+        depends_on:
+            - postgres
+            - jaeger
+
+    postgres:
+        restart: always
+        image: postgres:13-alpine
+        environment:
+            POSTGRES_USER: shargain
+            POSTGRES_PASSWORD: shargain
+            POSTGRES_DB: shargain
+        volumes:
+            - pgdata:/var/lib/postgresql/data/
+
+    jaeger:
+        image: jaegertracing/jaeger:2.19.0
+        restart: always
+        ports:
+            - "4318:4318"
+            - "16686:16686"
+
+    prometheus:
+        image: prom/prometheus:latest
+        restart: always
+        volumes:
+            - ./deployment/dev/prometheus.yml:/etc/prometheus/prometheus.yml
+        ports:
+            - "9090:9090"
+        depends_on:
+            - web
+
+volumes:
+    pgdata:
+    venv:

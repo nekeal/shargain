@@ -36,7 +36,7 @@ services:
       - "traefik.http.routers.shargain.priority=2"
       - "traefik.http.services.shargain.loadbalancer.server.port=8010"
       - "traefik.http.routers.shargain.tls=true"
-    command: "gunicorn shargain.wsgi -w 4 -b 0.0.0.0:8010"
+    command: "gunicorn shargain.wsgi -c gunicorn.conf.py -w 4 -b 0.0.0.0:8010"
     depends_on:
       - migrations
   migrations:
