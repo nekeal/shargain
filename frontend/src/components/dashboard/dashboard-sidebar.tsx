@@ -10,20 +10,19 @@ import { getQuotaStatus, sendTargetTestNotification } from "@/lib/api/sdk.gen"
 
 interface DashboardSidebarProps {
   offerMonitor: OfferMonitor
-  isVisible: boolean
 }
 
-function getQuotaBadgeClassName(used: number, limit: number) {
+function getQuotaProgressVariant(used: number, limit: number): "success" | "warning" | "destructive" {
   if (limit <= 0 || used >= limit) {
-    return "bg-red-100 text-red-800 border-0"
+    return "destructive"
   }
   if (used / limit >= 0.8) {
-    return "bg-yellow-100 text-yellow-800 border-0"
+    return "warning"
   }
-  return "bg-green-100 text-green-800 border-0"
+  return "success"
 }
 
-export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardSidebarProps) {
+export default function DashboardSidebar({ offerMonitor }: DashboardSidebarProps) {
   const { t } = useTranslation();
   type Status = 'idle' | 'loading' | 'success' | 'error'
   const [status, setStatus] = useState<Status>('idle')
@@ -70,33 +69,27 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
   return (
     <div className="space-y-6">
       {/* Status Card */}
-      <Card
-        className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-600 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-          }`}
-      >
+      <Card className="bg-card border border-border">
         <CardHeader>
-          <CardTitle className="flex items-center text-lg">
-            <AlertCircle className="w-5 h-5 mr-2 text-violet-600" />
+          <CardTitle className="flex items-center text-base font-medium">
+            <AlertCircle className="w-4 h-4 mr-2 text-primary" aria-hidden="true" />
             {t('dashboard.sidebar.status.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">{t('dashboard.sidebar.status.activeWebsites')}</span>
-            <Badge className="bg-green-100 text-green-800 border-0">
+            <span className="text-sm text-muted-foreground">{t('dashboard.sidebar.status.activeWebsites')}</span>
+            <Badge variant="success" className="border-0">
               {offerMonitor.urls.filter((url) => url.isActive).length}
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">{t('dashboard.sidebar.status.totalWebsites')}</span>
-            <Badge className="bg-violet-100 text-violet-800 border-0">{offerMonitor.urls.length}</Badge>
+            <span className="text-sm text-muted-foreground">{t('dashboard.sidebar.status.totalWebsites')}</span>
+            <Badge variant="default" className="border-0">{offerMonitor.urls.length}</Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">{t('dashboard.sidebar.status.notifications')}</span>
-            <Badge
-              className={`border-0 ${offerMonitor.enableNotifications ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-                }`}
-            >
+            <span className="text-sm text-muted-foreground">{t('dashboard.sidebar.status.notifications')}</span>
+            <Badge variant={offerMonitor.enableNotifications ? "success" : "secondary"} className="border-0">
               {offerMonitor.enableNotifications ? t('dashboard.sidebar.status.enabled') : t('dashboard.sidebar.status.disabled')}
             </Badge>
           </div>
@@ -104,24 +97,21 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
       </Card>
 
       {/* Quota Card */}
-      <Card
-        className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-700 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-          }`}
-      >
+      <Card className="bg-card border border-border">
         <CardHeader>
-          <CardTitle className="text-lg">{t('dashboard.sidebar.quotas.title')}</CardTitle>
+          <CardTitle className="text-base font-medium">{t('dashboard.sidebar.quotas.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {scrapingUrlQuota ? (
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">{t('dashboard.sidebar.quotas.scrapingUrls')}</span>
-                <Badge className={getQuotaBadgeClassName(scrapingUrlQuota.used, scrapingUrlQuota.limit)}>
+                <span className="text-sm text-muted-foreground">{t('dashboard.sidebar.quotas.scrapingUrls')}</span>
+                <Badge variant={getQuotaProgressVariant(scrapingUrlQuota.used, scrapingUrlQuota.limit)}>
                   {scrapingUrlQuota.used} / {scrapingUrlQuota.limit}
                 </Badge>
               </div>
               {scrapingUrlQuota.used >= scrapingUrlQuota.limit ? (
-                <p className="text-xs text-amber-700">{t('dashboard.sidebar.quotas.scrapingUrlsAction')}</p>
+                <p className="text-xs text-warning">{t('dashboard.sidebar.quotas.scrapingUrlsAction')}</p>
               ) : null}
             </div>
           ) : null}
@@ -131,13 +121,13 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
               className="space-y-1"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="text-sm text-gray-600 truncate">{t('dashboard.sidebar.quotas.offers')}</span>
-                <Badge className={getQuotaBadgeClassName(currentTargetOffersQuota.used, currentTargetOffersQuota.limit)}>
+                <span className="text-sm text-muted-foreground truncate">{t('dashboard.sidebar.quotas.offers')}</span>
+                <Badge variant={getQuotaProgressVariant(currentTargetOffersQuota.used, currentTargetOffersQuota.limit)}>
                   {currentTargetOffersQuota.used} / {currentTargetOffersQuota.limit}
                 </Badge>
               </div>
               {currentTargetOffersQuota.used >= currentTargetOffersQuota.limit ? (
-                <p className="text-xs text-amber-700">
+                <p className="text-xs text-warning">
                   {t('dashboard.sidebar.quotas.offersAction')}
                   {currentTargetOffersQuota.periodEnd
                     ? ` ${new Date(currentTargetOffersQuota.periodEnd).toLocaleDateString()}`
@@ -150,28 +140,28 @@ export default function DashboardSidebar({ offerMonitor, isVisible }: DashboardS
       </Card>
 
       {/* Quick Actions */}
-      <Card
-        className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-800 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-          }`}
-      >
+      <Card className="bg-card border border-border">
         <CardHeader>
-          <CardTitle className="text-lg">{t('dashboard.sidebar.quickActions.title')}</CardTitle>
+          <CardTitle className="text-base font-medium">{t('dashboard.sidebar.quickActions.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Button
             variant="outline"
-            className="w-full justify-start border-violet-200 text-violet-600 hover:bg-violet-50 transition-all duration-300 hover:scale-105 bg-transparent"
+            className="w-full justify-start"
             onClick={handleTestNotification}
             disabled={status !== 'idle'}
           >
-            {status === 'loading' ? (
-              <Loader className="w-4 h-4 mr-2 animate-spin" />
-            ) : status === 'success' ? (
-              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-            ) : status === 'error' ? (
-              <XCircle className="w-4 h-4 mr-2 text-red-500" />
-            ) : (
-              <Bell className="w-4 h-4 mr-2" />
+            {status === 'loading' && (
+              <Loader className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+            )}
+            {status === 'success' && (
+              <CheckCircle className="w-4 h-4 mr-2 text-success" aria-hidden="true" />
+            )}
+            {status === 'error' && (
+              <XCircle className="w-4 h-4 mr-2 text-destructive" aria-hidden="true" />
+            )}
+            {status === 'idle' && (
+              <Bell className="w-4 h-4 mr-2" aria-hidden="true" />
             )}
             {message || t('dashboard.sidebar.quickActions.testNotifications')}
           </Button>
