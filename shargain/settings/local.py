@@ -15,7 +15,7 @@ DATABASES = {
 }
 
 # ------------- SECURITY -------------
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "https://3000-oc.bcode.app", "https://8000-oc.bcode.app"]
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
 
