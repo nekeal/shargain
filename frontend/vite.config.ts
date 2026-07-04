@@ -18,6 +18,7 @@ export default defineConfig(() => {
       tsconfigPaths(),
     ],
     server: {
+      allowedHosts: ["3000-oc.bcode.app"],
       proxy: {
         '/api': {
           target: "http://localhost:8000",

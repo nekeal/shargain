@@ -38,6 +38,7 @@
     "loading": "Ładowanie...",
     "error": "Błąd ładowania danych dashboardu.",
     "noData": "Brak dostępnych danych monitora.",
+    "retry": "Spróbuj ponownie",
     "targetSelector": {
       "urlCount": "{{count}} URL",
       "urlCount_plural": "{{count}} URL-e",
@@ -71,6 +72,30 @@
       "pending": "Oczekujące",
       "noWebsitesTitle": "Nie dodano jeszcze żadnych stron",
       "noWebsitesDescription": "Dodaj swoją pierwszą stronę powyżej, aby rozpocząć monitorowanie ofert",
+      "pause": "Wstrzymaj monitorowanie",
+      "resume": "Wznów monitorowanie",
+      "delete": "Usuń stronę",
+      "toast": {
+        "nameUpdated": "Nazwa monitora zaktualizowana",
+        "nameUpdateError": "Nie udało się zaktualizować nazwy monitora",
+        "added": "Strona dodana pomyślnie",
+        "addError": "Nie udało się dodać strony"
+      },
+      "addUrlDialog": {
+        "title": "Dodaj URL",
+        "description": "Wpisz adres URL z OLX, Vinted, Otomoto lub Otodom.",
+        "urlLabel": "URL",
+        "nameLabel": "Nazwa (opcjonalnie)",
+        "cancel": "Anuluj",
+        "add": "Dodaj"
+      },
+      "urlCard": {
+        "filters": "Filtry",
+        "location": "Lokalizacja",
+        "filterCount": "{{count}} filtr(y)",
+        "locationOn": "Włączone",
+        "locationOff": "Wyłączone"
+      },
       "supportedWebsites": {
         "title": "Jak uzyskać adres URL?",
         "description": "Oto strony, które są obecnie obsługiwane do monitorowania. Aby uzyskać najlepsze wyniki, postępuj zgodnie z poniższymi instrukcjami, aby uzyskać poprawny adres URL.",
@@ -102,7 +127,15 @@
       "activeChannel": "Aktywny kanał",
       "activeChannelPlaceholder": "Wybierz kanał...",
       "config": "Konfiguracja",
-      "addChannel": "Dodaj kanał"
+      "addChannel": "Dodaj kanał",
+      "toast": {
+        "enableSuccess": "Powiadomienia zostały zaktualizowane",
+        "enableError": "Nie udało się zaktualizować powiadomień",
+        "telegramOpened": "Telegram otwarty w nowej karcie",
+        "telegramError": "Nie udało się otworzyć Telegramu",
+        "channelUpdated": "Kanał powiadomień zaktualizowany",
+        "channelError": "Nie udało się zaktualizować kanału"
+      }
     },
     "sidebar": {
       "status": {
@@ -127,6 +160,26 @@
       "testNotification": {
         "success": "Powiadomienie zostało wysłane pomyślnie!",
         "error": "Nie udało się wysłać powiadomienia."
+      },
+      "header": {
+        "monitor": "Monitor"
+      },
+      "channel": {
+        "title": "Kanał powiadomień",
+        "placeholder": "Wybierz kanał..."
+      },
+      "settings": {
+        "title": "Ustawienia",
+        "monitorActive": "Monitor aktywny",
+        "notificationsEnabled": "Powiadomienia włączone"
+      },
+      "actions": {
+        "title": "Działania",
+        "addUrl": "Dodaj URL",
+        "testNotification": "Testuj powiadomienia"
+      },
+      "quota": {
+        "resetDate": "Limit resetuje się {{date}}"
       }
     }
   },

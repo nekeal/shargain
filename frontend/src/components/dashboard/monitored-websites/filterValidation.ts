@@ -63,20 +63,20 @@ export const createFilterSchemas = (t: TFunction) => {
 };
 
 // Base schemas for type inference (without translations)
-const baseFilterRuleSchema = z.object({
+export const baseFilterRuleSchema = z.object({
   field: z.enum(FILTER_CONSTRAINTS.ALLOWED_FIELDS),
   operator: z.enum(FILTER_CONSTRAINTS.ALLOWED_OPERATORS),
   value: z.string().min(1).max(FILTER_CONSTRAINTS.MAX_VALUE_LENGTH),
   caseSensitive: z.boolean().default(false),
 });
 
-const baseRuleGroupSchema = z.object({
+export const baseRuleGroupSchema = z.object({
   logic: z.enum(FILTER_CONSTRAINTS.ALLOWED_LOGIC).default("and"),
   logicWithNext: z.enum(FILTER_CONSTRAINTS.ALLOWED_LOGIC).optional().nullable(),
   rules: z.array(baseFilterRuleSchema).min(1).max(FILTER_CONSTRAINTS.MAX_RULES_PER_GROUP),
 });
 
-const baseFiltersConfigSchema = z.object({
+export const baseFiltersConfigSchema = z.object({
   ruleGroups: z.array(baseRuleGroupSchema).min(1).max(FILTER_CONSTRAINTS.MAX_RULE_GROUPS),
 });
 

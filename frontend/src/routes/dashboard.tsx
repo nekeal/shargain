@@ -113,19 +113,13 @@ function EmptyState() {
 function DashboardLayout({ offerMonitor, sidebarTop }: { offerMonitor: OfferMonitor; sidebarTop?: React.ReactNode }) {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        setIsVisible(true);
-    }, []);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
+        <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8 max-w-6xl">
-                <div
-                    className={`mb-8 transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                    <h1 className="text-2xl font-semibold text-gray-900">{t('dashboard.greeting', { name: user?.username || '' })}</h1>
-                    <p className="text-sm text-gray-500">{t('dashboard.subtitle')}</p>
+                <div className="mb-8">
+                    <h1 className="text-2xl font-semibold text-foreground">{t('dashboard.greeting', { name: user?.username || '' })}</h1>
+                    <p className="text-sm text-muted-foreground">{t('dashboard.subtitle')}</p>
                 </div>
 
                 {sidebarTop ? (
@@ -136,8 +130,8 @@ function DashboardLayout({ offerMonitor, sidebarTop }: { offerMonitor: OfferMoni
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        <MonitoredWebsites offerMonitor={offerMonitor} isVisible={isVisible} />
-                        <MonitorSettings offerMonitor={offerMonitor} isVisible={isVisible} />
+                        <MonitoredWebsites offerMonitor={offerMonitor} />
+                        <MonitorSettings offerMonitor={offerMonitor} />
                     </div>
                     <div className="space-y-6">
                         {sidebarTop ? (
@@ -145,7 +139,7 @@ function DashboardLayout({ offerMonitor, sidebarTop }: { offerMonitor: OfferMoni
                                 {sidebarTop}
                             </div>
                         ) : null}
-                        <DashboardSidebar offerMonitor={offerMonitor} isVisible={isVisible} />
+                        <DashboardSidebar offerMonitor={offerMonitor} />
                     </div>
                 </div>
             </div>

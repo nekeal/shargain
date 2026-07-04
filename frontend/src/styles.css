@@ -35,9 +35,18 @@ code {
     --accent: oklch(0.967 0.001 286.375);
     --accent-foreground: oklch(0.21 0.006 285.885);
     --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.969 0.016 293.756);
+    --warning: oklch(0.75 0.18 85);
+    --warning-foreground: oklch(0.15 0.02 85);
+    --warning-muted: oklch(0.96 0.04 85);
+    --warning-muted-foreground: oklch(0.4 0.12 85);
+    --success: oklch(0.646 0.16 142);
+    --success-foreground: oklch(0.98 0.01 142);
+    --success-muted: oklch(0.95 0.03 142);
+    --success-muted-foreground: oklch(0.35 0.12 142);
     --border: oklch(0.92 0.004 286.32);
     --input: oklch(0.92 0.004 286.32);
-    --ring: oklch(0.606 0.25 292.717);
+    --ring:    --ring: oklch(0.606 0.25 292.717);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
@@ -69,6 +78,15 @@ code {
     --accent: oklch(0.274 0.006 286.033);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
+    --destructive-foreground: oklch(0.969 0.016 293.756);
+    --warning: oklch(0.75 0.18 85);
+    --warning-foreground: oklch(0.985 0 0);
+    --warning-muted: oklch(0.25 0.05 85);
+    --warning-muted-foreground: oklch(0.8 0.12 85);
+    --success: oklch(0.65 0.18 142);
+    --success-foreground: oklch(0.15 0.02 142);
+    --success-muted: oklch(0.25 0.05 142);
+    --success-muted-foreground: oklch(0.8 0.12 142);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.541 0.281 293.009);
@@ -105,6 +123,14 @@ code {
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-muted: var(--warning-muted);
+  --color-warning-muted-foreground: var(--warning-muted-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-muted: var(--success-muted);
+  --color-success-muted-foreground: var(--success-muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -134,4 +160,50 @@ code {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer utilities {
+  @media (prefers-reduced-motion: reduce) {
+    .motion-reduce\:transition-none {
+      transition: none !important;
+    }
+    .motion-reduce\:animate-none {
+      animation: none !important;
+    }
+    .motion-reduce\:duration-0 {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+    }
+  }
+}
+
+@theme inline {
+  --animate-fade-in: fade-in 200ms ease-out-quart;
+  --animate-slide-up: slide-up 300ms ease-out-quart;
+  --animate-zoom-in: zoom-in-95 200ms ease-out-quart;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zoom-in-95 {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-from-bottom {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-out-to-bottom {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(100%); }
 }

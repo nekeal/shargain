@@ -10,8 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as Dashboard2RouteImport } from './routes/dashboard2'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PrototypeDropdownRouteImport } from './routes/prototype.dropdown'
+import { Route as PrototypeDashboardRouteImport } from './routes/prototype.dashboard'
 import { Route as LegalTermsRouteImport } from './routes/legal/terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal/privacy'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
@@ -22,6 +25,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Dashboard2Route = Dashboard2RouteImport.update({
+  id: '/dashboard2',
+  path: '/dashboard2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -30,6 +38,16 @@ const DashboardRoute = DashboardRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrototypeDropdownRoute = PrototypeDropdownRouteImport.update({
+  id: '/prototype/dropdown',
+  path: '/prototype/dropdown',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrototypeDashboardRoute = PrototypeDashboardRouteImport.update({
+  id: '/prototype/dashboard',
+  path: '/prototype/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalTermsRoute = LegalTermsRouteImport.update({
@@ -56,69 +74,90 @@ const AuthSigninRoute = AuthSigninRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/dashboard2': typeof Dashboard2Route
   '/notifications': typeof NotificationsRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/prototype/dashboard': typeof PrototypeDashboardRoute
+  '/prototype/dropdown': typeof PrototypeDropdownRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/dashboard2': typeof Dashboard2Route
   '/notifications': typeof NotificationsRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/prototype/dashboard': typeof PrototypeDashboardRoute
+  '/prototype/dropdown': typeof PrototypeDropdownRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/dashboard2': typeof Dashboard2Route
   '/notifications': typeof NotificationsRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/prototype/dashboard': typeof PrototypeDashboardRoute
+  '/prototype/dropdown': typeof PrototypeDropdownRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/dashboard2'
     | '/notifications'
     | '/auth/signin'
     | '/auth/signup'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/prototype/dashboard'
+    | '/prototype/dropdown'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
+    | '/dashboard2'
     | '/notifications'
     | '/auth/signin'
     | '/auth/signup'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/prototype/dashboard'
+    | '/prototype/dropdown'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/dashboard2'
     | '/notifications'
     | '/auth/signin'
     | '/auth/signup'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/prototype/dashboard'
+    | '/prototype/dropdown'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  Dashboard2Route: typeof Dashboard2Route
   NotificationsRoute: typeof NotificationsRoute
   AuthSigninRoute: typeof AuthSigninRoute
   AuthSignupRoute: typeof AuthSignupRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
+  PrototypeDashboardRoute: typeof PrototypeDashboardRoute
+  PrototypeDropdownRoute: typeof PrototypeDropdownRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -128,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard2': {
+      id: '/dashboard2'
+      path: '/dashboard2'
+      fullPath: '/dashboard2'
+      preLoaderRoute: typeof Dashboard2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -142,6 +188,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prototype/dropdown': {
+      id: '/prototype/dropdown'
+      path: '/prototype/dropdown'
+      fullPath: '/prototype/dropdown'
+      preLoaderRoute: typeof PrototypeDropdownRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prototype/dashboard': {
+      id: '/prototype/dashboard'
+      path: '/prototype/dashboard'
+      fullPath: '/prototype/dashboard'
+      preLoaderRoute: typeof PrototypeDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/terms': {
@@ -178,11 +238,14 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  Dashboard2Route: Dashboard2Route,
   NotificationsRoute: NotificationsRoute,
   AuthSigninRoute: AuthSigninRoute,
   AuthSignupRoute: AuthSignupRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
+  PrototypeDashboardRoute: PrototypeDashboardRoute,
+  PrototypeDropdownRoute: PrototypeDropdownRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

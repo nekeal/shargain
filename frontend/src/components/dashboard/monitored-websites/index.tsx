@@ -20,10 +20,9 @@ const urlSchema = z.url({ message: "Please enter a valid URL." }).nonempty({ mes
 
 interface MonitoredWebsitesProps {
   offerMonitor: OfferMonitor
-  isVisible: boolean
 }
 
-export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsitesProps) {
+export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
   const { t } = useTranslation();
   const [newUrl, setNewUrl] = useState("")
   const [newName, setNewName] = useState("")
@@ -115,24 +114,21 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
   }
 
   return (
-    <Card
-      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-400 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-        }`}
-    >
+    <Card className="bg-card border border-border">
       <CardHeader>
         <CardTitle className="flex items-center text-2xl">
-          <Globe className="w-6 h-6 mr-3 text-violet-600" />
+          <Globe className="w-6 h-6 mr-3 text-primary" />
           {t('dashboard.monitoredWebsites.title')}
         </CardTitle>
         <CardDescription>{t('dashboard.monitoredWebsites.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Target Name Update */}
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+        <div className="p-4 bg-secondary/50 rounded-lg">
           <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between">
             <div className="flex-1">
-              <h3 className="font-medium text-gray-900">{t('dashboard.monitoredWebsites.targetName')}</h3>
-              <p className="text-sm text-gray-600">{t('dashboard.monitoredWebsites.targetNameDescription')}</p>
+              <h3 className="font-medium text-foreground">{t('dashboard.monitoredWebsites.targetName')}</h3>
+              <p className="text-sm text-muted-foreground">{t('dashboard.monitoredWebsites.targetNameDescription')}</p>
             </div>
             <div className="flex sm:flex-row items-center gap-2">
               <Input
@@ -168,7 +164,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
             </div>
           </div>
           {updateError && (
-            <div className="flex items-center mt-2 text-sm text-red-600">
+            <div className="flex items-center mt-2 text-sm text-destructive">
               <AlertCircle className="w-4 h-4 mr-2" />
               {updateError}
             </div>
@@ -177,9 +173,9 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
         {/* Add New URL */}
         <form
           onSubmit={handleAddUrl}
-          className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg border border-violet-100"
+          className="p-4 bg-secondary/50 rounded-lg border border-border"
         >
-          <h4 className="font-medium text-gray-900 mb-4">{t('dashboard.monitoredWebsites.addWebsite')}</h4>
+          <h4 className="font-medium text-foreground mb-4">{t('dashboard.monitoredWebsites.addWebsite')}</h4>
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div className="flex-1 space-y-2">
               <Label htmlFor="url-address">{t('dashboard.monitoredWebsites.url')}</Label>
@@ -187,10 +183,10 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                 id="url-address"
                 value={newUrl}
                 onChange={handleChangeUrlAddress}
-                className={cn("bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500", urlError ? "border-red-500" : "")}
+                className={cn(urlError ? "border-destructive" : "")}
                 placeholder="https://example.com/deals"
               />
-              {urlError && <div className="text-red-500 text-sm mt-1">{urlError}</div>}
+              {urlError && <div className="text-destructive text-sm mt-1">{urlError}</div>}
             </div>
             <div className="flex-1 space-y-2">
               <Label htmlFor="url-name">{t('dashboard.monitoredWebsites.name')}</Label>
@@ -198,7 +194,6 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
                 id="url-name"
                 value={newName}
                 onChange={handleChangeUrlName}
-                className="bg-white/70 border-violet-200 focus:border-violet-500 focus:ring-violet-500"
                 placeholder={t('dashboard.monitoredWebsites.namePlaceholder')}
               />
             </div>
@@ -207,7 +202,7 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           <Button
             type="button"
             variant="link"
-            className="text-violet-600 hover:text-violet-800 p-0 h-auto font-normal text-sm flex items-center gap-1"
+            className="text-primary hover:text-primary/90 p-0 h-auto font-normal text-sm flex items-center gap-1"
             onClick={() => setIsHelpModalOpen(true)}
           >
             <HelpCircle className="w-4 h-4" />
@@ -215,10 +210,10 @@ export function MonitoredWebsites({ offerMonitor, isVisible }: MonitoredWebsites
           </Button>
 
           {addUrlMutation.isError && (
-            <div className="text-red-500 text-sm mt-2">{getAddUrlErrorMessage(addUrlMutation.error)}</div>
+            <div className="text-destructive text-sm mt-2">{getAddUrlErrorMessage(addUrlMutation.error)}</div>
           )}
-          {isUrlQuotaExceeded && (
-            <div className="flex items-start gap-2 text-amber-700 text-sm mt-2">
+{isUrlQuotaExceeded && (
+            <div className="flex items-start gap-2 text-warning text-sm mt-2">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <span>{t('dashboard.monitoredWebsites.quotaExceededAction')}</span>
             </div>

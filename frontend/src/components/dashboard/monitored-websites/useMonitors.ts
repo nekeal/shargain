@@ -56,6 +56,7 @@ export const useAddUrlMutation = (
         mutationFn: (newUrl: { url: string, name?: string, showLocationMapInNotifications?: boolean }) => addUrlToTarget({ path: { target_id: targetId }, body: { url: newUrl.url, name: newUrl.name, showLocationMapInNotifications: newUrl.showLocationMapInNotifications } }).then(response => response.data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['target'] });
+            queryClient.invalidateQueries({ queryKey: ['quotaStatus'] });
         },
     });
 };
@@ -66,6 +67,7 @@ export const useRemoveUrlMutation = (targetId: number) => {
         mutationFn: (urlId: number) => deleteTargetUrl({ path: { target_id: targetId, url_id: urlId } }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['target'] });
+            queryClient.invalidateQueries({ queryKey: ['quotaStatus'] });
         },
     });
 };

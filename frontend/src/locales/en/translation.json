@@ -38,6 +38,7 @@
     "loading": "Loading...",
     "error": "Error loading dashboard data.",
     "noData": "No monitor data available.",
+    "retry": "Retry",
     "targetSelector": {
       "urlCount": "{{count}} URL",
       "urlCount_plural": "{{count}} URLs",
@@ -71,6 +72,30 @@
       "pending": "Pending",
       "noWebsitesTitle": "No websites added yet",
       "noWebsitesDescription": "Add your first website above to start monitoring offers",
+      "pause": "Pause monitoring",
+      "resume": "Resume monitoring",
+      "delete": "Delete website",
+      "toast": {
+        "nameUpdated": "Monitor name updated",
+        "nameUpdateError": "Failed to update monitor name",
+        "added": "Website added successfully",
+        "addError": "Could not add website"
+      },
+      "addUrlDialog": {
+        "title": "Add URL",
+        "description": "Enter a URL from OLX, Vinted, Otomoto, or Otodom.",
+        "urlLabel": "URL",
+        "nameLabel": "Name (optional)",
+        "cancel": "Cancel",
+        "add": "Add"
+      },
+      "urlCard": {
+        "filters": "Filters",
+        "location": "Location",
+        "filterCount": "{{count}} filter(s)",
+        "locationOn": "On",
+        "locationOff": "Off"
+      },
       "supportedWebsites": {
         "title": "How to get the URL?",
         "description": "Here are the websites currently supported for monitoring. For best results, follow the instructions below to get the correct URL.",
@@ -102,7 +127,15 @@
       "activeChannel": "Active Channel",
       "activeChannelPlaceholder": "Select a channel...",
       "config": "Config",
-      "addChannel": "Add Channel"
+      "addChannel": "Add Channel",
+      "toast": {
+        "enableSuccess": "Notifications updated",
+        "enableError": "Failed to update notifications",
+        "telegramOpened": "Telegram opened in new tab",
+        "telegramError": "Failed to open Telegram",
+        "channelUpdated": "Notification channel updated",
+        "channelError": "Failed to update channel"
+      }
     },
     "sidebar": {
       "status": {
@@ -127,6 +160,26 @@
       "testNotification": {
         "success": "Notification sent successfully!",
         "error": "Failed to send notification."
+      },
+      "header": {
+        "monitor": "Monitor"
+      },
+      "channel": {
+        "title": "Notification Channel",
+        "placeholder": "Select a channel..."
+      },
+      "settings": {
+        "title": "Settings",
+        "monitorActive": "Monitor active",
+        "notificationsEnabled": "Notifications enabled"
+      },
+      "actions": {
+        "title": "Actions",
+        "addUrl": "Add URL",
+        "testNotification": "Test notification"
+      },
+      "quota": {
+        "resetDate": "Quota resets {{date}}"
       }
     }
   },
