@@ -8,7 +8,7 @@ import type { TargetSummaryResponse } from "@/lib/api/types.gen"
 
 interface MobileSidebarDrawerProps {
   isOpen: boolean
-  onClose: () => void
+  onOpenChange: (open: boolean) => void
   offerMonitor: OfferMonitor
   targets?: Array<TargetSummaryResponse>
   selectedTargetId?: number
@@ -17,14 +17,14 @@ interface MobileSidebarDrawerProps {
 
 export function MobileSidebarDrawer({
   isOpen,
-  onClose,
+  onOpenChange,
   offerMonitor,
   targets,
   selectedTargetId,
   onSelectTarget,
 }: MobileSidebarDrawerProps) {
   return (
-    <DialogPrimitive.Root open={isOpen} onOpenChange={onClose}>
+    <DialogPrimitive.Root open={isOpen} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content

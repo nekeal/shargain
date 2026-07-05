@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ChevronLeft, Clock, ExternalLink, Eye, EyeOff, Filter, MapPin, Trash2 } from "lucide-react"
 import { useRemoveUrlMutation, useToggleUrlActiveMutation, useUpdateUrlMutation } from "./monitored-websites/useMonitors"
@@ -11,14 +12,12 @@ import cn from "@/lib/utils"
 interface UrlCardProps {
   url: MonitoredUrl
   targetId: number
-  filterOpen: boolean
-  locationOpen: boolean
-  onToggleFilter: () => void
-  onToggleLocation: () => void
 }
 
-export function UrlCard2({ url, targetId, filterOpen, locationOpen, onToggleFilter, onToggleLocation }: UrlCardProps) {
+export function UrlCard2({ url, targetId }: UrlCardProps) {
   const { t } = useTranslation()
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [locationOpen, setLocationOpen] = useState(false)
 
   const toggleUrlActiveMutation = useToggleUrlActiveMutation(targetId)
   const removeUrlMutation = useRemoveUrlMutation(targetId)
@@ -90,7 +89,9 @@ export function UrlCard2({ url, targetId, filterOpen, locationOpen, onToggleFilt
         {/* Filters */}
         <div className="border-b border-border">
           <button
-            onClick={onToggleFilter}
+            onClick={() => setFilterOpen(!filterOpen)}
+            aria-expanded={filterOpen}
+            aria-controls={`filter-panel-${url.id}`}
             className="w-full px-4 py-2.5 flex items-center justify-between text-sm hover:bg-secondary/30 transition-colors"
           >
             <span className="flex items-center gap-2 text-muted-foreground">
@@ -108,7 +109,7 @@ export function UrlCard2({ url, targetId, filterOpen, locationOpen, onToggleFilt
             />
           </button>
           {filterOpen && (
-            <div className="px-4 py-3 bg-secondary/20 border-t border-border">
+            <div id={`filter-panel-${url.id}`} className="px-4 py-3 bg-secondary/20 border-t border-border">
               <FilterEditor
                 initialData={url.filters ?? null}
                 onSave={(data) => updateUrlMutation.mutate({ filters: data })}
@@ -120,7 +121,9 @@ export function UrlCard2({ url, targetId, filterOpen, locationOpen, onToggleFilt
         {/* Location */}
         <div>
           <button
-            onClick={onToggleLocation}
+            onClick={() => setLocationOpen(!locationOpen)}
+            aria-expanded={locationOpen}
+            aria-controls={`location-panel-${url.id}`}
             className="w-full px-4 py-2.5 flex items-center justify-between text-sm hover:bg-secondary/30 transition-colors"
           >
             <span className="flex items-center gap-2 text-muted-foreground">
@@ -141,7 +144,7 @@ export function UrlCard2({ url, targetId, filterOpen, locationOpen, onToggleFilt
             />
           </button>
           {locationOpen && (
-            <div className="px-4 py-3 bg-secondary/20 border-t border-border">
+            <div id={`location-panel-${url.id}`} className="px-4 py-3 bg-secondary/20 border-t border-border">
               <LocationEditor
                 initialShowLocationMap={url.showLocationMapInNotifications ?? false}
                 initialWaypoints={url.waypoints ?? []}

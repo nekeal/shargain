@@ -136,7 +136,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
                       defaultValue={rule.field}
                       onValueChange={(v) => updateRule(gIdx, rIdx, "field", v)}
                     >
-                      <SelectTrigger className="flex-1 min-w-0 h-7 text-xs px-2 gap-1 [&>svg]:w-3 [&>svg]:h-3 [&>svg]:shrink-0 sm:w-[96px]">
+                      <SelectTrigger className="flex-1 min-w-0 h-9 text-sm px-2 gap-1 [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:shrink-0 sm:w-[96px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -159,7 +159,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
                       defaultValue={rule.operator}
                       onValueChange={(v) => updateRule(gIdx, rIdx, "operator", v)}
                     >
-                      <SelectTrigger className="flex-1 min-w-0 h-7 text-xs px-2 gap-1 [&>svg]:w-3 [&>svg]:h-3 [&>svg]:shrink-0 sm:w-[120px]">
+                      <SelectTrigger className="flex-1 min-w-0 h-9 text-sm px-2 gap-1 [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:shrink-0 sm:w-[120px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -186,7 +186,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
                   <div className="flex items-center gap-1.5 w-full">
                     <Input
                       defaultValue={rule.value}
-                      className="flex-1 min-w-0 h-7 text-xs"
+                      className="flex-1 min-w-0 h-9 text-sm"
                       placeholder="Value"
                       onChange={(e) => updateRule(gIdx, rIdx, "value", e.target.value)}
                     />

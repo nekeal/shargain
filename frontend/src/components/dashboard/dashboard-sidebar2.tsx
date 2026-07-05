@@ -48,6 +48,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
   const { data: notificationConfigs } = useQuery({
     queryKey: ['notificationConfigs'],
     queryFn: () => listNotificationConfigs(),
+    staleTime: 30_000,
   });
 
   const quotaRows = quotaStatus?.data.quotas ?? []
@@ -146,7 +147,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {/* Details */}
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wider">{t('dashboard.sidebar.status.title')}</Label>
+          <Label className="text-xs text-muted-foreground font-semibold">{t('dashboard.sidebar.status.title')}</Label>
           <div className="p-3 bg-secondary/50 rounded-lg space-y-2 text-sm">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">{t('dashboard.sidebar.status.activeWebsites')}</span>
@@ -161,7 +162,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
             </div>
           </div>
 
-          <Label className="text-xs text-muted-foreground uppercase tracking-wider mt-3 block">{t('dashboard.sidebar.channel.title')}</Label>
+          <Label className="text-xs text-muted-foreground font-semibold mt-3 block">{t('dashboard.sidebar.channel.title')}</Label>
           <Select
             value={offerMonitor.notificationConfigId?.toString() || ""}
             onValueChange={(value: string) => {
@@ -169,7 +170,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
               handleChannelChange(configId);
             }}
           >
-            <SelectTrigger className="h-8 text-xs w-full">
+            <SelectTrigger className="min-h-[44px] h-8 text-xs w-full">
               <SelectValue placeholder={t('dashboard.sidebar.channel.placeholder')} />
             </SelectTrigger>
             <SelectContent>
@@ -189,7 +190,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
 
         {/* Quota */}
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wider">{t('dashboard.sidebar.quotas.title')}</Label>
+          <Label className="text-xs text-muted-foreground font-semibold">{t('dashboard.sidebar.quotas.title')}</Label>
           <div className="space-y-2">
             {scrapingUrlQuota && (
               <div>
@@ -227,7 +228,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
 
         {/* Settings */}
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wider">{t('dashboard.sidebar.settings.title')}</Label>
+          <Label className="text-xs text-muted-foreground font-semibold">{t('dashboard.sidebar.settings.title')}</Label>
           <div className="flex items-center justify-between py-1">
             <span className="text-sm text-muted-foreground">{t('dashboard.sidebar.settings.notificationsEnabled')}</span>
             <Switch
@@ -241,7 +242,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
 
         {/* Actions */}
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wider">{t('dashboard.sidebar.actions.title')}</Label>
+          <Label className="text-xs text-muted-foreground font-semibold">{t('dashboard.sidebar.actions.title')}</Label>
           <Button
             variant="outline"
             size="sm"
@@ -250,19 +251,21 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
             disabled={status !== 'idle'}
             aria-busy={status === 'loading'}
           >
-            {status === 'loading' && (
-              <Loader className="w-3.5 h-3.5 mr-2 animate-spin" aria-hidden="true" />
-            )}
-            {status === 'success' && (
-              <CheckCircle className="w-3.5 h-3.5 mr-2 text-success" aria-hidden="true" />
-            )}
-            {status === 'error' && (
-              <XCircle className="w-3.5 h-3.5 mr-2 text-destructive" aria-hidden="true" />
-            )}
-            {status === 'idle' && (
-              <Bell className="w-3.5 h-3.5 mr-2" aria-hidden="true" />
-            )}
-            {message || t('dashboard.sidebar.quickActions.testNotifications')}
+            <div aria-live="polite" aria-atomic="true" className="flex items-center">
+              {status === 'loading' && (
+                <Loader className="w-3.5 h-3.5 mr-2 animate-spin" aria-hidden="true" />
+              )}
+              {status === 'success' && (
+                <CheckCircle className="w-3.5 h-3.5 mr-2 text-success" aria-hidden="true" />
+              )}
+              {status === 'error' && (
+                <XCircle className="w-3.5 h-3.5 mr-2 text-destructive" aria-hidden="true" />
+              )}
+              {status === 'idle' && (
+                <Bell className="w-3.5 h-3.5 mr-2" aria-hidden="true" />
+              )}
+              {message || t('dashboard.sidebar.quickActions.testNotifications')}
+            </div>
           </Button>
         </div>
     </div>

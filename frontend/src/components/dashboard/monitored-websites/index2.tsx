@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { SupportedWebsitesModal } from "./supported-websites-modal"
 import type { OfferMonitor } from "@/types/dashboard"
 import { getQuotaStatus, updateTargetName } from "@/lib/api/sdk.gen"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AddUrlDialog } from "@/components/dashboard/AddUrlDialog"
@@ -21,8 +21,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
   const [isAddUrlDialogOpen, setIsAddUrlDialogOpen] = useState(false)
   const [targetName, setTargetName] = useState(offerMonitor.name)
-  const [filterOpen, setFilterOpen] = useState<Record<number, boolean>>({})
-  const [locationOpen, setLocationOpen] = useState<Record<number, boolean>>({})
+  const [updateError, setUpdateError] = useState<string | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -62,6 +61,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
       toast.success(t('dashboard.monitoredWebsites.toast.nameUpdated'));
     },
     onError: (err: Error) => {
+      setUpdateError(err.message);
       toast.error(t('dashboard.monitoredWebsites.toast.nameUpdateError'));
       console.error("Error updating target name:", err);
     },
@@ -79,26 +79,26 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
 
   const handleTargetNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTargetName(e.target.value)
+    setUpdateError(null)
   }
 
   const handleTargetNameSave = () => {
+    setUpdateError(null)
     updateNameMutation.mutate(targetName)
   }
 
   return (
     <>
-      <Card className="bg-card border border-border animate-fade-in">
+      <Card className="bg-card border border-border">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center text-lg font-medium">
-                <Globe className="w-5 h-5 mr-3 text-primary" aria-hidden="true" />
-                {t('dashboard.monitoredWebsites.title')}
-              </CardTitle>
-              <CardDescription className="text-sm text-muted-foreground">{t('dashboard.monitoredWebsites.description')}</CardDescription>
-            </div>
+          <CardTitle className="flex items-center text-lg font-medium">
+            <Globe className="w-5 h-5 mr-3 text-primary" aria-hidden="true" />
+            {t('dashboard.monitoredWebsites.title')}
+          </CardTitle>
+          <CardDescription className="text-sm text-muted-foreground">{t('dashboard.monitoredWebsites.description')}</CardDescription>
+          <CardAction>
             <Button
-              size="sm"
+              size="default"
               onClick={handleAddUrlDialogOpen}
               disabled={isUrlQuotaExceeded}
               className="transition-colors duration-200 ease-out-quart motion-reduce:transition-none"
@@ -106,7 +106,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
               <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
               {t('dashboard.monitoredWebsites.addWebsite')}
             </Button>
-          </div>
+          </CardAction>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Target Name Update */}
@@ -123,6 +123,8 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                   onChange={handleTargetNameChange}
                   className="w-full"
                   disabled={updateNameMutation.isPending}
+                  aria-invalid={!!updateError}
+                  aria-describedby="target-name-error"
                 />
                 <Button
                   onClick={handleTargetNameSave}
@@ -144,11 +146,16 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                 </Button>
               </div>
             </div>
+            {updateError && (
+              <div id="target-name-error" role="alert" className="text-sm text-destructive mt-2">
+                {updateError}
+              </div>
+            )}
           </div>
 
           {/* Quota Warning */}
           {isUrlQuotaExceeded && (
-            <div className="flex items-center gap-2 text-warning-muted-foreground text-sm" role="status">
+            <div className="flex items-center gap-2 text-warning-foreground text-sm" role="status">
               <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
@@ -157,21 +164,17 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
           )}
 
           {/* URL List */}
-          <div className="space-y-4" role="list" aria-label={t('dashboard.monitoredWebsites.title')}>
+          <div className="space-y-4" role="list" id="target-content" aria-label={t('dashboard.monitoredWebsites.title')}>
             {offerMonitor.urls.map((url) => (
               <UrlCard2
                 key={url.id}
                 url={url}
                 targetId={offerMonitor.id}
-                filterOpen={filterOpen[url.id] ?? false}
-                locationOpen={locationOpen[url.id] ?? false}
-                onToggleFilter={() => setFilterOpen((p) => ({ ...p, [url.id]: !p[url.id] }))}
-                onToggleLocation={() => setLocationOpen((p) => ({ ...p, [url.id]: !p[url.id] }))}
               />
             ))}
 
             {offerMonitor.urls.length === 0 && (
-              <div className="bg-card border border-border rounded-xl p-12 text-center animate-fade-in">
+              <div className="bg-card border border-border rounded-xl p-12 text-center">
                 <Globe className="w-12 h-12 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
                 <p className="text-lg font-medium text-foreground mb-2">{t('dashboard.monitoredWebsites.noWebsitesTitle')}</p>
                 <p className="text-sm text-muted-foreground mb-6">{t('dashboard.monitoredWebsites.noWebsitesDescription')}</p>

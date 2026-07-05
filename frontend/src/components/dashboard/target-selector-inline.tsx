@@ -25,7 +25,7 @@ export function TargetSelectorInline({ targets, selectedTargetId, onSelect }: Ta
             onValueChange={(val) => onSelect(parseInt(val, 10))}
             disabled={targets.length === 0}
         >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full" aria-controls="target-content">
                 <Globe className="size-4 text-primary shrink-0" aria-hidden="true" />
                 <SelectValue placeholder={t('dashboard.targetSelector.selectPlaceholder')} />
             </SelectTrigger>
