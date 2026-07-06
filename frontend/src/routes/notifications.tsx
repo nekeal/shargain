@@ -1,4 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { Bell } from 'lucide-react'
 import {NotificationListPage} from "@/components/notifications";
 
 export const Route = createFileRoute('/notifications')({
@@ -14,17 +15,18 @@ export const Route = createFileRoute('/notifications')({
 
 function NotificationsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-50">
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-4">
+    <div className="min-h-screen bg-secondary">
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="mb-8">
+          <h1 className="flex items-center gap-3 text-2xl font-semibold text-foreground">
+            <Bell className="w-6 h-6 text-primary" aria-hidden="true" />
             Notification Configurations
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm text-muted-foreground mt-1">
             Manage your notification configurations for receiving alerts when new offers are found.
           </p>
         </div>
-        <div className="rounded-2xl shadow-xl p-6 backdrop-blur-sm bg-white/80">
+        <div className="bg-card border border-border rounded-xl">
           <NotificationListPage />
         </div>
       </main>

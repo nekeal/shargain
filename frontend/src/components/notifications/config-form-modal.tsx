@@ -120,7 +120,7 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: Co
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             {errors.general && (
-              <div className="text-red-500 text-sm">{errors.general}</div>
+              <div className="text-destructive text-sm">{errors.general}</div>
             )}
 
             <div className="space-y-2">
@@ -149,14 +149,14 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: Co
                   }
                 }}
                 placeholder="Enter Telegram chat ID"
-                className={errors.chatId ? 'border-red-500' : ''}
+                className={errors.chatId ? 'border-destructive' : ''}
                 disabled={!!configToEdit} // Chat ID can't be edited after creation
               />
               {errors.chatId && (
-                <p className="text-red-500 text-xs">{errors.chatId}</p>
+                <p className="text-destructive text-xs">{errors.chatId}</p>
               )}
               {!configToEdit && (
-                <p className="text-gray-500 text-xs">
+                <p className="text-muted-foreground text-xs">
                   The Telegram chat ID where notifications will be sent
                 </p>
               )}
@@ -172,9 +172,9 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: Co
                 id="channel"
                 value="telegram"
                 disabled
-                className="bg-gray-100"
+                className="bg-muted"
               />
-              <p className="text-gray-500 text-xs">
+              <p className="text-muted-foreground text-xs">
                 Channel cannot be changed after creation
               </p>
             </div>
@@ -184,7 +184,7 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: Co
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />

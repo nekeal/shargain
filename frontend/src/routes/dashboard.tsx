@@ -27,7 +27,7 @@ export const Route = createFileRoute('/dashboard')({
 
 function LoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-background" role="status" aria-live="polite" aria-busy="true">
+        <div className="min-h-screen bg-secondary" role="status" aria-live="polite" aria-busy="true">
             <div className="container mx-auto px-4 py-8 max-w-6xl animate-pulse motion-reduce:animate-none">
                 <div className="mb-8">
                     <div className="h-7 w-64 bg-muted rounded-md mb-2" />
@@ -69,7 +69,7 @@ function LoadingSkeleton() {
 
 function ErrorState({ message }: { message: string }) {
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center" role="alert" aria-live="assertive">
+        <div className="min-h-screen bg-secondary flex items-center justify-center" role="alert" aria-live="assertive">
             <div className="bg-card rounded-xl p-8 max-w-md text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
                 <h2 className="text-lg font-semibold text-foreground mb-2">{message}</h2>
@@ -81,7 +81,7 @@ function ErrorState({ message }: { message: string }) {
 function EmptyState({ onAddUrl }: { onAddUrl?: () => void }) {
     const { t } = useTranslation();
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-live="polite">
+        <div className="min-h-screen bg-secondary flex items-center justify-center" role="status" aria-live="polite">
             <div className="bg-card rounded-xl p-8 max-w-md text-center">
                 <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-lg font-semibold text-foreground mb-2">{t('dashboard.noData')}</p>
@@ -102,7 +102,7 @@ function DashboardLayout({ offerMonitor, sidebarTop, onAddUrl }: { offerMonitor:
     const { user } = useAuth();
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-secondary">
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 <div className="mb-8">
                     <h1 className="text-2xl font-semibold text-foreground">{t('dashboard.greeting', { name: user?.username || '' })}</h1>
