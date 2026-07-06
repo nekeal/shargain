@@ -24,10 +24,16 @@ class NotificationMessageContext:
 
 
 class NewOfferNotificationService:
-    def __init__(self, message_contexts: list[NotificationMessageContext], scrapping_target: ScrappingTarget):
+    def __init__(
+        self,
+        message_contexts: list[NotificationMessageContext],
+        scrapping_target: ScrappingTarget,
+        notification_title: str,
+    ):
         assert scrapping_target.notification_config_id, "Scrapping target has no notification_config"  # noqa: S101
         self.message_contexts = message_contexts
         self._scrapping_target = scrapping_target
+        self.notification_title = notification_title
 
     def run(self):
         message = self.get_message_header()
@@ -76,4 +82,4 @@ class NewOfferNotificationService:
         return base_msg + "\n\n"
 
     def get_message_header(self):
-        return f"{self._scrapping_target.name.upper()}\n\n"
+        return f"{self.notification_title.upper()}\n\n"
