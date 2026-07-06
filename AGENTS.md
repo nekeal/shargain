@@ -16,9 +16,9 @@
 - `just quality-check`: run Ruff lint/format checks and mypy.
 - `just coverage`: run backend coverage report.
 - `docker compose up`: run local stack in containers.
-- `npm --prefix frontend run dev`: start frontend on port `3000`.
-- `npm --prefix frontend run test`: run frontend Vitest suite.
-- `npm --prefix frontend run lint`: run TypeScript + ESLint checks.
+- `pnpm -C frontend dev`: start frontend on port `3000`.
+- `pnpm -C frontend test`: run frontend Vitest suite.
+- `pnpm -C frontend lint`: run TypeScript + ESLint checks.
 
 ## Coding Style & Naming Conventions
 - Python: 4-space indentation, max line length 120, `snake_case` for modules/functions.

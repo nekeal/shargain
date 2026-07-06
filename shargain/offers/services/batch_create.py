@@ -189,4 +189,7 @@ class OfferBatchCreateService:
                 )
 
             # Call notification service per group
-            self.notification_service_class(message_contexts, scrapping_target).run()
+            notification_title = scraping_url.name if scraping_url else scrapping_target.name
+            self.notification_service_class(
+                message_contexts, scrapping_target, notification_title=notification_title
+            ).run()
