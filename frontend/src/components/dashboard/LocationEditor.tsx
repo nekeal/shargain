@@ -80,7 +80,7 @@ export function LocationEditor({
             <Label className="text-sm font-medium">Include location</Label>
             <p className="text-xs text-muted-foreground">Adds map link and distance to alerts</p>
           </div>
-          <Switch checked={enabled} onCheckedChange={setEnabled} />
+          <Switch checked={enabled} onCheckedChange={setEnabled} aria-label="Include location" />
         </div>
 
         {enabled && (
@@ -93,7 +93,7 @@ export function LocationEditor({
                 }
                 className="flex items-center gap-1 text-xs text-primary/60 hover:text-primary transition-colors"
               >
-                <Plus className="w-3 h-3" /> Add
+                <Plus className="w-3 h-3" aria-hidden="true" /> Add
               </button>
             </div>
 
@@ -109,7 +109,7 @@ export function LocationEditor({
                       className="p-0.5 rounded text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
                       aria-label="Remove waypoint"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3 h-3" aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -158,10 +158,10 @@ export function LocationEditor({
                   />
                 </div>
                   {fieldErrors[`lat-${wp.id}`] && (
-                    <span className="text-xs text-destructive">{fieldErrors[`lat-${wp.id}`]}</span>
+                    <span className="text-xs text-destructive" role="alert">{fieldErrors[`lat-${wp.id}`]}</span>
                   )}
                   {fieldErrors[`lon-${wp.id}`] && (
-                    <span className="text-xs text-destructive">{fieldErrors[`lon-${wp.id}`]}</span>
+                    <span className="text-xs text-destructive" role="alert">{fieldErrors[`lon-${wp.id}`]}</span>
                   )}
               </div>
             ))}
@@ -197,6 +197,7 @@ export function LocationEditor({
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
+              aria-hidden="true"
             >
               <polyline points="20 6 9 17 4 12" />
             </svg>

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ChevronLeft, Clock, ExternalLink, Eye, EyeOff, Filter, MapPin, Trash2 } from "lucide-react"
 import { useRemoveUrlMutation, useToggleUrlActiveMutation, useUpdateUrlMutation } from "./monitored-websites/useMonitors"
@@ -39,12 +39,12 @@ const UrlCardHeader = React.memo(function UrlCardHeader({ url, targetId }: UrlCa
         </a>
         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {url.lastCheckedAt ? new Date(url.lastCheckedAt).toLocaleString() : t("dashboard.monitoredWebsites.pending")}
+            <Clock className="w-3 h-3" aria-hidden="true" />
+            {url.lastCheckedAt ? new Intl.DateTimeFormat().format(new Date(url.lastCheckedAt)) : t("dashboard.monitoredWebsites.pending")}
           </span>
           {url.showLocationMapInNotifications && (
             <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
+              <MapPin className="w-3 h-3" aria-hidden="true" />
               {t("dashboard.monitoredWebsites.urlCard.locationOn")}
             </span>
           )}
@@ -88,10 +88,13 @@ const UrlCardFilters = React.memo(function UrlCardFilters({ url, targetId, filte
   const { t } = useTranslation()
   const updateUrlMutation = useUpdateUrlMutation(targetId, url.id)
 
-  const activeRulesCount = url.filters?.ruleGroups.reduce(
-    (acc, g) => acc + g.rules.filter((r) => r.value.trim()).length,
-    0
-  ) ?? 0
+  const activeRulesCount = useMemo(() =>
+    url.filters?.ruleGroups.reduce(
+      (acc, g) => acc + g.rules.filter((r) => r.value.trim()).length,
+      0
+    ) ?? 0,
+    [url.filters]
+  )
 
   return (
     <div className="border-b border-border">
@@ -116,7 +119,7 @@ const UrlCardFilters = React.memo(function UrlCardFilters({ url, targetId, filte
         />
       </button>
       {filterOpen && (
-        <div id={`filter-panel-${url.id}`} className="px-4 py-3 bg-secondary/20 border-t border-border">
+        <div id={`filter-panel-${url.id}`} role="region" aria-label={t("dashboard.monitoredWebsites.urlCard.filters")} className="px-4 py-3 bg-secondary/20 border-t border-border">
           <FilterEditor
             initialData={url.filters ?? null}
             onSave={(data) => updateUrlMutation.mutate({ filters: data })}
@@ -164,7 +167,7 @@ const UrlCardLocation = React.memo(function UrlCardLocation({ url, targetId, loc
         />
       </button>
       {locationOpen && (
-        <div id={`location-panel-${url.id}`} className="px-4 py-3 bg-secondary/20 border-t border-border">
+        <div id={`location-panel-${url.id}`} role="region" aria-label={t("dashboard.monitoredWebsites.urlCard.location")} className="px-4 py-3 bg-secondary/20 border-t border-border">
           <LocationEditor
             initialShowLocationMap={url.showLocationMapInNotifications ?? false}
             initialWaypoints={url.waypoints ?? []}

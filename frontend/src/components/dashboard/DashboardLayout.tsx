@@ -21,7 +21,7 @@ export function DashboardLayout({ offerMonitor, targets, selectedTargetId, onSel
     return (
         <div className="flex min-h-screen bg-background">
             {/* Desktop Sidebar - hidden on mobile */}
-            <div className="hidden lg:w-[260px] lg:border-r lg:border-border lg:bg-card lg:shrink-0 lg:flex lg:flex-col">
+            <div className="hidden lg:w-[260px] lg:border-r lg:border-border lg:bg-card lg:shrink-0 lg:flex lg:flex-col" aria-hidden="true">
                 <DashboardSidebar
                     offerMonitor={offerMonitor}
                     targets={targets}

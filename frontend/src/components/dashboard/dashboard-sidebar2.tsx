@@ -152,7 +152,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">{t('dashboard.sidebar.status.activeWebsites')}</span>
               <Badge variant="success" className="border-0">
-                <Wifi className="w-3 h-3 mr-1" />
+                <Wifi className="w-3 h-3 mr-1" aria-hidden="true" />
                 {offerMonitor.urls.filter((url) => url.isActive).length}
               </Badge>
             </div>
@@ -162,7 +162,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
             </div>
           </div>
 
-          <Label className="text-xs text-muted-foreground font-semibold mt-3 block">{t('dashboard.sidebar.channel.title')}</Label>
+          <Label htmlFor="sidebar-channel-select" className="text-xs text-muted-foreground font-semibold mt-3 block">{t('dashboard.sidebar.channel.title')}</Label>
           <Select
             value={offerMonitor.notificationConfigId?.toString() || ""}
             onValueChange={(value: string) => {
@@ -170,7 +170,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
               handleChannelChange(configId);
             }}
           >
-            <SelectTrigger className="min-h-[44px] h-8 text-xs w-full">
+            <SelectTrigger id="sidebar-channel-select" className="min-h-[44px] h-8 text-xs w-full">
               <SelectValue placeholder={t('dashboard.sidebar.channel.placeholder')} />
             </SelectTrigger>
             <SelectContent>
@@ -218,7 +218,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
                 />
                 {currentTargetOffersQuota.periodEnd && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t('dashboard.sidebar.quota.resetDate', { date: new Date(currentTargetOffersQuota.periodEnd).toLocaleDateString() })}
+                    {t('dashboard.sidebar.quota.resetDate', { date: new Intl.DateTimeFormat().format(new Date(currentTargetOffersQuota.periodEnd)) })}
                   </p>
                 )}
               </div>
@@ -264,7 +264,7 @@ export default function DashboardSidebar({ offerMonitor, targets, selectedTarget
               {status === 'idle' && (
                 <Bell className="w-3.5 h-3.5 mr-2" aria-hidden="true" />
               )}
-              {message || t('dashboard.sidebar.quickActions.testNotifications')}
+              {message || `${t('dashboard.sidebar.quickActions.testNotifications')}…`}
             </div>
           </Button>
         </div>

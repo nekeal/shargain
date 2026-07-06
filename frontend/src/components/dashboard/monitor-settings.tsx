@@ -72,9 +72,7 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['target'] });
     },
-    onError: (err: any) => {
-      console.error("Error updating notification configuration:", err);
-    },
+    onError: () => {},
   });
 
 
@@ -88,7 +86,7 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
         <CardDescription>{t('dashboard.monitorSettings.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
           <div>
             <h3 className="font-medium text-foreground">{t('dashboard.monitorSettings.enableNotifications')}</h3>
             <p className="text-sm text-muted-foreground">{t('dashboard.monitorSettings.enableNotificationsDescription')}</p>
@@ -102,7 +100,7 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
         {offerMonitor.enableNotifications && (
           <>
             {(notificationConfigs?.data.configs ?? []).length === 0 ? (
-              <div className="p-6 bg-secondary/50 rounded-lg text-center border border-border">
+              <div className="p-6 bg-secondary/30 rounded-lg text-center border border-border">
                 <Zap className="w-12 h-12 mx-auto text-primary mb-4" />
                 <h3 className="text-xl font-bold text-foreground mb-2">{t('dashboard.monitorSettings.connectChannel.title')}</h3>
                 <p className="text-md text-muted-foreground mb-6">{t('dashboard.monitorSettings.connectChannel.description')}</p>

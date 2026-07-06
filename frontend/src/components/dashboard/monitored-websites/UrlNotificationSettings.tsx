@@ -42,10 +42,10 @@ function WaypointRow({ waypoint, index, onUpdate, onRemove, onPaste }: WaypointR
   const { t } = useTranslation();
 
   return (
-    <div className="p-3 bg-white/50 border border-gray-200 rounded-lg">
+    <div className="p-3 bg-background/50 border border-border rounded-lg">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 w-8 shrink-0">
+          <span className="text-xs text-muted-foreground w-8 shrink-0">
             {t("filters.waypointName")}
           </span>
           <Input
@@ -53,10 +53,11 @@ function WaypointRow({ waypoint, index, onUpdate, onRemove, onPaste }: WaypointR
             placeholder={t("filters.waypointNamePlaceholder")}
             onChange={(e) => onUpdate(index, "name", e.target.value)}
             className="h-8 text-xs px-2 flex-1"
+            aria-label={t("filters.waypointName")}
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 w-8 shrink-0">
+          <span className="text-xs text-muted-foreground w-8 shrink-0">
             {t("filters.waypointLat")}
           </span>
           <Input
@@ -66,6 +67,7 @@ function WaypointRow({ waypoint, index, onUpdate, onRemove, onPaste }: WaypointR
             placeholder={t("filters.waypointLatPlaceholder")}
             onChange={(e) => onUpdate(index, "lat", parseFloat(e.target.value) || 0)}
             className="h-8 text-xs px-2 flex-1"
+            aria-label={t("filters.waypointLat")}
           />
           <Button
             type="button"
@@ -79,7 +81,7 @@ function WaypointRow({ waypoint, index, onUpdate, onRemove, onPaste }: WaypointR
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 w-8 shrink-0">
+          <span className="text-xs text-muted-foreground w-8 shrink-0">
             {t("filters.waypointLon")}
           </span>
           <Input
@@ -89,6 +91,7 @@ function WaypointRow({ waypoint, index, onUpdate, onRemove, onPaste }: WaypointR
             placeholder={t("filters.waypointLonPlaceholder")}
             onChange={(e) => onUpdate(index, "lon", parseFloat(e.target.value) || 0)}
             className="h-8 text-xs px-2 flex-1"
+            aria-label={t("filters.waypointLon")}
           />
           <Button
             type="button"
@@ -163,7 +166,7 @@ function PasteDialog({ open, onClose, onParsed }: PasteDialogProps) {
           }}
           placeholder={t("filters.googleMapsUrlPlaceholder")}
         />
-        {error && <p className="text-xs text-red-500">{error}</p>}
+        {error && <p className="text-xs text-destructive">{error}</p>}
         <DialogFooter>
           <Button variant="outline" onClick={close}>
             {t("filters.cancel")}
@@ -269,10 +272,10 @@ export function UrlNotificationSettings({
           }
           className={cn(
             "w-full px-3 py-2 flex items-center justify-between",
-            "text-sm text-gray-600 hover:text-gray-900",
-            "bg-gray-50/80 hover:bg-gray-100/80 rounded-md",
+            "text-sm text-muted-foreground hover:text-foreground",
+            "bg-muted/80 hover:bg-muted rounded-md",
             "transition-colors duration-150",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
           )}
         >
           <span className="flex items-center gap-2">
@@ -283,7 +286,7 @@ export function UrlNotificationSettings({
           </span>
           <ChevronDown
             className={cn(
-              "w-4 h-4 text-gray-400 transition-transform duration-200",
+              "w-4 h-4 text-muted-foreground transition-transform duration-200",
               isOpen && "rotate-180",
             )}
           />
@@ -291,7 +294,7 @@ export function UrlNotificationSettings({
       </CollapsibleTrigger>
 
       <CollapsibleContent className="mt-2 space-y-3">
-        <div className="flex items-center justify-between p-3 bg-white/50 border border-gray-200 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-background/50 border border-border rounded-lg">
           <div className="flex flex-col gap-0.5">
             <Label
               htmlFor="show-location-map-settings"
@@ -299,7 +302,7 @@ export function UrlNotificationSettings({
             >
               {t("filters.includeLocationMap")}
             </Label>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               {t("filters.includeLocationMapDescription")}
             </span>
           </div>
@@ -325,7 +328,7 @@ export function UrlNotificationSettings({
             <button
               type="button"
               onClick={addWaypoint}
-              className="w-full py-1.5 flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-violet-600 border border-dashed border-gray-300 hover:border-violet-400 rounded-md transition-colors"
+              className="w-full py-1.5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border hover:border-primary rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
             >
               <Plus className="w-3 h-3" />
               {t("filters.addWaypoint")}

@@ -162,21 +162,21 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
         <div className={cn('flex items-center border-b border-border h-14', leftCollapsed ? 'justify-center' : 'justify-between px-4')}>
           {!leftCollapsed && (
             <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-primary" />
+              <Target className="w-5 h-5 text-primary" aria-hidden="true" />
               <span className="font-semibold text-sm text-foreground">Shargain</span>
             </div>
           )}
           <Button variant="ghost" size="icon" onClick={() => setLeftCollapsed(!leftCollapsed)} className="h-8 w-8" aria-label="Toggle sidebar">
-            <ChevronLeft className={cn('w-4 h-4 transition-transform', leftCollapsed && 'rotate-180')} />
+            <ChevronLeft className={cn('w-4 h-4 transition-transform', leftCollapsed && 'rotate-180')} aria-hidden="true" />
           </Button>
         </div>
 
         {!leftCollapsed ? (
           <div className="flex-1 overflow-y-auto p-4 space-y-5">
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Target</Label>
+              <Label className="text-xs text-muted-foreground uppercase tracking-wider" htmlFor="varianta-target-select">Target</Label>
               <Select value={String(selectedTargetId)} onValueChange={(v) => setSelectedTargetId(Number(v))}>
-                <SelectTrigger><SelectValue placeholder="Select target" /></SelectTrigger>
+                <SelectTrigger id="varianta-target-select"><SelectValue placeholder="Select target" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">Home Monitor</SelectItem>
                   <SelectItem value="2">Work Monitor</SelectItem>
@@ -205,14 +205,14 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
                 </div>
               </div>
               {mockQuota.used / mockQuota.limit >= 0.8 && (
-                <p className="text-xs text-amber-700 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Resets {mockQuota.periodEnd}</p>
+                <p className="text-xs text-amber-700 flex items-center gap-1"><AlertCircle className="w-3 h-3" aria-hidden="true" /> Resets {mockQuota.periodEnd}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Notification Channel</Label>
+              <Label className="text-xs text-muted-foreground uppercase tracking-wider" htmlFor="varianta-channel-select">Notification Channel</Label>
               <Select value={currentChannelId} onValueChange={(v) => setTargetChannels(prev => ({ ...prev, [selectedTargetId]: v }))}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger id="varianta-channel-select" className="h-9 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -236,7 +236,7 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
                 </SelectContent>
               </Select>
               <Button variant="outline" size="sm" className="w-full text-xs justify-start">
-                <Bell className="w-3.5 h-3.5 mr-2" /> Test notification
+                <Bell className="w-3.5 h-3.5 mr-2" aria-hidden="true" /> Test notification
               </Button>
             </div>
 
@@ -244,18 +244,18 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
               <Label className="text-xs text-muted-foreground uppercase tracking-wider">Settings</Label>
               <div className="flex items-center justify-between py-1">
                 <span className="text-sm text-muted-foreground">Monitor active</span>
-                <Switch defaultChecked />
+                <Switch defaultChecked aria-label="Monitor active" />
               </div>
             </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center gap-5 py-5">
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" title="Target"><Target className="w-4 h-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground relative" title="Quota">
-              <Bell className="w-4 h-4" />
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" title="Target" aria-label="Target"><Target className="w-4 h-4" aria-hidden="true" /></Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground relative" title="Quota" aria-label="Quota">
+              <Bell className="w-4 h-4" aria-hidden="true" />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-400 rounded-full" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" title="Channel"><Bell className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" title="Channel" aria-label="Channel"><Bell className="w-4 h-4" aria-hidden="true" /></Button>
           </div>
         )}
       </div>
@@ -280,7 +280,7 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
             </div>
           </div>
           <Button size="sm" className="h-8 px-3 text-xs" onClick={() => setShowAddForm(true)}>
-            <Plus className="w-3.5 h-3.5 mr-1" /> Add URL
+            <Plus className="w-3.5 h-3.5 mr-1" aria-hidden="true" /> Add URL
           </Button>
         </div>
 
@@ -289,12 +289,12 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
           {currentTarget.urls.length === 0 && showWelcome && (
             <div className="flex flex-col items-center justify-center h-full text-center max-w-sm mx-auto">
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mb-4">
-                <Globe className="w-8 h-8 text-muted-foreground" />
+                <Globe className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
               </div>
               <h2 className="text-lg font-semibold text-foreground mb-1">Start monitoring</h2>
               <p className="text-sm text-muted-foreground mb-4">Add your first URL to start tracking offers from OLX, Vinted, Otomoto, and Otodom.</p>
               <Button onClick={() => { setShowWelcome(false); setShowAddForm(true) }}>
-                <Plus className="w-4 h-4 mr-1" /> Add your first URL
+                <Plus className="w-4 h-4 mr-1" aria-hidden="true" /> Add your first URL
               </Button>
             </div>
           )}
@@ -305,7 +305,7 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-foreground">Add URL to monitor</h3>
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAddForm(false)}>
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </Button>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -318,7 +318,7 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
                   <Input placeholder="My monitor" />
                 </div>
               </div>
-              <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Add URL</Button>
+              <Button size="sm"><Plus className="w-4 h-4 mr-1" aria-hidden="true" /> Add URL</Button>
             </div>
           )}
 
@@ -350,7 +350,7 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
                   <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={closePanel} aria-label="Close panel">
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </Button>
                   <p className="text-sm font-medium text-foreground truncate">{panelUrl.name}</p>
                   <span className="hidden sm:inline text-xs text-muted-foreground">
@@ -358,28 +358,32 @@ function VariantA({ target }: { target: typeof mockTargets[0] }) {
                   </span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setIsPinned(!isPinned)} className="gap-1 text-xs shrink-0">
-                  {isPinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />}
+                  {isPinned ? <PinOff className="w-3 h-3" aria-hidden="true" /> : <Pin className="w-3 h-3" aria-hidden="true" />}
                   {isPinned ? 'Unpin' : 'Pin'}
                 </Button>
               </div>
               <div className="flex gap-1 pb-2">
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'filters'}
                   onClick={() => setActiveTab('filters')}
                   className={cn(
                     'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
                     activeTab === 'filters' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   )}
                 >
-                  <Filter className="w-3.5 h-3.5 inline mr-1.5" />Filters
+                  <Filter className="w-3.5 h-3.5 inline mr-1.5" aria-hidden="true" />Filters
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={activeTab === 'location'}
                   onClick={() => setActiveTab('location')}
                   className={cn(
                     'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
                     activeTab === 'location' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   )}
                 >
-                  <MapPin className="w-3.5 h-3.5 inline mr-1.5" />Location
+                  <MapPin className="w-3.5 h-3.5 inline mr-1.5" aria-hidden="true" />Location
                 </button>
               </div>
             </div>
@@ -411,10 +415,10 @@ function UrlRowA({ url, isActive, onSelect, onOpenLocation, onDelete }: {
   url: UrlRecord; isActive: boolean; onSelect: () => void; onOpenLocation: () => void; onDelete: () => void
 }) {
   return (
-    <div
+    <button type="button"
       onClick={onSelect}
       className={cn(
-        'p-4 bg-card border rounded-xl transition-all cursor-pointer',
+        'p-4 bg-card border rounded-xl transition-all text-left w-full',
         isActive ? 'border-primary shadow-md' : 'border-border hover:border-primary/40'
       )}
     >
@@ -428,10 +432,10 @@ function UrlRowA({ url, isActive, onSelect, onOpenLocation, onDelete }: {
             </Badge>
           </div>
           <a href={url.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary truncate block" onClick={e => e.stopPropagation()}>
-            <ExternalLink className="w-3 h-3 inline mr-1" />{url.url}
+            <ExternalLink className="w-3 h-3 inline mr-1" aria-hidden="true" />{url.url}
           </a>
           <div className="flex items-center gap-3 mt-1">
-            <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" />{url.lastChecked}</span>
+            <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden="true" />{url.lastChecked}</span>
             {url.offersToday > 0 && <span className="text-xs text-green-600 font-medium">{url.offersToday} new</span>}
             {url.filterCount > 0 && <span className="text-xs text-primary/70">{url.filterCount} filter{url.filterCount > 1 ? 's' : ''}</span>}
           </div>
@@ -439,23 +443,23 @@ function UrlRowA({ url, isActive, onSelect, onOpenLocation, onDelete }: {
 
         <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
           <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={url.isActive ? 'Pause' : 'Resume'}>
-            {url.isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            {url.isActive ? <Pause className="w-3.5 h-3.5" aria-hidden="true" /> : <Play className="w-3.5 h-3.5" aria-hidden="true" />}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="More">
-                <MoreHorizontal className="w-3.5 h-3.5" />
+                <MoreHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={onSelect}><Filter className="w-3.5 h-3.5 mr-2" /> Filters</DropdownMenuItem>
-              <DropdownMenuItem onSelect={onOpenLocation}><MapPin className="w-3.5 h-3.5 mr-2" /> Location</DropdownMenuItem>
-              <DropdownMenuItem onSelect={onDelete} className="text-destructive"><Trash2 className="w-3.5 h-3.5 mr-2" /> Delete</DropdownMenuItem>
+              <DropdownMenuItem onSelect={onSelect}><Filter className="w-3.5 h-3.5 mr-2" aria-hidden="true" /> Filters</DropdownMenuItem>
+              <DropdownMenuItem onSelect={onOpenLocation}><MapPin className="w-3.5 h-3.5 mr-2" aria-hidden="true" /> Location</DropdownMenuItem>
+              <DropdownMenuItem onSelect={onDelete} className="text-destructive"><Trash2 className="w-3.5 h-3.5 mr-2" aria-hidden="true" /> Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -473,7 +477,7 @@ function VariantB({ target }: { target: typeof mockTargets[0] }) {
       <div className="w-[260px] border-r border-border bg-card shrink-0 flex flex-col">
         <div className="p-4 border-b border-border">
           <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-            <Target className="w-4 h-4 text-primary" /> {target.name}
+            <Target className="w-4 h-4 text-primary" aria-hidden="true" /> {target.name}
           </h2>
         </div>
 
@@ -483,16 +487,16 @@ function VariantB({ target }: { target: typeof mockTargets[0] }) {
             <div className="p-3 bg-secondary/50 rounded-lg space-y-2 text-sm">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Status</span>
-                <Badge className="bg-green-100 text-green-800 border-0 text-xs"><Wifi className="w-3 h-3 mr-1" />Active</Badge>
+                <Badge className="bg-green-100 text-green-800 border-0 text-xs"><Wifi className="w-3 h-3 mr-1" aria-hidden="true" />Active</Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">URLs</span>
                 <span className="font-medium">{target.urls.length}</span>
               </div>
             </div>
-            <Label className="text-xs text-muted-foreground mt-3 block">Notification Channel</Label>
+            <Label className="text-xs text-muted-foreground mt-3 block" htmlFor="variantb-channel-select">Notification Channel</Label>
             <Select value={channelId} onValueChange={setChannelId}>
-              <SelectTrigger className="h-8 text-xs w-full">
+              <SelectTrigger id="variantb-channel-select" className="h-8 text-xs w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -547,10 +551,10 @@ function VariantB({ target }: { target: typeof mockTargets[0] }) {
             <Label className="text-xs text-muted-foreground uppercase tracking-wider">Actions</Label>
             <div className="space-y-2">
               <Button variant="outline" size="sm" className="w-full justify-start text-xs" onClick={() => setShowAddUrl(true)}>
-                <Plus className="w-3.5 h-3.5 mr-2" /> Add URL
+                <Plus className="w-3.5 h-3.5 mr-2" aria-hidden="true" /> Add URL
               </Button>
               <Button variant="outline" size="sm" className="w-full justify-start text-xs">
-                <Bell className="w-3.5 h-3.5 mr-2" /> Test notification
+                <Bell className="w-3.5 h-3.5 mr-2" aria-hidden="true" /> Test notification
               </Button>
             </div>
           </div>
@@ -568,12 +572,12 @@ function VariantB({ target }: { target: typeof mockTargets[0] }) {
             <h1 className="text-xl font-semibold text-foreground">Monitored URLs</h1>
             <p className="text-sm text-muted-foreground">{target.urls.length} URL{target.urls.length !== 1 ? 's' : ''}</p>
           </div>
-          <Button size="sm" onClick={() => setShowAddUrl(true)}><Plus className="w-4 h-4 mr-1" /> Add URL</Button>
+          <Button size="sm" onClick={() => setShowAddUrl(true)}><Plus className="w-4 h-4 mr-1" aria-hidden="true" /> Add URL</Button>
         </div>
 
         {target.urls.length === 0 && (
           <div className="text-center py-16 text-muted-foreground">
-            <Globe className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <Globe className="w-12 h-12 mx-auto mb-3 opacity-40" aria-hidden="true" />
             <p className="font-medium">No URLs added yet</p>
             <p className="text-sm">Click "Add URL" to start monitoring.</p>
           </div>
@@ -611,7 +615,7 @@ function VariantB({ target }: { target: typeof mockTargets[0] }) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddUrl(false)}>Cancel</Button>
-            <Button onClick={() => setShowAddUrl(false)}><Plus className="w-4 h-4 mr-1" /> Add</Button>
+            <Button onClick={() => setShowAddUrl(false)}><Plus className="w-4 h-4 mr-1" aria-hidden="true" /> Add</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -633,20 +637,20 @@ function UrlCardB({ url, filterOpen, locationOpen, onToggleFilter, onToggleLocat
             </Badge>
           </div>
           <a href={url.url} target="_blank" className="text-xs text-muted-foreground hover:text-primary truncate block">
-            <ExternalLink className="w-3 h-3 inline mr-1" />{url.url}
+            <ExternalLink className="w-3 h-3 inline mr-1" aria-hidden="true" />{url.url}
           </a>
           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-            <span><Clock className="w-3 h-3 inline mr-0.5" />{url.lastChecked}</span>
+            <span><Clock className="w-3 h-3 inline mr-0.5" aria-hidden="true" />{url.lastChecked}</span>
             {url.offersToday > 0 && <span className="text-green-600 font-medium">{url.offersToday} new</span>}
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="text-xs h-8" aria-label="Toggle active">
-            {url.isActive ? <EyeOff className="w-3.5 h-3.5 mr-1" /> : <Eye className="w-3.5 h-3.5 mr-1" />}
+            {url.isActive ? <EyeOff className="w-3.5 h-3.5 mr-1" aria-hidden="true" /> : <Eye className="w-3.5 h-3.5 mr-1" aria-hidden="true" />}
             {url.isActive ? 'Pause' : 'Resume'}
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label="Delete">
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -656,10 +660,10 @@ function UrlCardB({ url, filterOpen, locationOpen, onToggleFilter, onToggleLocat
           <button onClick={onToggleFilter}
             className="w-full px-4 py-2.5 flex items-center justify-between text-sm hover:bg-secondary/30 transition-colors">
             <span className="flex items-center gap-2 text-muted-foreground">
-              <Filter className="w-3.5 h-3.5" /> Filters
+              <Filter className="w-3.5 h-3.5" aria-hidden="true" /> Filters
               {url.filterCount > 0 && <Badge className="bg-secondary text-secondary-foreground border-0 text-xs">{url.filterCount}</Badge>}
             </span>
-            <ChevronLeft className={cn('w-3.5 h-3.5 text-muted-foreground transition-transform', filterOpen && '-rotate-90')} />
+            <ChevronLeft className={cn('w-3.5 h-3.5 text-muted-foreground transition-transform', filterOpen && '-rotate-90')} aria-hidden="true" />
           </button>
           {filterOpen && (
             <div className="px-4 py-3 bg-secondary/20 border-t border-border">
@@ -672,12 +676,12 @@ function UrlCardB({ url, filterOpen, locationOpen, onToggleFilter, onToggleLocat
           <button onClick={onToggleLocation}
             className="w-full px-4 py-2.5 flex items-center justify-between text-sm hover:bg-secondary/30 transition-colors">
             <span className="flex items-center gap-2 text-muted-foreground">
-              <MapPin className="w-3.5 h-3.5" /> Location
+              <MapPin className="w-3.5 h-3.5" aria-hidden="true" /> Location
                 <Badge className={cn('border-0 text-xs', url.showLocationMap ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground')}>
                   {url.showLocationMap ? 'On' : 'Off'}
                 </Badge>
             </span>
-            <ChevronLeft className={cn('w-3.5 h-3.5 text-muted-foreground transition-transform', locationOpen && '-rotate-90')} />
+            <ChevronLeft className={cn('w-3.5 h-3.5 text-muted-foreground transition-transform', locationOpen && '-rotate-90')} aria-hidden="true" />
           </button>
           {locationOpen && (
             <div className="px-4 py-3 bg-secondary/20 border-t border-border">
@@ -713,7 +717,7 @@ function VariantC({ target }: { target: typeof mockTargets[0] }) {
         'bg-green-50 text-green-800 border-b border-green-200'
       )}>
         <div className="flex items-center gap-2">
-          <Bell className="w-3.5 h-3.5 shrink-0" />
+          <Bell className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
           <span>
             <strong>{mockQuota.used}/{mockQuota.limit}</strong> notifications used this month
             {mockQuota.used / mockQuota.limit >= 0.8 && <span> — resets {mockQuota.periodEnd}</span>}
@@ -732,7 +736,7 @@ function VariantC({ target }: { target: typeof mockTargets[0] }) {
       <div className="border-b border-border px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between max-w-3xl mx-auto">
           <div className="flex items-center gap-3">
-            <Target className="w-5 h-5 text-primary" />
+            <Target className="w-5 h-5 text-primary" aria-hidden="true" />
             <div>
               <h1 className="text-base font-semibold text-foreground">{target.name}</h1>
               <p className="text-xs text-muted-foreground">
@@ -766,7 +770,7 @@ function VariantC({ target }: { target: typeof mockTargets[0] }) {
               </SelectContent>
             </Select>
             <Button size="sm" onClick={() => setShowAddForm(true)}>
-              <Plus className="w-4 h-4 mr-1" /> Add URL
+              <Plus className="w-4 h-4 mr-1" aria-hidden="true" /> Add URL
             </Button>
           </div>
         </div>
@@ -776,10 +780,10 @@ function VariantC({ target }: { target: typeof mockTargets[0] }) {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 space-y-1">
         {target.urls.length === 0 && (
           <div className="text-center py-16">
-            <Globe className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
+            <Globe className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" aria-hidden="true" />
             <p className="font-medium text-foreground">No URLs yet</p>
             <p className="text-sm text-muted-foreground mb-4">Start monitoring classifieds in seconds.</p>
-            <Button onClick={() => setShowAddForm(true)}><Plus className="w-4 h-4 mr-1" /> Add your first URL</Button>
+            <Button onClick={() => setShowAddForm(true)}><Plus className="w-4 h-4 mr-1" aria-hidden="true" /> Add your first URL</Button>
           </div>
         )}
 
@@ -789,14 +793,14 @@ function VariantC({ target }: { target: typeof mockTargets[0] }) {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium">New URL</h3>
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAddForm(false)}>
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3.5 h-3.5" aria-hidden="true" />
               </Button>
             </div>
             <div className="flex gap-2">
               <Input placeholder="https://olx.pl/..." className="flex-1" />
               <Input placeholder="Name" className="w-36" />
             </div>
-            <Button size="sm"><Plus className="w-3.5 h-3.5 mr-1" /> Add</Button>
+            <Button size="sm"><Plus className="w-3.5 h-3.5 mr-1" aria-hidden="true" /> Add</Button>
           </div>
         )}
 
@@ -808,14 +812,14 @@ function VariantC({ target }: { target: typeof mockTargets[0] }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     {url.isActive
-                      ? <Wifi className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                      : <WifiOff className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                      ? <Wifi className="w-3.5 h-3.5 text-green-500 shrink-0" aria-hidden="true" />
+                      : <WifiOff className="w-3.5 h-3.5 text-gray-300 shrink-0" aria-hidden="true" />
                     }
                     <h3 className="text-sm font-medium text-foreground truncate">{url.name}</h3>
                     <span className="text-xs text-muted-foreground hidden sm:inline truncate">{url.url}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground ml-5.5">
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{url.lastChecked}</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden="true" />{url.lastChecked}</span>
                     {url.offersToday > 0 && <span className="text-green-600 font-medium">{url.offersToday} new</span>}
                     {url.filterCount > 0 && <span>{url.filterCount} filters</span>}
                     {url.showLocationMap && <span>📍 Location on</span>}
@@ -823,18 +827,18 @@ function VariantC({ target }: { target: typeof mockTargets[0] }) {
                 </div>
                 <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity lg:opacity-60 lg:hover:opacity-100">
                   <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Toggle">
-                    {url.isActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                    {url.isActive ? <Pause className="w-3.5 h-3.5" aria-hidden="true" /> : <Play className="w-3.5 h-3.5" aria-hidden="true" />}
                   </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Filters"
                     onClick={() => openDrawer(url, 'filters')}>
-                    <Filter className="w-3.5 h-3.5" />
+                    <Filter className="w-3.5 h-3.5" aria-hidden="true" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Location"
                     onClick={() => openDrawer(url, 'location')}>
-                    <MapPin className="w-3.5 h-3.5" />
+                    <MapPin className="w-3.5 h-3.5" aria-hidden="true" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" aria-label="Delete">
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
@@ -851,7 +855,7 @@ function VariantC({ target }: { target: typeof mockTargets[0] }) {
             <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDrawerOpen(false)}>
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </Button>
                 <div>
                   <p className="text-sm font-medium text-foreground">{drawerUrl.name}</p>
@@ -930,7 +934,7 @@ function FilterEditor() {
                 <button onClick={() => setGroups(groups.filter((_, i) => i !== gIdx))}
                   className="p-0.5 rounded text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
                   aria-label={`Delete group ${gIdx + 1}`}>
-                  <X className="w-3 h-3" />
+                  <X className="w-3 h-3" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -970,7 +974,7 @@ function FilterEditor() {
                     <button onClick={() => removeRule(gIdx, rIdx)}
                       className="p-0.5 rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
                       aria-label="Delete rule">
-                      <X className="w-3 h-3" />
+                      <X className="w-3 h-3" aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -978,7 +982,7 @@ function FilterEditor() {
 
               <button onClick={() => addRule(gIdx)}
                 className="flex items-center gap-1 text-xs text-primary/60 hover:text-primary py-1 transition-colors">
-                <Plus className="w-3 h-3" /> Add rule
+                <Plus className="w-3 h-3" aria-hidden="true" /> Add rule
               </button>
             </div>
           </div>
@@ -986,7 +990,7 @@ function FilterEditor() {
 
         <button onClick={addGroup}
           className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground py-2 border border-dashed border-border/60 hover:border-border rounded-lg transition-colors">
-          <Plus className="w-3 h-3" /> Add group (OR)
+          <Plus className="w-3 h-3" aria-hidden="true" /> Add group (OR)
         </button>
       </div>
 
@@ -1058,7 +1062,7 @@ function LocationEditor() {
               <Label className="text-xs text-muted-foreground">Reference points</Label>
               <button onClick={() => setWaypoints(prev => [...prev, { name: '', lat: 0, lon: 0 }])}
                 className="flex items-center gap-1 text-xs text-primary/60 hover:text-primary transition-colors">
-                <Plus className="w-3 h-3" /> Add
+                <Plus className="w-3 h-3" aria-hidden="true" /> Add
               </button>
             </div>
             {waypoints.map((wp, idx) => (
@@ -1069,7 +1073,7 @@ function LocationEditor() {
                     <button onClick={() => setWaypoints(prev => prev.filter((_, i) => i !== idx))}
                       className="p-0.5 rounded text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
                       aria-label="Remove waypoint">
-                      <X className="w-3 h-3" />
+                      <X className="w-3 h-3" aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -1140,7 +1144,7 @@ function PrototypeSwitcher({ current, setVariant }: { current: ViewVariant; setV
           className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
           aria-label="Previous variant"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" />
         </button>
 
         <div className="flex items-center gap-1">
@@ -1168,7 +1172,7 @@ function PrototypeSwitcher({ current, setVariant }: { current: ViewVariant; setV
           className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
           aria-label="Next variant"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
     </div>

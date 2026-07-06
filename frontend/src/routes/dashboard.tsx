@@ -10,28 +10,9 @@ import MonitorSettings from '@/components/dashboard/monitor-settings';
 import { MonitoredWebsites } from '@/components/dashboard/monitored-websites';
 import DashboardSidebar from '@/components/dashboard/dashboard-sidebar';
 import { TargetSelectorInline } from '@/components/dashboard/target-selector-inline';
+import { Button } from '@/components/ui/button';
+import { loadStoredTargetId, saveStoredTargetId } from '@/components/dashboard/DashboardShared';
 import { useGetMyTarget, useGetTarget, useGetTargets, usePrefetchTargets } from '@/components/dashboard/monitored-websites/useMonitors';
-
-const STORAGE_KEY = 'shargain_selected_target_id';
-
-function loadStoredTargetId(): number | null {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored === null) return null;
-        const parsed = parseInt(stored, 10);
-        return Number.isFinite(parsed) ? parsed : null;
-    } catch {
-        return null;
-    }
-}
-
-function saveStoredTargetId(targetId: number) {
-    try {
-        localStorage.setItem(STORAGE_KEY, String(targetId));
-    } catch {
-        // localStorage not available
-    }
-}
 
 export const Route = createFileRoute('/dashboard')({
     component: DashboardContent,
@@ -46,38 +27,38 @@ export const Route = createFileRoute('/dashboard')({
 
 function LoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100">
-            <div className="container mx-auto px-4 py-8 max-w-6xl animate-pulse">
+        <div className="min-h-screen bg-background" role="status" aria-live="polite" aria-busy="true">
+            <div className="container mx-auto px-4 py-8 max-w-6xl animate-pulse motion-reduce:animate-none">
                 <div className="mb-8">
-                    <div className="h-7 w-64 bg-gray-200 rounded-lg mb-2" />
-                    <div className="h-4 w-96 bg-gray-200 rounded-lg" />
+                    <div className="h-7 w-64 bg-muted rounded-md mb-2" />
+                    <div className="h-4 w-96 bg-muted rounded-md" />
                 </div>
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white/70 rounded-2xl p-6 space-y-4">
-                            <div className="h-5 w-48 bg-gray-200 rounded-lg" />
-                            <div className="h-3 w-72 bg-gray-200 rounded-lg" />
+                        <div className="bg-card/70 rounded-xl p-6 space-y-4">
+                            <div className="h-5 w-48 bg-muted rounded-md" />
+                            <div className="h-3 w-72 bg-muted rounded-md" />
                             <div className="space-y-3 pt-2">
-                                <div className="h-12 bg-gray-200 rounded-xl" />
-                                <div className="h-12 bg-gray-200 rounded-xl" />
-                                <div className="h-12 bg-gray-200 rounded-xl" />
+                                <div className="h-12 bg-muted rounded-xl" />
+                                <div className="h-12 bg-muted rounded-xl" />
+                                <div className="h-12 bg-muted rounded-xl" />
                             </div>
                         </div>
-                        <div className="bg-white/70 rounded-2xl p-6 space-y-4">
-                            <div className="h-5 w-40 bg-gray-200 rounded-lg" />
-                            <div className="h-10 bg-gray-200 rounded-xl" />
-                            <div className="h-10 bg-gray-200 rounded-xl" />
+                        <div className="bg-card/70 rounded-xl p-6 space-y-4">
+                            <div className="h-5 w-40 bg-muted rounded-md" />
+                            <div className="h-10 bg-muted rounded-xl" />
+                            <div className="h-10 bg-muted rounded-xl" />
                         </div>
                     </div>
                     <div className="space-y-6">
-                        <div className="bg-white/70 rounded-2xl p-6 space-y-4">
-                            <div className="h-5 w-32 bg-gray-200 rounded-lg" />
-                            <div className="h-8 bg-gray-200 rounded-xl" />
-                            <div className="h-8 bg-gray-200 rounded-xl" />
+                        <div className="bg-card/70 rounded-xl p-6 space-y-4">
+                            <div className="h-5 w-32 bg-muted rounded-md" />
+                            <div className="h-8 bg-muted rounded-xl" />
+                            <div className="h-8 bg-muted rounded-xl" />
                         </div>
-                        <div className="bg-white/70 rounded-2xl p-6 space-y-4">
-                            <div className="h-5 w-28 bg-gray-200 rounded-lg" />
-                            <div className="h-10 bg-gray-200 rounded-xl" />
+                        <div className="bg-card/70 rounded-xl p-6 space-y-4">
+                            <div className="h-5 w-28 bg-muted rounded-md" />
+                            <div className="h-10 bg-muted rounded-xl" />
                         </div>
                     </div>
                 </div>
@@ -88,29 +69,35 @@ function LoadingSkeleton() {
 
 function ErrorState({ message }: { message: string }) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100 flex items-center justify-center">
-            <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
-                <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">{message}</h2>
+        <div className="min-h-screen bg-background flex items-center justify-center" role="alert" aria-live="assertive">
+            <div className="bg-card rounded-xl p-8 max-w-md text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                <h2 className="text-lg font-semibold text-foreground mb-2">{message}</h2>
             </div>
         </div>
     );
 }
 
-function EmptyState() {
+function EmptyState({ onAddUrl }: { onAddUrl?: () => void }) {
     const { t } = useTranslation();
     return (
-        <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100 flex items-center justify-center">
-            <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
-                <Globe className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-lg font-semibold text-gray-900 mb-2">{t('dashboard.noData')}</p>
-                <p className="text-sm text-gray-500">{t('dashboard.subtitle')}</p>
+        <div className="min-h-screen bg-background flex items-center justify-center" role="status" aria-live="polite">
+            <div className="bg-card rounded-xl p-8 max-w-md text-center">
+                <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-lg font-semibold text-foreground mb-2">{t('dashboard.noData')}</p>
+                <p className="text-sm text-muted-foreground mb-6">{t('dashboard.subtitle')}</p>
+                {onAddUrl && (
+                    <Button size="lg" onClick={onAddUrl}>
+                        <Globe className="w-4 h-4 mr-2" aria-hidden="true" />
+                        {t('dashboard.monitoredWebsites.addWebsite')}
+                    </Button>
+                )}
             </div>
         </div>
     );
 }
 
-function DashboardLayout({ offerMonitor, sidebarTop }: { offerMonitor: OfferMonitor; sidebarTop?: React.ReactNode }) {
+function DashboardLayout({ offerMonitor, sidebarTop, onAddUrl }: { offerMonitor: OfferMonitor; sidebarTop?: React.ReactNode; onAddUrl?: () => void }) {
     const { t } = useTranslation();
     const { user } = useAuth();
 
@@ -147,7 +134,7 @@ function DashboardLayout({ offerMonitor, sidebarTop }: { offerMonitor: OfferMoni
     );
 }
 
-function MultiTargetDashboard({ targets }: { targets: Array<TargetSummaryResponse> }) {
+function MultiTargetDashboard({ targets, onAddUrl }: { targets: Array<TargetSummaryResponse>; onAddUrl?: () => void }) {
     const { t } = useTranslation();
     const [selectedTargetId, setSelectedTargetId] = useState<number | null>(loadStoredTargetId);
 
@@ -181,8 +168,9 @@ function MultiTargetDashboard({ targets }: { targets: Array<TargetSummaryRespons
     return (
         <DashboardLayout
             offerMonitor={fetchedTarget}
+            onAddUrl={onAddUrl}
             sidebarTop={
-                <Card className="border-0 bg-white/60 backdrop-blur-sm">
+                <Card className="bg-card border border-border">
                     <CardHeader>
                         <CardTitle className="text-lg">{t('dashboard.scrapingTarget')}</CardTitle>
                     </CardHeader>
@@ -199,7 +187,7 @@ function MultiTargetDashboard({ targets }: { targets: Array<TargetSummaryRespons
     );
 }
 
-function SingleTargetDashboard() {
+function SingleTargetDashboard({ onAddUrl }: { onAddUrl?: () => void }) {
     const { data: myTarget, isLoading, isError } = useGetMyTarget();
 
     if (isLoading) {
@@ -211,10 +199,10 @@ function SingleTargetDashboard() {
     }
 
     if (!myTarget) {
-        return <EmptyState />;
+        return <EmptyState onAddUrl={onAddUrl} />;
     }
 
-    return <DashboardLayout offerMonitor={myTarget} />;
+    return <DashboardLayout offerMonitor={myTarget} onAddUrl={onAddUrl} />;
 }
 
 function DashboardContent() {

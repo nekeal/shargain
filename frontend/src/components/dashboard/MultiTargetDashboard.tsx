@@ -13,7 +13,7 @@ interface MultiTargetDashboardProps {
 
 export function MultiTargetDashboard({ targets }: MultiTargetDashboardProps) {
     const { t } = useTranslation();
-    const [selectedTargetId, setSelectedTargetId] = useState<number | null>(loadStoredTargetId);
+    const [selectedTargetId, setSelectedTargetId] = useState<number | null>(null);
 
     const { data: fetchedTarget, isLoading, isError, isPlaceholderData } = useGetTarget(selectedTargetId);
     const handleSelectTarget = useCallback((targetId: number) => {
@@ -22,6 +22,10 @@ export function MultiTargetDashboard({ targets }: MultiTargetDashboardProps) {
     }, []);
 
     usePrefetchTargets(targets, selectedTargetId);
+
+    useEffect(() => {
+        setSelectedTargetId(loadStoredTargetId());
+    }, []);
 
     useEffect(() => {
         if (selectedTargetId === null || !targets.some(target => target.id === selectedTargetId)) {

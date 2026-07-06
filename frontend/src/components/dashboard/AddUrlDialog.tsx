@@ -76,7 +76,7 @@ export function AddUrlDialog({ offerMonitor, isOpen, onClose, onSuccess }: AddUr
               value={newUrl}
               onChange={(e) => { setNewUrl(e.target.value); setUrlError(null); }}
               className={cn(urlError ? "border-destructive focus-visible:ring-destructive/50" : "")}
-              placeholder="https://example.com/deals"
+              placeholder="https://example.com/deals…"
               aria-invalid={!!urlError}
               aria-describedby={urlError ? "dialog-url-error" : undefined}
               disabled={addUrlMutation.isPending}
@@ -91,6 +91,7 @@ export function AddUrlDialog({ offerMonitor, isOpen, onClose, onSuccess }: AddUr
               onChange={(e) => setNewName(e.target.value)}
               placeholder={t('dashboard.monitoredWebsites.namePlaceholder')}
               disabled={addUrlMutation.isPending}
+              spellCheck={false}
             />
           </div>
         </form>

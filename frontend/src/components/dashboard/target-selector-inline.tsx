@@ -22,10 +22,13 @@ export function TargetSelectorInline({ targets, selectedTargetId, onSelect }: Ta
     return (
         <Select
             value={selectedTargetId?.toString() ?? ""}
-            onValueChange={(val) => onSelect(parseInt(val, 10))}
+            onValueChange={(val) => {
+                const id = parseInt(val, 10);
+                if (!Number.isNaN(id)) onSelect(id);
+            }}
             disabled={targets.length === 0}
         >
-            <SelectTrigger className="w-full" aria-controls="target-content">
+            <SelectTrigger className="w-full" aria-controls="target-content" aria-label={t('dashboard.targetSelector.selectPlaceholder')}>
                 <Globe className="size-4 text-primary shrink-0" aria-hidden="true" />
                 <SelectValue placeholder={t('dashboard.targetSelector.selectPlaceholder')} />
             </SelectTrigger>

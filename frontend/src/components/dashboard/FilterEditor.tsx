@@ -135,7 +135,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
                   className="p-0.5 rounded text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
                   aria-label={`Delete group ${gIdx + 1}`}
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3 h-3" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -210,7 +210,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
                         className="p-0.5 rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
                         aria-label="Delete rule"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-3 h-3" aria-hidden="true" />
                       </button>
                     )}
                   </div>
@@ -221,7 +221,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
                 onClick={() => addRule(gIdx)}
                 className="flex items-center gap-1 text-xs text-primary/60 hover:text-primary py-1 transition-colors"
               >
-                <Plus className="w-3 h-3" /> Add rule
+                <Plus className="w-3 h-3" aria-hidden="true" /> Add rule
               </button>
             </div>
           </div>
@@ -231,7 +231,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
           onClick={addGroup}
           className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground py-2 border border-dashed border-border/60 hover:border-border rounded-lg transition-colors"
         >
-          <Plus className="w-3 h-3" /> Add group (OR)
+          <Plus className="w-3 h-3" aria-hidden="true" /> Add group (OR)
         </button>
       </div>
 
@@ -244,7 +244,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
           </span>
           <div className="flex items-center gap-2">
             {validationError && (
-              <span className="text-xs text-destructive max-w-[200px] truncate" title={validationError}>
+              <span className="text-xs text-destructive max-w-[200px] truncate" title={validationError} role="alert">
                 {validationError}
               </span>
             )}
@@ -270,6 +270,7 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
+              aria-hidden="true"
             >
               <polyline points="20 6 9 17 4 12" />
             </svg>

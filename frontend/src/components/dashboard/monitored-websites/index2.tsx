@@ -124,16 +124,18 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                   disabled={updateNameMutation.isPending}
                   aria-invalid={!!updateError}
                   aria-describedby="target-name-error"
+                  spellCheck={false}
                 />
                 <Button
                   onClick={handleTargetNameSave}
                   disabled={updateNameMutation.isPending || targetName === offerMonitor.name}
                   variant="default"
                   size="icon"
+                  aria-label="Save"
                 >
                   {updateNameMutation.isPending ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin mr-2" />
+                      <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin mr-2" role="status" />
                       <span className="sr-only">{t('dashboard.monitoredWebsites.saving')}</span>
                     </>
                   ) : (
