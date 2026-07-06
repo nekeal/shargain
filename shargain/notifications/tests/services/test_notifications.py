@@ -13,10 +13,10 @@ from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
 @pytest.mark.django_db
 class TestGetMessageForOffer:
     @staticmethod
-    def _make_service():
+    def _make_service(notification_title="TEST TARGET"):
         config = NotificationConfigFactory()
         target = ScrappingTargetFactory(notification_config=config)
-        return NewOfferNotificationService([], target)
+        return NewOfferNotificationService([], target, notification_title)
 
     def test_message_includes_distances_when_provided(self):
         offer = OfferFactory.build()
@@ -56,3 +56,19 @@ class TestGetMessageForOffer:
 
         assert "km from" not in msg
         assert "m from" not in msg
+
+
+@pytest.mark.django_db
+class TestGetMessageHeader:
+    @staticmethod
+    def _make_service(notification_title="TEST TARGET"):
+        config = NotificationConfigFactory()
+        target = ScrappingTargetFactory(notification_config=config)
+        return NewOfferNotificationService([], target, notification_title)
+
+    def test_message_header_uses_provided_title(self):
+        service = self._make_service("MY CUSTOM TITLE")
+        header = service.get_message_header()
+
+        assert "MY CUSTOM TITLE" in header
+        assert header == "MY CUSTOM TITLE\n\n"
