@@ -15,7 +15,7 @@ export function MultiTargetDashboard({ targets }: MultiTargetDashboardProps) {
     const { t } = useTranslation();
     const [selectedTargetId, setSelectedTargetId] = useState<number | null>(loadStoredTargetId);
 
-    const { data: fetchedTarget, isLoading, isError } = useGetTarget(selectedTargetId);
+    const { data: fetchedTarget, isLoading, isError, isPlaceholderData } = useGetTarget(selectedTargetId);
     const handleSelectTarget = useCallback((targetId: number) => {
         saveStoredTargetId(targetId);
         setSelectedTargetId(targetId);
@@ -34,11 +34,11 @@ export function MultiTargetDashboard({ targets }: MultiTargetDashboardProps) {
         return <LoadingSkeleton />;
     }
 
-    if (isLoading) {
+    if (isLoading && !isPlaceholderData) {
         return <LoadingSkeleton />;
     }
 
-    if (isError || !fetchedTarget) {
+    if (isError && !fetchedTarget) {
         return <ErrorState message={t('dashboard.failedToLoadTarget')} onRetry={() => setSelectedTargetId(null)} />;
     }
 

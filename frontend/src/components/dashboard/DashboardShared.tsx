@@ -25,54 +25,66 @@ export function saveStoredTargetId(targetId: number) {
     }
 }
 
+export function SidebarSkeleton() {
+    return (
+        <div className="w-[260px] border-r border-border bg-card shrink-0 flex flex-col animate-pulse">
+            <div className="p-4 border-b border-border h-14" />
+            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+                <div className="space-y-3">
+                    <div className="h-4 w-24 bg-muted rounded" />
+                    <div className="h-20 bg-muted rounded-xl p-4 space-y-3">
+                        <div className="h-4 w-32 bg-muted rounded" />
+                        <div className="h-8 bg-muted rounded" />
+                        <div className="h-8 bg-muted rounded" />
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <div className="h-4 w-24 bg-muted rounded" />
+                    <div className="h-16 bg-muted rounded-xl p-4 space-y-2">
+                        <div className="flex justify-between text-xs">
+                            <div className="h-4 w-20 bg-muted rounded" />
+                            <div className="h-4 w-20 bg-muted rounded" />
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{ width: '67%' }} />
+                        </div>
+                    </div>
+                    <div className="h-16 xl p-4 space-y-2">
+                        <div className="flex justify-between text-xs">
+                            <div className="h-4 w-20 bg-muted rounded" />
+                            <div className="h-4 w-20 bg-muted rounded" />
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{ width: '40%' }} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function ContentSkeleton() {
+    return (
+        <div className="flex-1 overflow-y-auto p-6 animate-pulse space-y-6">
+            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                <div className="h-5 w-48 bg-muted rounded-lg" />
+                <div className="h-3 w-72 bg-muted rounded-lg" />
+                <div className="space-y-3 pt-2">
+                    <div className="h-12 bg-muted rounded-xl" />
+                    <div className="h-12 bg-muted rounded-xl" />
+                    <div className="h-12 bg-muted rounded-xl" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function LoadingSkeleton() {
     return (
         <div className="flex min-h-screen bg-background animate-fade-in" aria-busy="true" aria-live="polite">
-            <div className="w-[260px] border-r border-border bg-card shrink-0 flex flex-col animate-pulse">
-                <div className="p-4 border-b border-border h-14" />
-                <div className="flex-1 overflow-y-auto p-4 space-y-5">
-                    <div className="space-y-3">
-                        <div className="h-4 w-24 bg-muted rounded" />
-                        <div className="h-20 bg-muted rounded-xl p-4 space-y-3">
-                            <div className="h-4 w-32 bg-muted rounded" />
-                            <div className="h-8 bg-muted rounded" />
-                            <div className="h-8 bg-muted rounded" />
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="h-4 w-24 bg-muted rounded" />
-                        <div className="h-16 bg-muted rounded-xl p-4 space-y-2">
-                            <div className="flex justify-between text-xs">
-                                <div className="h-4 w-20 bg-muted rounded" />
-                                <div className="h-4 w-20 bg-muted rounded" />
-                            </div>
-                            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full" style={{ width: '67%' }} />
-                            </div>
-                        </div>
-                        <div className="h-16 xl p-4 space-y-2">
-                            <div className="flex justify-between text-xs">
-                                <div className="h-4 w-20 bg-muted rounded" />
-                                <div className="h-4 w-20 bg-muted rounded" />
-                            </div>
-                            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full" style={{ width: '40%' }} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 animate-pulse space-y-6">
-                <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-                    <div className="h-5 w-48 bg-muted rounded-lg" />
-                    <div className="h-3 w-72 bg-muted rounded-lg" />
-                    <div className="space-y-3 pt-2">
-                        <div className="h-12 bg-muted rounded-xl" />
-                        <div className="h-12 bg-muted rounded-xl" />
-                        <div className="h-12 bg-muted rounded-xl" />
-                    </div>
-                </div>
-            </div>
+            <SidebarSkeleton />
+            <ContentSkeleton />
         </div>
     );
 }

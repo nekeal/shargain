@@ -122,7 +122,6 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
                   onClick={() => generateTokenMutation.mutate()}
                   disabled={generateTokenMutation.isPending}
                   size="lg"
-                  className="transition-colors duration-200 ease-out-quart motion-reduce:transition-none"
                 >
                   <Send className="w-5 h-5 mr-3" aria-hidden="true" />
                   {t('dashboard.monitorSettings.connectChannel.button')}
@@ -136,7 +135,7 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
                 <Button
                   variant="link"
                   onClick={() => setIsModalOpen(true)}
-                  className="text-sm text-primary hover:text-primary/90 transition-colors duration-200 ease-out-quart motion-reduce:transition-none"
+                  className="text-sm text-primary hover:text-primary/90"
                 >
                   {t('dashboard.monitorSettings.connectChannel.manual')}
                 </Button>
@@ -153,10 +152,10 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
                         updateNotificationConfigMutation.mutate(configId);
                       }}
                     >
-                      <SelectTrigger id="notification-config" className="w-full sm:max-w-[300px] transition-colors duration-200 ease-out-quart motion-reduce:transition-none">
+                      <SelectTrigger id="notification-config" className="w-full sm:max-w-[300px]">
                         <SelectValue placeholder={t('dashboard.monitorSettings.activeChannelPlaceholder')} />
                       </SelectTrigger>
-                      <SelectContent className="transition-colors duration-200 ease-out-quart motion-reduce:transition-none">
+                      <SelectContent>
                         {(notificationConfigs?.data.configs ?? []).map((config) => (
                           <SelectItem key={config.id} value={config.id.toString()}>
                             {config.name || `${t('dashboard.monitorSettings.config')} ${config.id}`}
@@ -168,7 +167,7 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
                   <Button
                     onClick={() => setIsModalOpen(true)}
                     variant="outline"
-                    className="w-full sm:w-auto transition-colors duration-200 ease-out-quart motion-reduce:transition-none"
+                    className="w-full sm:w-auto"
                   >
                     <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                     {t('dashboard.monitorSettings.addChannel')}

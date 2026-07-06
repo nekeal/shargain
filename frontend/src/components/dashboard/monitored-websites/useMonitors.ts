@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { OfferMonitor } from "@/types/dashboard";
 import type { FiltersConfigSchema, TargetSummaryResponse, WaypointSchema } from "@/lib/api/types.gen";
 import { activateScrapingUrl, addUrlToTarget, deactivateScrapingUrl, deleteTargetUrl, getMyTarget, getSingleTarget, listTargets, updateScrapingUrl } from "@/lib/api/sdk.gen";
@@ -26,6 +26,7 @@ export const useGetTarget = (targetId: number | null) => {
         queryFn: () => getSingleTarget({ path: { target_id: targetId! } }).then(response => response.data as OfferMonitor),
         enabled: targetId !== null,
         staleTime: 30_000,
+        placeholderData: targetId !== null ? keepPreviousData : undefined,
     });
 };
 
@@ -75,8 +76,8 @@ export const useRemoveUrlMutation = (targetId: number) => {
 export const useToggleUrlActiveMutation = (targetId: number) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ urlId, isActive }: { urlId: number, isActive: boolean }) => {
-            if (isActive) {
+        mutationFn: ({ urlId, currentlyActive }: { urlId: number, currentlyActive: boolean }) => {
+            if (currentlyActive) {
                 return deactivateScrapingUrl({ path: { target_id: targetId, url_id: urlId } });
             }
             return activateScrapingUrl({ path: { target_id: targetId, url_id: urlId } });

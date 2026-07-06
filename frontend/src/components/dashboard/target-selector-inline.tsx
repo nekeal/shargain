@@ -31,7 +31,7 @@ export function TargetSelectorInline({ targets, selectedTargetId, onSelect }: Ta
             </SelectTrigger>
             <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
                 {targets.map((target: TargetSummaryResponse) => {
-                    const isActive = target.isActive
+                    const isActive = target?.isActive ?? false
                     return (
                     <SelectItem key={target.id} value={String(target.id)}>
                         <span className="flex items-center justify-between w-full gap-2">

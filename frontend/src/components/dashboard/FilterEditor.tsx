@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Plus, X } from "lucide-react"
 import { baseFiltersConfigSchema } from "./monitored-websites/filterValidation"
 import type { FiltersConfigSchema, RuleGroupSchema } from "@/lib/api/types.gen"
@@ -37,6 +37,20 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
   const totalRules = groups.reduce((a, g) => a + g.rules.length, 0)
   const isFading = status === "fading"
 
+  const validationError = useMemo(() => {
+    if (!isDirty) return null
+    const cleaned = groups
+      .map((g) => ({ ...g, rules: g.rules.filter((r) => r.value.trim()) }))
+      .filter((g) => g.rules.length > 0)
+    const result = cleaned.length > 0 ? { ruleGroups: cleaned } : null
+    const validation = baseFiltersConfigSchema.safeParse(result)
+    if (!validation.success) {
+      const errors = validation.error.flatten()
+      return errors.formErrors.length > 0 ? errors.formErrors.join("; ") : "Invalid filter configuration"
+    }
+    return null
+  }, [groups, isDirty])
+
   const handleApply = () => {
     const cleaned = groups
       .map((g) => ({ ...g, rules: g.rules.filter((r) => r.value.trim()) }))
@@ -47,7 +61,6 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
     const validation = baseFiltersConfigSchema.safeParse(result)
     if (!validation.success) {
       console.warn("Filter validation failed:", validation.error.flatten())
-      // Still allow save - backend will reject if truly invalid
     }
 
     setSnapshot(JSON.stringify(groups))
@@ -229,9 +242,16 @@ export function FilterEditor({ initialData, onSave }: FilterEditorProps) {
             <span className="w-1.5 h-1.5 rounded-full bg-warning" />
             Unsaved changes
           </span>
-          <Button size="sm" className="h-7 text-xs" onClick={handleApply}>
-            Apply
-          </Button>
+          <div className="flex items-center gap-2">
+            {validationError && (
+              <span className="text-xs text-destructive max-w-[200px] truncate" title={validationError}>
+                {validationError}
+              </span>
+            )}
+            <Button size="sm" className="h-7 text-xs" onClick={handleApply} disabled={!!validationError}>
+              Apply
+            </Button>
+          </div>
         </div>
       )}
 {status === "applied" && (

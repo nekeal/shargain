@@ -101,7 +101,6 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
               size="default"
               onClick={handleAddUrlDialogOpen}
               disabled={isUrlQuotaExceeded}
-              className="transition-colors duration-200 ease-out-quart motion-reduce:transition-none"
             >
               <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
               {t('dashboard.monitoredWebsites.addWebsite')}
@@ -131,7 +130,6 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                   disabled={updateNameMutation.isPending || targetName === offerMonitor.name}
                   variant="default"
                   size="icon"
-                  className="transition-colors duration-200 ease-out-quart motion-reduce:transition-none"
                 >
                   {updateNameMutation.isPending ? (
                     <>
@@ -182,7 +180,6 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                   size="lg"
                   onClick={handleAddUrlDialogOpen}
                   disabled={isUrlQuotaExceeded}
-                  className="transition-colors duration-200 ease-out-quart motion-reduce:transition-none"
                 >
                   <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
                   {t('dashboard.monitoredWebsites.addWebsite')}

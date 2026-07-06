@@ -17,6 +17,12 @@ interface LocationEditorProps {
   onSave: (showLocationMap: boolean, waypoints: Array<WaypointSchema>) => void
 }
 
+function getValidationError(lat: number, lon: number): string | null {
+  if (lat < -90 || lat > 90) return "Latitude must be between -90 and 90"
+  if (lon < -180 || lon > 180) return "Longitude must be between -180 and 180"
+  return null
+}
+
 export function LocationEditor({
   initialShowLocationMap,
   initialWaypoints,
@@ -26,6 +32,7 @@ export function LocationEditor({
   const [waypoints, setWaypoints] = useState<Array<WaypointWithId>>(
     initialWaypoints.map(w => ({ ...w, id: crypto.randomUUID() }))
   )
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [snapshot, setSnapshot] = useState(() =>
     JSON.stringify({ enabled: initialShowLocationMap, waypoints: initialWaypoints })
   )
@@ -46,7 +53,13 @@ export function LocationEditor({
   const isFading = status === "fading"
 
   const handleApply = () => {
-    setSnapshot(current)
+    const clampedWaypoints = waypoints.map(wp => ({
+      ...wp,
+      lat: Math.max(-90, Math.min(90, wp.lat)),
+      lon: Math.max(-180, Math.min(180, wp.lon)),
+    }))
+    setWaypoints(clampedWaypoints)
+    setSnapshot(JSON.stringify({ enabled, waypoints: clampedWaypoints }))
     setStatus("applied")
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
@@ -55,7 +68,7 @@ export function LocationEditor({
     }, 2000)
 
     // Strip id field before sending to API
-    const waypointsForApi = waypoints.map(({ id, ...rest }) => rest)
+    const waypointsForApi = clampedWaypoints.map(({ id, ...rest }) => rest)
     onSave(enabled, waypointsForApi)
   }
 
@@ -115,27 +128,41 @@ export function LocationEditor({
                     defaultValue={String(wp.lat)}
                     placeholder="Latitude"
                     className="h-7 text-xs flex-1"
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const val = Number(e.target.value) || 0
+                      const errKey = `lat-${wp.id}`
+                      const error = getValidationError(val, wp.lon)
+                      setFieldErrors(prev => error ? { ...prev, [errKey]: error } : { ...prev, [errKey]: undefined })
                       setWaypoints((prev) =>
                         prev.map((p) =>
-                          p.id === wp.id ? { ...p, lat: Number(e.target.value) || 0 } : p
+                          p.id === wp.id ? { ...p, lat: val } : p
                         )
                       )
-                    }
+                    }}
                   />
                   <Input
                     defaultValue={String(wp.lon)}
                     placeholder="Longitude"
                     className="h-7 text-xs flex-1"
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const val = Number(e.target.value) || 0
+                      const errKey = `lon-${wp.id}`
+                      const error = getValidationError(wp.lat, val)
+                      setFieldErrors(prev => error ? { ...prev, [errKey]: error } : { ...prev, [errKey]: undefined })
                       setWaypoints((prev) =>
                         prev.map((p) =>
-                          p.id === wp.id ? { ...p, lon: Number(e.target.value) || 0 } : p
+                          p.id === wp.id ? { ...p, lon: val } : p
                         )
                       )
-                    }
+                    }}
                   />
                 </div>
+                  {fieldErrors[`lat-${wp.id}`] && (
+                    <span className="text-xs text-destructive">{fieldErrors[`lat-${wp.id}`]}</span>
+                  )}
+                  {fieldErrors[`lon-${wp.id}`] && (
+                    <span className="text-xs text-destructive">{fieldErrors[`lon-${wp.id}`]}</span>
+                  )}
               </div>
             ))}
           </div>
