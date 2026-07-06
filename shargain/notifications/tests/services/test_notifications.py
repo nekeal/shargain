@@ -13,10 +13,10 @@ from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
 @pytest.mark.django_db
 class TestGetMessageForOffer:
     @staticmethod
-    def _make_service(notification_title="TEST TARGET"):
+    def _make_service():
         config = NotificationConfigFactory()
         target = ScrappingTargetFactory(notification_config=config)
-        return NewOfferNotificationService([], target, notification_title)
+        return NewOfferNotificationService([], target, "NOTIFICATION TITLE")
 
     def test_message_includes_distances_when_provided(self):
         offer = OfferFactory.build()
