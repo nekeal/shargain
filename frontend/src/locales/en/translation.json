@@ -292,7 +292,8 @@
       "invalidLogic": "Invalid logic operator",
       "noGroups": "At least one rule group is required",
       "saveFailed": "Failed to save filters. Please try again."
-    }
+    },
+    "saveSuccess": "Filters saved successfully"
   },
   "notifications": {
     "title": "Notification Configurations",

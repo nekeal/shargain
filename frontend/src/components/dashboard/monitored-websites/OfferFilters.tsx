@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { CheckCircle, ChevronDown, Filter, Plus, Save, X } from "lucide-react";
 import { createFilterSchemas } from "./filterValidation";
 import { useUpdateUrlMutation } from "./useMonitors";
@@ -106,6 +107,7 @@ export function OfferFilters({
         {
           onSuccess: () => {
             savedSnapshot.current = normalizedFilters;
+            toast.success(t("filters.saveSuccess"));
           },
         },
       );

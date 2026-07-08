@@ -292,7 +292,8 @@
       "invalidLogic": "Nieprawidłowy operator logiczny",
       "noGroups": "Wymagana jest przynajmniej jedna grupa reguł",
       "saveFailed": "Nie udało się zapisać filtrów. Spróbuj ponownie."
-    }
+    },
+    "saveSuccess": "Filtry zapisane pomyślnie"
   },
   "notifications": {
     "title": "Konfiguracje powiadomień",
