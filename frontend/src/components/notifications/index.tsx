@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Bell, Edit, Plus, Trash2 } from 'lucide-react'
 import { deleteNotificationConfig, listNotificationConfigs } from '@/lib/api/sdk.gen'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ import {
 import { ConfigFormModal } from '@/components/notifications/config-form-modal'
 
 export function NotificationListPage() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [configToDelete, setConfigToDelete] = useState<number | null>(null)
@@ -66,7 +68,7 @@ export function NotificationListPage() {
   if (error) {
     return (
       <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-center">
-        <p className="text-destructive font-medium">Error loading notification configurations</p>
+        <p className="text-destructive font-medium">{t('notifications.loadError')}</p>
       </div>
     )
   }
@@ -76,13 +78,13 @@ export function NotificationListPage() {
   return (
     <div className="space-y-3">
       <div className="sm:text-right px-6 pt-6">
-        <Button
-          onClick={handleCreateClick}
-          className="w-full sm:w-auto"
-        >
-          <Plus className="w-5 h-5 ml-0 mr-2" />
-          Create New Configuration
-        </Button>
+          <Button
+            onClick={handleCreateClick}
+            className="w-full sm:w-auto"
+          >
+            <Plus className="w-5 h-5 ml-0 mr-2" />
+            {t('notifications.createNew')}
+          </Button>
       </div>
 
       {configs.length > 0 ? (
@@ -91,14 +93,14 @@ export function NotificationListPage() {
             <Card key={config.id}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="truncate">
-                  {config.name || 'Unnamed Configuration'}
+                  {config.name || t('notifications.unnamed')}
                 </CardTitle>
                 <div className="flex space-x-1">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleEditClick(config)}
-                    aria-label="Edit configuration"
+                    aria-label={t('notifications.editAriaLabel')}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -106,7 +108,7 @@ export function NotificationListPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDeleteClick(config.id)}
-                    aria-label="Delete configuration"
+                    aria-label={t('notifications.deleteAriaLabel')}
                     className="text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -117,7 +119,7 @@ export function NotificationListPage() {
                 <p className="text-muted-foreground capitalize">{config.channel}</p>
                 <div className="mt-4 pt-4 border-t border-border">
                   <p className="text-sm text-muted-foreground">
-                    {config.chatId ? `Chat ID: ${config.chatId}` : 'No chat ID configured'}
+                    {config.chatId ? `${t('notifications.chatId')}: ${config.chatId}` : t('notifications.noChatId')}
                   </p>
                 </div>
               </CardContent>
@@ -129,13 +131,13 @@ export function NotificationListPage() {
           <div className="mx-auto w-16 h-16 bg-secondary rounded-full flex items-center justify-center mb-4">
             <Bell className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">No notification configurations yet</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">{t('notifications.emptyTitle')}</h3>
           <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-            Get started by creating your first notification configuration to receive alerts when new offers are found.
+            {t('notifications.emptyDescription')}
           </p>
           <Button onClick={handleCreateClick} size="lg">
             <Plus className="w-4 h-4 mr-2" />
-            Create Your First Configuration
+            {t('notifications.createFirst')}
           </Button>
         </div>
       )}
@@ -143,21 +145,21 @@ export function NotificationListPage() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>{t('notifications.confirmTitle')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this notification configuration? This action cannot be undone.
+              {t('notifications.confirmDescription')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
+              {t('notifications.cancel')}
             </Button>
             <Button
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              {deleteMutation.isPending ? t('notifications.deleting') : t('notifications.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

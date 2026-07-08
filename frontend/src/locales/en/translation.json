@@ -109,7 +109,10 @@
         "step4": "Paste it in the URL field above, add an optional name, and you will get notifications when new offers are found.",
         "closeButton": "Close",
         "showUrlExamples": "Show URL examples for {{websiteName}}"
-      }
+      },
+      "confirmRemoveTitle": "Remove website",
+      "confirmRemoveDescription": "Are you sure you want to remove this website? This action cannot be undone.",
+      "removing": "Removing..."
     },
     "monitorSettings": {
       "title": "Monitor Settings",
@@ -289,6 +292,46 @@
       "invalidLogic": "Invalid logic operator",
       "noGroups": "At least one rule group is required",
       "saveFailed": "Failed to save filters. Please try again."
+    }
+  },
+  "notifications": {
+    "title": "Notification Configurations",
+    "subtitle": "Manage your notification configurations for receiving alerts when new offers are found.",
+    "createNew": "Create New Configuration",
+    "unnamed": "Unnamed Configuration",
+    "editAriaLabel": "Edit configuration",
+    "deleteAriaLabel": "Delete configuration",
+    "chatId": "Chat ID",
+    "noChatId": "No chat ID configured",
+    "emptyTitle": "No notification configurations yet",
+    "emptyDescription": "Get started by creating your first notification configuration to receive alerts when new offers are found.",
+    "createFirst": "Create Your First Configuration",
+    "loadError": "Error loading notification configurations",
+    "confirmTitle": "Confirm Deletion",
+    "confirmDescription": "Are you sure you want to delete this notification configuration? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "form": {
+      "editTitle": "Edit Configuration",
+      "createTitle": "Create Configuration",
+      "editDescription": "Edit your notification configuration details.",
+      "createDescription": "Create a new notification configuration for Telegram.",
+      "nameLabel": "Display Name",
+      "namePlaceholder": "Enter display name (optional)",
+      "chatIdLabel": "Chat ID *",
+      "chatIdPlaceholder": "Enter Telegram chat ID",
+      "chatIdRequired": "Chat ID is required",
+      "helpTelegram": "The Telegram chat ID where notifications will be sent",
+      "channelLabel": "Channel",
+      "channelLocked": "Channel cannot be changed after creation",
+      "cancel": "Cancel",
+      "update": "Update",
+      "updating": "Updating...",
+      "create": "Create",
+      "creating": "Creating...",
+      "saveError": "An error occurred while saving the configuration",
+      "updateError": "An error occurred while updating the configuration"
     }
   }
 }

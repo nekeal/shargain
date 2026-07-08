@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import cn from "@/lib/utils"
 
-const urlSchema = z.url({ message: "Please enter a valid URL." }).nonempty({ message: "URL cannot be empty." })
+const urlSchema = z.url({ message: "Please enter a valid URL." }).min(1, { message: "URL cannot be empty." })
 
 interface AddUrlDialogProps {
   offerMonitor: OfferMonitor
@@ -73,6 +73,8 @@ export function AddUrlDialog({ offerMonitor, isOpen, onClose, onSuccess }: AddUr
             <Label htmlFor="dialog-url">{t('dashboard.monitoredWebsites.addUrlDialog.urlLabel')}</Label>
             <Input
               id="dialog-url"
+              name="url"
+              autoComplete="url"
               value={newUrl}
               onChange={(e) => { setNewUrl(e.target.value); setUrlError(null); }}
               className={cn(urlError ? "border-destructive focus-visible:ring-destructive/50" : "")}
@@ -87,6 +89,8 @@ export function AddUrlDialog({ offerMonitor, isOpen, onClose, onSuccess }: AddUr
             <Label htmlFor="dialog-name">{t('dashboard.monitoredWebsites.addUrlDialog.nameLabel')}</Label>
             <Input
               id="dialog-name"
+              name="name"
+              autoComplete="off"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder={t('dashboard.monitoredWebsites.namePlaceholder')}

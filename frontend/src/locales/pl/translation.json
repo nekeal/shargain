@@ -109,7 +109,10 @@
         "step4": "Wklej go w powyższe pole URL, dodaj opcjonalną nazwę, i otrzymuj powiadomienia o nowych ofertach.",
         "closeButton": "Zamknij",
         "showUrlExamples": "Pokaż przykłady URL dla {{websiteName}}"
-      }
+      },
+      "confirmRemoveTitle": "Usuń stronę",
+      "confirmRemoveDescription": "Czy na pewno chcesz usunąć tę stronę? Tej operacji nie można cofnąć.",
+      "removing": "Usuwanie..."
     },
     "monitorSettings": {
       "title": "Ustawienia monitora",
@@ -289,6 +292,46 @@
       "invalidLogic": "Nieprawidłowy operator logiczny",
       "noGroups": "Wymagana jest przynajmniej jedna grupa reguł",
       "saveFailed": "Nie udało się zapisać filtrów. Spróbuj ponownie."
+    }
+  },
+  "notifications": {
+    "title": "Konfiguracje powiadomień",
+    "subtitle": "Zarządzaj konfiguracjami powiadomień, aby otrzymywać alerty o nowych ofertach.",
+    "createNew": "Utwórz nową konfigurację",
+    "unnamed": "Nienazwana konfiguracja",
+    "editAriaLabel": "Edytuj konfigurację",
+    "deleteAriaLabel": "Usuń konfigurację",
+    "chatId": "ID czatu",
+    "noChatId": "Brak skonfigurowanego ID czatu",
+    "emptyTitle": "Brak konfiguracji powiadomień",
+    "emptyDescription": "Zacznij, tworząc pierwszą konfigurację powiadomień, aby otrzymywać alerty o nowych ofertach.",
+    "createFirst": "Utwórz pierwszą konfigurację",
+    "loadError": "Błąd ładowania konfiguracji powiadomień",
+    "confirmTitle": "Potwierdź usunięcie",
+    "confirmDescription": "Czy na pewno chcesz usunąć tę konfigurację powiadomień? Tej operacji nie można cofnąć.",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "deleting": "Usuwanie...",
+    "form": {
+      "editTitle": "Edytuj konfigurację",
+      "createTitle": "Utwórz konfigurację",
+      "editDescription": "Edytuj szczegóły swojej konfiguracji powiadomień.",
+      "createDescription": "Utwórz nową konfigurację powiadomień dla Telegrama.",
+      "nameLabel": "Nazwa wyświetlana",
+      "namePlaceholder": "Wpisz nazwę wyświetlaną (opcjonalnie)",
+      "chatIdLabel": "ID czatu *",
+      "chatIdPlaceholder": "Wpisz ID czatu Telegrama",
+      "chatIdRequired": "ID czatu jest wymagane",
+      "helpTelegram": "ID czatu Telegrama, na który będą wysyłane powiadomienia",
+      "channelLabel": "Kanał",
+      "channelLocked": "Kanał nie może zostać zmieniony po utworzeniu",
+      "cancel": "Anuluj",
+      "update": "Aktualizuj",
+      "updating": "Aktualizowanie...",
+      "create": "Utwórz",
+      "creating": "Tworzenie...",
+      "saveError": "Wystąpił błąd podczas zapisywania konfiguracji",
+      "updateError": "Wystąpił błąd podczas aktualizowania konfiguracji"
     }
   }
 }

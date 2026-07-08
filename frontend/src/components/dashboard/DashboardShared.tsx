@@ -47,7 +47,7 @@ export function SidebarSkeleton() {
                             <div className="h-full bg-primary rounded-full w-[67%]" />
                         </div>
                     </div>
-                    <div className="h-16 xl p-4 space-y-2">
+                    <div className="h-16 p-4 space-y-2">
                         <div className="flex justify-between text-xs">
                             <div className="h-4 w-20 bg-muted rounded" />
                             <div className="h-4 w-20 bg-muted rounded" />

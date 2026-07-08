@@ -76,8 +76,8 @@ export const useRemoveUrlMutation = (targetId: number) => {
 export const useToggleUrlActiveMutation = (targetId: number) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ urlId, currentlyActive }: { urlId: number, currentlyActive: boolean }) => {
-            if (currentlyActive) {
+        mutationFn: ({ urlId, isActive }: { urlId: number, isActive: boolean }) => {
+            if (isActive) {
                 return deactivateScrapingUrl({ path: { target_id: targetId, url_id: urlId } });
             }
             return activateScrapingUrl({ path: { target_id: targetId, url_id: urlId } });

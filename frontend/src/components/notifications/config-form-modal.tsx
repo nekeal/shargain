@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { NotificationChannelChoices } from '@/lib/api'
 import { createNotificationConfig, updateNotificationConfig } from '@/lib/api/sdk.gen'
@@ -22,6 +23,7 @@ interface ConfigFormModalProps {
 }
 
 export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: ConfigFormModalProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [name, setName] = useState('')
   const [chatId, setChatId] = useState('')
@@ -52,7 +54,7 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: Co
       if (error?.body?.detail) {
         setErrors({ general: error.body.detail })
       } else {
-        setErrors({ general: 'An error occurred while saving the configuration' })
+        setErrors({ general: t('notifications.form.saveError') })
       }
     }
   })
@@ -68,7 +70,7 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: Co
       if (error?.body?.detail) {
         setErrors({ general: error.body.detail })
       } else {
-        setErrors({ general: 'An error occurred while updating the configuration' })
+        setErrors({ general: t('notifications.form.updateError') })
       }
     }
   })
@@ -79,7 +81,7 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: Co
 
     const newErrors: { name?: string; chatId?: string; general?: string } = {}
     if (!chatId.trim()) {
-      newErrors.chatId = 'Chat ID is required'
+      newErrors.chatId = t('notifications.form.chatIdRequired')
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -106,97 +108,102 @@ export function ConfigFormModal({ isOpen, onClose, configToEdit, onSuccess }: Co
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            {configToEdit ? 'Edit Configuration' : 'Create Configuration'}
-          </DialogTitle>
-          <DialogDescription>
-            {configToEdit
-              ? 'Edit your notification configuration details.'
-              : 'Create a new notification configuration for Telegram.'}
-          </DialogDescription>
-        </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>
+              {configToEdit ? t('notifications.form.editTitle') : t('notifications.form.createTitle')}
+            </DialogTitle>
+            <DialogDescription>
+              {configToEdit
+                ? t('notifications.form.editDescription')
+                : t('notifications.form.createDescription')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            {errors.general && (
-              <div className="text-destructive text-sm">{errors.general}</div>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              {errors.general && (
+                <div className="text-destructive text-sm">{errors.general}</div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  {t('notifications.form.nameLabel')}
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  autoComplete="off"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('notifications.form.namePlaceholder')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="chatId">
+                  {t('notifications.form.chatIdLabel')}
+                </Label>
+                <Input
+                  id="chatId"
+                  name="chatId"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={chatId}
+                  onChange={(e) => {
+                    setChatId(e.target.value)
+                    if (errors.chatId) {
+                      setErrors(prev => ({ ...prev, chatId: undefined }))
+                    }
+                  }}
+                  placeholder={t('notifications.form.chatIdPlaceholder')}
+                  className={errors.chatId ? 'border-destructive' : ''}
+                  disabled={!!configToEdit} // Chat ID can't be edited after creation
+                />
+                {errors.chatId && (
+                  <p className="text-destructive text-xs">{errors.chatId}</p>
+                )}
+                {!configToEdit && (
+                  <p className="text-muted-foreground text-xs">
+                    {t('notifications.form.helpTelegram')}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {configToEdit && (
+              <div className="space-y-2">
+                <Label htmlFor="channel">
+                  {t('notifications.form.channelLabel')}
+                </Label>
+                <Input
+                  id="channel"
+                  value="telegram"
+                  disabled
+                  className="bg-muted"
+                />
+                <p className="text-muted-foreground text-xs">
+                  {t('notifications.form.channelLocked')}
+                </p>
+              </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="name">
-                Display Name
-              </Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter display name (optional)"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="chatId">
-                Chat ID *
-              </Label>
-              <Input
-                id="chatId"
-                value={chatId}
-                onChange={(e) => {
-                  setChatId(e.target.value)
-                  if (errors.chatId) {
-                    setErrors(prev => ({ ...prev, chatId: undefined }))
-                  }
-                }}
-                placeholder="Enter Telegram chat ID"
-                className={errors.chatId ? 'border-destructive' : ''}
-                disabled={!!configToEdit} // Chat ID can't be edited after creation
-              />
-              {errors.chatId && (
-                <p className="text-destructive text-xs">{errors.chatId}</p>
-              )}
-              {!configToEdit && (
-                <p className="text-muted-foreground text-xs">
-                  The Telegram chat ID where notifications will be sent
-                </p>
-              )}
-            </div>
-          </div>
-
-          {configToEdit && (
-            <div className="space-y-2">
-              <Label htmlFor="channel">
-                Channel
-              </Label>
-              <Input
-                id="channel"
-                value="telegram"
-                disabled
-                className="bg-muted"
-              />
-              <p className="text-muted-foreground text-xs">
-                Channel cannot be changed after creation
-              </p>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                  {configToEdit ? 'Updating...' : 'Creating...'}
-                </>
-              ) : configToEdit ? (
-                'Update'
-              ) : (
-                'Create'
-              )}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onClose}>
+                {t('notifications.form.cancel')}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    {configToEdit ? t('notifications.form.updating') : t('notifications.form.creating')}
+                  </>
+                ) : configToEdit ? (
+                  t('notifications.form.update')
+                ) : (
+                  t('notifications.form.create')
+                )}
+              </Button>
+            </DialogFooter>
         </form>
       </DialogContent >
     </Dialog >

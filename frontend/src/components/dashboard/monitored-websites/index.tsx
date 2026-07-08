@@ -12,6 +12,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AddUrlDialog } from '@/components/dashboard/AddUrlDialog'
 
 interface MonitoredWebsitesProps {
@@ -24,6 +25,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
   const [updateSuccess, setUpdateSuccess] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null)
   const [isAddUrlDialogOpen, setIsAddUrlDialogOpen] = useState(false)
+  const [urlToRemove, setUrlToRemove] = useState<number | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -99,6 +101,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                 disabled={updateNameMutation.isPending || (targetName === offerMonitor.name && !updateError) || updateSuccess}
                 variant="default"
                 size="icon"
+                aria-label={t('dashboard.monitoredWebsites.update')}
               >
                 {updateNameMutation.isPending ? (
                   <>
@@ -147,7 +150,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                         href={url.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text line-clamp-2 hover:text-primary transition-colors duration-200 break-all"
+                        className="line-clamp-2 hover:text-primary transition-colors duration-200 break-all"
                       >
                         <ExternalLink className="w-4 h-4 mr-1" />
                         {url.url}
@@ -171,6 +174,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                     size="sm"
                     variant="outline"
                     onClick={() => toggleUrlActiveMutation.mutate({ urlId: url.id, isActive: url.isActive })}
+                    aria-label={url.isActive ? t('dashboard.monitoredWebsites.pause') : t('dashboard.monitoredWebsites.resume')}
                     className={cn(url.isActive ? "text-muted-foreground hover:bg-accent" : "text-success hover:bg-success/10")}
                   >
                     {url.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -178,7 +182,8 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => removeUrlMutation.mutate(url.id)}
+                    onClick={() => setUrlToRemove(url.id)}
+                    aria-label={t('dashboard.monitoredWebsites.delete')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -217,6 +222,33 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
         onClose={() => setIsAddUrlDialogOpen(false)}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['target'] })}
       />
+      <Dialog open={urlToRemove !== null} onOpenChange={(open) => { if (!open) setUrlToRemove(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('dashboard.monitoredWebsites.confirmRemoveTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('dashboard.monitoredWebsites.confirmRemoveDescription')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUrlToRemove(null)}>
+              {t('dashboard.monitoredWebsites.addUrlDialog.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (urlToRemove !== null) {
+                  removeUrlMutation.mutate(urlToRemove)
+                  setUrlToRemove(null)
+                }
+              }}
+              disabled={removeUrlMutation.isPending}
+            >
+              {removeUrlMutation.isPending ? t('dashboard.monitoredWebsites.removing') : t('dashboard.monitoredWebsites.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }
