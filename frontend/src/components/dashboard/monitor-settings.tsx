@@ -19,10 +19,9 @@ import { generateTelegramToken, listNotificationConfigs, toggleTargetNotificatio
 
 interface MonitorSettingsProps {
   offerMonitor: OfferMonitor
-  isVisible: boolean
 }
 
-export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSettingsProps) {
+export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -73,44 +72,38 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['target'] });
     },
-    onError: (err: any) => {
-      console.error("Error updating notification configuration:", err);
-    },
+    onError: () => {},
   });
 
 
   return (
-    <Card
-      className={`border-0 bg-white/60 backdrop-blur-sm transition-all duration-700 delay-200 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-        }`}
-    >
+    <Card className="bg-card border border-border">
       <CardHeader>
-        <CardTitle className="flex items-center text-2xl">
-          <Settings className="w-6 h-6 mr-3 text-violet-600" />
+        <CardTitle className="flex items-center text-xl">
+          <Settings className="w-5 h-5 mr-3 text-primary" />
           {t('dashboard.monitorSettings.title')}
         </CardTitle>
         <CardDescription>{t('dashboard.monitorSettings.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
           <div>
-            <h3 className="font-medium text-gray-900">{t('dashboard.monitorSettings.enableNotifications')}</h3>
-            <p className="text-sm text-gray-600">{t('dashboard.monitorSettings.enableNotificationsDescription')}</p>
+            <h3 className="font-medium text-foreground">{t('dashboard.monitorSettings.enableNotifications')}</h3>
+            <p className="text-sm text-muted-foreground">{t('dashboard.monitorSettings.enableNotificationsDescription')}</p>
           </div>
           <Switch
             checked={offerMonitor.enableNotifications}
             onCheckedChange={(checked: boolean) => toggleNotificationsMutation.mutate(checked)}
-            className="data-[state=checked]:bg-violet-600"
             disabled={toggleNotificationsMutation.isPending}
           />
         </div>
         {offerMonitor.enableNotifications && (
           <>
             {(notificationConfigs?.data.configs ?? []).length === 0 ? (
-              <div className="p-6 bg-gradient-to-br from-violet-100 to-sky-100 rounded-lg text-center shadow-lg">
-                <Zap className="w-12 h-12 mx-auto text-violet-500 mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{t('dashboard.monitorSettings.connectChannel.title')}</h3>
-                <p className="text-md text-gray-600 mb-6">{t('dashboard.monitorSettings.connectChannel.description')}</p>
+              <div className="p-6 bg-secondary/30 rounded-lg text-center border border-border">
+                <Zap className="w-12 h-12 mx-auto text-primary mb-4" />
+                <h3 className="text-xl font-bold text-foreground mb-2">{t('dashboard.monitorSettings.connectChannel.title')}</h3>
+                <p className="text-md text-muted-foreground mb-6">{t('dashboard.monitorSettings.connectChannel.description')}</p>
                 <Button
                   onClick={() => generateTokenMutation.mutate()}
                   disabled={generateTokenMutation.isPending}
@@ -119,23 +112,23 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                   <Send className="w-5 h-5 mr-3" />
                   {t('dashboard.monitorSettings.connectChannel.button')}
                 </Button>
-                <p className="text-sm text-gray-500 mt-3 mb-5">{t('dashboard.monitorSettings.connectChannel.note')}</p>
+                <p className="text-sm text-muted-foreground mt-3 mb-5">{t('dashboard.monitorSettings.connectChannel.note')}</p>
                 <div className="my-4 flex items-center">
-                  <div className="flex-grow border-t border-gray-300"></div>
-                  <span className="flex-shrink mx-4 text-gray-500 text-sm">{t('dashboard.monitorSettings.connectChannel.or')}</span>
-                  <div className="flex-grow border-t border-gray-300"></div>
+                  <div className="flex-grow border-t border-border"></div>
+                  <span className="flex-shrink mx-4 text-muted-foreground text-sm">{t('dashboard.monitorSettings.connectChannel.or')}</span>
+                  <div className="flex-grow border-t border-border"></div>
                 </div>
                 <Button
                   variant="link"
                   onClick={() => setIsModalOpen(true)}
-                  className="text-sm text-violet-600 hover:text-violet-800"
+                  className="text-sm text-primary hover:text-primary/90"
                 >
                   {t('dashboard.monitorSettings.connectChannel.manual')}
                 </Button>
               </div>
             ) : (
-              <div className="p-4 rounded-lg bg-white/80">
-                <h3 className="font-medium text-gray-900 mb-4 text-lg">{t('dashboard.monitorSettings.activeChannel')}</h3>
+              <div className="p-4 rounded-lg bg-card border border-border">
+                <h3 className="font-medium text-foreground mb-4 text-lg">{t('dashboard.monitorSettings.activeChannel')}</h3>
                 <div className="flex flex-wrap items-center sm:space-x-4 gap-y-2">
                   <div className="flex-grow w-full sm:w-auto">
                     <Select
@@ -145,10 +138,7 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                         updateNotificationConfigMutation.mutate(configId);
                       }}
                     >
-                      <SelectTrigger
-                        id="notification-config"
-                        className="max-w-50 sm:max-w-full border-violet-200 hover:border-violet-300 focus:ring-violet-500"
-                      >
+                      <SelectTrigger id="notification-config" className="max-w-50 sm:max-w-full">
                         <SelectValue placeholder={t('dashboard.monitorSettings.activeChannelPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
@@ -168,8 +158,6 @@ export default function MonitorSettings({ offerMonitor, isVisible }: MonitorSett
                     <Plus className="w-4 h-4 mr-2" />
                     {t('dashboard.monitorSettings.addChannel')}
                   </Button>
-                </div>
-                <div className="mt-4 flex items-center space-x-2">
                 </div>
               </div>
             )}

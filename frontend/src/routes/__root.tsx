@@ -1,5 +1,6 @@
 import { Outlet, createRootRouteWithContext, useMatchRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { Toaster } from 'sonner'
 import type { QueryClient } from '@tanstack/react-query'
 import type { AuthContextType } from '@/context/auth';
 import { Navbar01 } from "@/components/ui/shadcn-io/navbar-01";
@@ -61,6 +62,18 @@ function RootComponent() {
       </main>
       <Footer />
       <TanStackRouterDevtools />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          className: "bg-card border border-border text-foreground",
+          duration: 4000,
+          style: {
+            backgroundColor: 'var(--background)',
+            color: 'var(--foreground)',
+            border: '1px solid var(--border)',
+          },
+        }}
+      />
     </div>
   )
 }

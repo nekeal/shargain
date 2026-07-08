@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { OfferMonitor } from "@/types/dashboard";
 import type { FiltersConfigSchema, TargetSummaryResponse, WaypointSchema } from "@/lib/api/types.gen";
 import { activateScrapingUrl, addUrlToTarget, deactivateScrapingUrl, deleteTargetUrl, getMyTarget, getSingleTarget, listTargets, updateScrapingUrl } from "@/lib/api/sdk.gen";
@@ -26,6 +26,7 @@ export const useGetTarget = (targetId: number | null) => {
         queryFn: () => getSingleTarget({ path: { target_id: targetId! } }).then(response => response.data as OfferMonitor),
         enabled: targetId !== null,
         staleTime: 30_000,
+        placeholderData: targetId !== null ? keepPreviousData : undefined,
     });
 };
 
@@ -56,6 +57,7 @@ export const useAddUrlMutation = (
         mutationFn: (newUrl: { url: string, name?: string, showLocationMapInNotifications?: boolean }) => addUrlToTarget({ path: { target_id: targetId }, body: { url: newUrl.url, name: newUrl.name, showLocationMapInNotifications: newUrl.showLocationMapInNotifications } }).then(response => response.data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['target'] });
+            queryClient.invalidateQueries({ queryKey: ['quotaStatus'] });
         },
     });
 };
@@ -66,6 +68,7 @@ export const useRemoveUrlMutation = (targetId: number) => {
         mutationFn: (urlId: number) => deleteTargetUrl({ path: { target_id: targetId, url_id: urlId } }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['target'] });
+            queryClient.invalidateQueries({ queryKey: ['quotaStatus'] });
         },
     });
 };

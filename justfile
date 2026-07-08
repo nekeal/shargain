@@ -140,7 +140,7 @@ pipeline-status:
 run:
     #!/usr/bin/env -S parallel --shebang --ungroup --jobs 2
     {{ MANAGE }} runserver
-    npm --prefix frontend run dev
+    pnpm -C frontend run dev --host 0.0.0.0
 
 # --- Combined Commands ---
 

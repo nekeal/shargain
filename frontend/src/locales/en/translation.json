@@ -38,6 +38,7 @@
     "loading": "Loading...",
     "error": "Error loading dashboard data.",
     "noData": "No monitor data available.",
+    "retry": "Retry",
     "targetSelector": {
       "urlCount": "{{count}} URL",
       "urlCount_plural": "{{count}} URLs",
@@ -71,6 +72,30 @@
       "pending": "Pending",
       "noWebsitesTitle": "No websites added yet",
       "noWebsitesDescription": "Add your first website above to start monitoring offers",
+      "pause": "Pause monitoring",
+      "resume": "Resume monitoring",
+      "delete": "Delete website",
+      "toast": {
+        "nameUpdated": "Monitor name updated",
+        "nameUpdateError": "Failed to update monitor name",
+        "added": "Website added successfully",
+        "addError": "Could not add website"
+      },
+      "addUrlDialog": {
+        "title": "Add URL",
+        "description": "Enter a URL from OLX, Vinted, Otomoto, or Otodom.",
+        "urlLabel": "URL",
+        "nameLabel": "Name (optional)",
+        "cancel": "Cancel",
+        "add": "Add"
+      },
+      "urlCard": {
+        "filters": "Filters",
+        "location": "Location",
+        "filterCount": "{{count}} filter(s)",
+        "locationOn": "On",
+        "locationOff": "Off"
+      },
       "supportedWebsites": {
         "title": "How to get the URL?",
         "description": "Here are the websites currently supported for monitoring. For best results, follow the instructions below to get the correct URL.",
@@ -84,7 +109,10 @@
         "step4": "Paste it in the URL field above, add an optional name, and you will get notifications when new offers are found.",
         "closeButton": "Close",
         "showUrlExamples": "Show URL examples for {{websiteName}}"
-      }
+      },
+      "confirmRemoveTitle": "Remove website",
+      "confirmRemoveDescription": "Are you sure you want to remove this website? This action cannot be undone.",
+      "removing": "Removing..."
     },
     "monitorSettings": {
       "title": "Monitor Settings",
@@ -102,7 +130,15 @@
       "activeChannel": "Active Channel",
       "activeChannelPlaceholder": "Select a channel...",
       "config": "Config",
-      "addChannel": "Add Channel"
+      "addChannel": "Add Channel",
+      "toast": {
+        "enableSuccess": "Notifications updated",
+        "enableError": "Failed to update notifications",
+        "telegramOpened": "Telegram opened in new tab",
+        "telegramError": "Failed to open Telegram",
+        "channelUpdated": "Notification channel updated",
+        "channelError": "Failed to update channel"
+      }
     },
     "sidebar": {
       "status": {
@@ -127,6 +163,26 @@
       "testNotification": {
         "success": "Notification sent successfully!",
         "error": "Failed to send notification."
+      },
+      "header": {
+        "monitor": "Monitor"
+      },
+      "channel": {
+        "title": "Notification Channel",
+        "placeholder": "Select a channel..."
+      },
+      "settings": {
+        "title": "Settings",
+        "monitorActive": "Monitor active",
+        "notificationsEnabled": "Notifications enabled"
+      },
+      "actions": {
+        "title": "Actions",
+        "addUrl": "Add URL",
+        "testNotification": "Test notification"
+      },
+      "quota": {
+        "resetDate": "Quota resets {{date}}"
       }
     }
   },
@@ -236,6 +292,47 @@
       "invalidLogic": "Invalid logic operator",
       "noGroups": "At least one rule group is required",
       "saveFailed": "Failed to save filters. Please try again."
+    },
+    "saveSuccess": "Filters saved successfully"
+  },
+  "notifications": {
+    "title": "Notification Configurations",
+    "subtitle": "Manage your notification configurations for receiving alerts when new offers are found.",
+    "createNew": "Create New Configuration",
+    "unnamed": "Unnamed Configuration",
+    "editAriaLabel": "Edit configuration",
+    "deleteAriaLabel": "Delete configuration",
+    "chatId": "Chat ID",
+    "noChatId": "No chat ID configured",
+    "emptyTitle": "No notification configurations yet",
+    "emptyDescription": "Get started by creating your first notification configuration to receive alerts when new offers are found.",
+    "createFirst": "Create Your First Configuration",
+    "loadError": "Error loading notification configurations",
+    "confirmTitle": "Confirm Deletion",
+    "confirmDescription": "Are you sure you want to delete this notification configuration? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "form": {
+      "editTitle": "Edit Configuration",
+      "createTitle": "Create Configuration",
+      "editDescription": "Edit your notification configuration details.",
+      "createDescription": "Create a new notification configuration for Telegram.",
+      "nameLabel": "Display Name",
+      "namePlaceholder": "Enter display name (optional)",
+      "chatIdLabel": "Chat ID *",
+      "chatIdPlaceholder": "Enter Telegram chat ID",
+      "chatIdRequired": "Chat ID is required",
+      "helpTelegram": "The Telegram chat ID where notifications will be sent",
+      "channelLabel": "Channel",
+      "channelLocked": "Channel cannot be changed after creation",
+      "cancel": "Cancel",
+      "update": "Update",
+      "updating": "Updating...",
+      "create": "Create",
+      "creating": "Creating...",
+      "saveError": "An error occurred while saving the configuration",
+      "updateError": "An error occurred while updating the configuration"
     }
   }
 }
