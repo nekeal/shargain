@@ -148,7 +148,7 @@ class OfferBatchCreateService:
             filtered_offers = url_offers
             if scraping_url and scraping_url.filters:
                 filter_service = OfferFilterService(scraping_url.filters)
-                filtered_offers = filter_service.apply_filters(url_offers)
+                filtered_offers = filter_service.apply(url_offers)  # type: ignore
 
             if not filtered_offers:
                 continue
