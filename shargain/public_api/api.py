@@ -1,6 +1,6 @@
 from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
-from ninja.errors import HttpError
+from ninja.errors import ConfigError as NinjaConfigError, HttpError
 from pydantic.alias_generators import to_camel
 from pydantic.networks import HttpUrl
 
@@ -67,8 +67,15 @@ from .auth import router as protected_router
 router = NinjaAPI(csrf=True)
 
 # Include both routers
-router.add_router("/auth", auth_router)
-router.add_router("/", protected_router)
+try:
+    router.add_router("/auth", auth_router)
+except NinjaConfigError:
+    pass
+
+try:
+    router.add_router("/", protected_router)
+except NinjaConfigError:
+    pass
 
 
 class ErrorSchema(Schema):
@@ -80,6 +87,23 @@ class BaseSchema(Schema):
     class Config:
         alias_generator = to_camel
         populate_by_name = True
+
+
+class FieldOperatorSchema(BaseSchema):
+    value: str
+    label: str
+
+
+class AvailableFieldSchema(BaseSchema):
+    name: str
+    label: str
+    type: str
+    unit: str | None = None
+    operators: list[FieldOperatorSchema]
+
+
+class AvailableFieldsResponse(BaseSchema):
+    fields: list[AvailableFieldSchema]
 
 
 class NotificationConfigRequest(BaseSchema):
@@ -211,6 +235,46 @@ def get_actor(request: HttpRequest) -> Actor:
     if not request.user or not request.user.id:
         raise HttpError(401, "Authentication required")
     return Actor(user_id=request.user.id)
+
+
+@router.get(
+    "/urls/{url_id}/available-fields",
+    operation_id="get_available_fields",
+    by_alias=True,
+    response={200: AvailableFieldsResponse, 401: ErrorSchema, 404: ErrorSchema},
+)
+def get_available_fields(request: HttpRequest, url_id: int):
+    actor = get_actor(request)
+    from shargain.offers.models import ScrapingUrl
+
+    try:
+        url_dto = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
+    except ScrapingUrl.DoesNotExist as e:
+        raise HttpError(404, "Scraping URL not found") from e
+
+    from shargain.offers.schemas.field_plugin import ListUrl
+    from shargain.offers.services.offer_field_resolver import OPERATOR_LABELS, OfferFieldResolver
+
+    fields = OfferFieldResolver.get_fields(ListUrl(url_dto.url))
+
+    return AvailableFieldsResponse(
+        fields=[
+            AvailableFieldSchema(
+                name=f.name,
+                label=f.label,
+                type=f.field_type.value,
+                unit=f.unit,
+                operators=[
+                    FieldOperatorSchema(
+                        value=op.value,
+                        label=OPERATOR_LABELS.get(op, op.value),
+                    )
+                    for op in (f.allowed_operators or [])
+                ],
+            )
+            for f in fields
+        ]
+    )
 
 
 @router.get(
