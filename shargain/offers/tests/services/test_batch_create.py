@@ -12,6 +12,54 @@ from shargain.quotas.tests.factories import OfferQuotaFactory
 
 
 @pytest.mark.django_db
+class TestRefactoredNotify:
+    def test_notify_extracts_fields_via_resolver(self):
+        notification_config = NotificationConfigFactory()
+        scraping_target = ScrappingTargetFactory(
+            notification_config=notification_config,
+            enable_notifications=True,
+        )
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            filters={
+                "ruleGroups": [
+                    {"logic": "and", "rules": [{"field": "title", "operator": "contains", "value": "apartment"}]}
+                ]
+            },
+            notification_fields={"fields": ["title", "price"]},
+        )
+        offer_data = {
+            "target": scraping_url.scraping_target.id,
+            "offers": [
+                {
+                    "url": "https://example.com/offer-1",
+                    "title": "Beautiful apartment",
+                    "list_url": scraping_url.url,
+                },
+                {
+                    "url": "https://example.com/offer-2",
+                    "title": "Small studio",
+                    "list_url": scraping_url.url,
+                },
+            ],
+        }
+
+        with patch("shargain.offers.services.batch_create.NewOfferNotificationService") as mock_notification:
+            mock_instance = mock_notification.return_value
+            mock_instance.run.return_value = None
+            service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+            service.notification_service_class = mock_notification
+            service.run()
+
+            mock_notification.assert_called_once()
+            contexts = mock_notification.call_args[0][0]
+            assert len(contexts) == 1
+            assert contexts[0].offer.title == "Beautiful apartment"
+            assert "title" in contexts[0].extracted_fields
+            assert "price" in contexts[0].extracted_fields
+
+
+@pytest.mark.django_db
 class TestOfferBatchCreateService:
     """Tests for the OfferBatchCreateService class."""
 

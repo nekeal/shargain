@@ -3,12 +3,12 @@ from collections import Counter
 
 from opentelemetry import trace
 
-from shargain.notifications.services.notifications import NewOfferNotificationService
+from shargain.notifications.services.notifications import NewOfferNotificationService, NotificationMessageContext
 from shargain.offers.application.commands.record_checkin import record_checkin
-from shargain.offers.application.dto import WaypointData
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
+from shargain.offers.schemas.field_plugin import ExtractedOffer, ListUrl
 from shargain.offers.serializers import OfferBatchCreateSerializer
-from shargain.offers.services.geo_utils import haversine
+from shargain.offers.services.offer_field_resolver import OfferFieldResolver
 from shargain.offers.signals import offers_batch_created
 from shargain.quotas.services.quota import QuotaService
 
@@ -119,77 +119,100 @@ class OfferBatchCreateService:
         if not (new_offers and scrapping_target.notification_config and scrapping_target.enable_notifications):
             return
 
-        from shargain.notifications.services.notifications import NotificationMessageContext
-        from shargain.offers.services.filter_service import OfferFilterService
-        from shargain.offers.services.location_parsers import LocationParserFactory
+        offers_by_url = self._group_by_url(new_offers)
+        scraping_urls = self._fetch_scraping_urls(offers_by_url.keys(), scrapping_target)
+        url_to_config_map = {sc.url: sc for sc in scraping_urls}
 
-        # Group offers by their list_url (the scraping URL)
-        offers_by_url: dict[str, list[Offer]] = {}
-        for offer in new_offers:
-            offers_by_url.setdefault(offer.list_url, []).append(offer)
-
-        # Log to verify if all offers have the same list_url
-        unique_urls = list(offers_by_url.keys())
-        logger.info(
-            "BatchCreateService._notify received offers with %s unique list_urls: %s",
-            len(unique_urls),
-            unique_urls,
-        )
-
-        # Fetch all relevant ScrapingUrl objects in a single query (prevents N+1)
-        scraping_urls = ScrapingUrl.objects.filter(url__in=unique_urls, scraping_target=scrapping_target)
-        url_to_config_map = {sc_url.url: sc_url for sc_url in scraping_urls}
-
-        # Apply filters and send notifications per URL
+        message_contexts: list[NotificationMessageContext] = []
         for list_url, url_offers in offers_by_url.items():
             scraping_url = url_to_config_map.get(list_url)
 
-            # Apply filters
-            filtered_offers = url_offers
-            if scraping_url and scraping_url.filters:
-                filter_service = OfferFilterService(scraping_url.filters)
-                filtered_offers = filter_service.apply(url_offers)  # type: ignore
-
-            if not filtered_offers:
+            extracted = self._extract_offers(url_offers, list_url)
+            filtered = self._filter_offers(extracted, scraping_url)
+            if not filtered:
                 continue
 
-            # Parse location if opted-in
-            message_contexts = []
-            show_location = scraping_url.show_location_map_in_notifications if scraping_url else False
+            contexts = self._build_contexts(filtered, scraping_url)
+            message_contexts.extend(contexts)
 
-            waypoints: list[WaypointData] | None = scraping_url.waypoints if scraping_url else None  # type: ignore[assignment]
+        if not message_contexts:
+            return
 
-            for offer in filtered_offers:
-                map_url, location_name, is_exact = None, None, False
-                distances: list[tuple[str, float]] = []
-                if show_location:
-                    parser = LocationParserFactory.get_parser(offer.domain, offer.metadata)
-                    map_url = parser.get_map_url()
-                    location_name = parser.get_location_name()
-                    is_exact = parser.is_location_exact()
+        notification_title = self._get_notification_title(scraping_urls, scrapping_target, list(offers_by_url.keys()))
+        self.notification_service_class(message_contexts, scrapping_target, notification_title=notification_title).run()
 
-                    coords = parser.get_coordinates()
-                    if coords and waypoints:
-                        distances = [
-                            (
-                                str(wp["name"]),
-                                haversine(coords.lat, coords.lon, wp["lat"], wp["lon"]),
-                            )
-                            for wp in waypoints
-                        ]
+    @staticmethod
+    def _group_by_url(offers):
+        offers_by_url: dict[str, list[Offer]] = {}
+        for offer in offers:
+            offers_by_url.setdefault(offer.list_url, []).append(offer)
+        return offers_by_url
 
-                message_contexts.append(
-                    NotificationMessageContext(
-                        offer=offer,
-                        map_url=map_url,
-                        location_name=location_name,
-                        is_exact_location=is_exact,
-                        distances=distances,
-                    )
+    @staticmethod
+    def _fetch_scraping_urls(list_urls, scrapping_target):
+        return list(ScrapingUrl.objects.filter(url__in=list(list_urls), scraping_target=scrapping_target))
+
+    @staticmethod
+    def _extract_offers(offers, list_url):
+        return [
+            ExtractedOffer(
+                offer=offer,
+                fields=OfferFieldResolver.extract(offer, ListUrl(list_url)),
+            )
+            for offer in offers
+        ]
+
+    @staticmethod
+    def _filter_offers(extracted_offers, scraping_url):
+        if not scraping_url or not scraping_url.filters:
+            return extracted_offers
+        from shargain.offers.services.filter_service import OfferFilterService
+
+        return OfferFilterService(scraping_url.filters).apply(extracted_offers)
+
+    @staticmethod
+    def _build_contexts(extracted_offers, scraping_url):
+        from shargain.offers.services.location_parsers import LocationParserFactory
+
+        selected = set()
+        if scraping_url and scraping_url.notification_fields:
+            selected = set(scraping_url.notification_fields.fields)
+
+        show_location = scraping_url.show_location_map_in_notifications if scraping_url else False
+        waypoints = scraping_url.waypoints if scraping_url else None
+
+        contexts = []
+        for extracted in extracted_offers:
+            map_url, location_name, is_exact = None, None, False
+            distances = []
+            if show_location:
+                parser = LocationParserFactory.get_parser(extracted.offer.domain, extracted.offer.metadata)
+                map_url = parser.get_map_url()
+                location_name = parser.get_location_name()
+                is_exact = parser.is_location_exact()
+                coords = parser.get_coordinates()
+                if coords and waypoints:
+                    from shargain.offers.services.geo_utils import haversine
+
+                    distances = [
+                        (str(wp["name"]), haversine(coords.lat, coords.lon, wp["lat"], wp["lon"])) for wp in waypoints
+                    ]
+
+            contexts.append(
+                NotificationMessageContext(
+                    offer=extracted.offer,
+                    map_url=map_url,
+                    location_name=location_name,
+                    is_exact_location=is_exact,
+                    distances=distances,
+                    extracted_fields={k: v for k, v in extracted.fields.items() if k in selected},
                 )
+            )
+        return contexts
 
-            # Call notification service per group
-            notification_title = scraping_url.name if scraping_url else scrapping_target.name
-            self.notification_service_class(
-                message_contexts, scrapping_target, notification_title=notification_title
-            ).run()
+    @staticmethod
+    def _get_notification_title(scraping_urls, scrapping_target, list_urls):
+        url_map = {sc.url: sc for sc in scraping_urls}
+        if list_urls and list_urls[0] in url_map and url_map[list_urls[0]].name:
+            return url_map[list_urls[0]].name
+        return scrapping_target.name

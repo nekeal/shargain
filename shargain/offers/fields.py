@@ -31,6 +31,8 @@ class PydanticField(models.JSONField):
     def from_db_value(self, value: Any, expression: Any, connection: Any) -> BaseModel | None:
         if value is None:
             return None
+        if isinstance(value, str):
+            return self.pydantic_model.model_validate_json(value)
         return self.pydantic_model.model_validate(value)
 
     def to_python(self, value: Any) -> BaseModel | None:
@@ -47,8 +49,8 @@ class PydanticField(models.JSONField):
         if value is None:
             return None
         if isinstance(value, self.pydantic_model):
-            return value.model_dump()
-        return value
+            value = value.model_dump()
+        return super().get_prep_value(value)
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
