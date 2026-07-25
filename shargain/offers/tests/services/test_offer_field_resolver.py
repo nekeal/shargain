@@ -10,6 +10,7 @@ from shargain.offers.schemas.field_plugin import (
     FieldDefinition,
     FieldType,
     ListUrl,
+    Operator,
 )
 from shargain.offers.services.offer_field_resolver import OfferFieldResolver
 
@@ -105,6 +106,54 @@ class TestOfferFieldResolver:
         offer_mock = Mock()
         result = OfferFieldResolver.extract(offer_mock, url)
         assert result == {}
+
+
+class TestGetOperatorsForType:
+    def test_string_type(self):
+        from shargain.offers.services.offer_field_resolver import get_operators_for_type
+
+        ops = get_operators_for_type(FieldType.STRING)
+        assert Operator.CONTAINS in ops
+        assert Operator.NOT_CONTAINS in ops
+        assert Operator.EQUALS in ops
+
+    def test_number_type(self):
+        from shargain.offers.services.offer_field_resolver import get_operators_for_type
+
+        ops = get_operators_for_type(FieldType.NUMBER)
+        assert Operator.EQUALS in ops
+        assert Operator.GREATER_THAN in ops
+        assert Operator.LESS_THAN in ops
+        assert Operator.GTE in ops
+        assert Operator.LTE in ops
+
+    def test_boolean_type(self):
+        from shargain.offers.services.offer_field_resolver import get_operators_for_type
+
+        ops = get_operators_for_type(FieldType.BOOLEAN)
+        assert Operator.EQUALS in ops
+        assert len(ops) == 1
+
+    def test_custom_operators_override_defaults(self):
+        from shargain.offers.services.offer_field_resolver import get_operators_for_type
+
+        custom = [Operator.CONTAINS]
+        result = get_operators_for_type(FieldType.NUMBER, custom)
+        assert result == custom
+
+    def test_get_fields_resolves_operators_from_type(self):
+        OfferFieldResolver._plugins = []
+        from shargain.offers.services.source_plugins.core_fields import core_fields
+
+        OfferFieldResolver.register(core_fields)
+        url = ListUrl("https://example.com/")
+        fields = OfferFieldResolver.get_fields(url)
+        for f in fields:
+            assert f.allowed_operators is not None
+        title_field = [f for f in fields if f.name == "title"][0]
+        assert Operator.CONTAINS in title_field.allowed_operators
+        price_field = [f for f in fields if f.name == "price"][0]
+        assert Operator.GREATER_THAN in price_field.allowed_operators
 
 
 class TestConcretePlugin:
