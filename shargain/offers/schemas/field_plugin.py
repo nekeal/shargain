@@ -1,5 +1,6 @@
 """Core types for the field plugin system."""
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import NewType
@@ -39,3 +40,22 @@ class FieldDefinition:
 class ExtractedOffer:
     offer: Offer
     fields: dict[str, int | float | str | bool | None]
+
+
+class BaseFieldPlugin(ABC):
+    """Abstract base for a field plugin.
+    Each plugin is a singleton object stored in OfferFieldResolver.
+    """
+
+    @abstractmethod
+    def matches(self, url: ListUrl) -> bool:
+        """Return True if this plugin supports the given listing URL."""
+
+    @property
+    @abstractmethod
+    def fields(self) -> list[FieldDefinition]:
+        """The fields this plugin can extract."""
+
+    @abstractmethod
+    def extract(self, offer: Offer, url: ListUrl) -> dict[str, int | float | str | bool | None]:
+        """Return {field_name: value} for all declared fields."""
