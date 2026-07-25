@@ -1,11 +1,16 @@
 """Core types for the field plugin system."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import NewType
+from typing import TYPE_CHECKING, NewType
 
-from shargain.offers.models import Offer
+from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from shargain.offers.models import Offer
 
 ListUrl = NewType("ListUrl", str)
 
@@ -40,6 +45,10 @@ class FieldDefinition:
 class ExtractedOffer:
     offer: Offer
     fields: dict[str, int | float | str | bool | None]
+
+
+class NotificationFieldsSelection(BaseModel):
+    fields: list[str] = []
 
 
 class BaseFieldPlugin(ABC):
