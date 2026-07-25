@@ -72,3 +72,58 @@ class TestGetMessageHeader:
 
         assert "MY CUSTOM TITLE" in header
         assert header == "MY CUSTOM TITLE\n\n"
+
+
+@pytest.mark.django_db
+class TestExtractedFieldsInMessage:
+    @staticmethod
+    def _make_service():
+        config = NotificationConfigFactory()
+        target = ScrappingTargetFactory(notification_config=config)
+        return NewOfferNotificationService([], target, "NOTIFICATION TITLE")
+
+    def test_extracted_fields_appended_as_key_value(self):
+        offer = OfferFactory.build()
+        context = NotificationMessageContext(
+            offer=offer,
+            extracted_fields={"price_per_m2": 42, "rooms": 3},
+        )
+        service = self._make_service()
+        msg = service.get_message_for_offer(context)
+        assert "Price Per M2: 42" in msg
+        assert "Rooms: 3" in msg
+
+    def test_boolean_fields_rendered_as_yes_no(self):
+        offer = OfferFactory.build()
+        context = NotificationMessageContext(
+            offer=offer,
+            extracted_fields={"has_balcony": True},
+        )
+        service = self._make_service()
+        msg = service.get_message_for_offer(context)
+        assert "Yes" in msg
+
+    def test_no_extracted_fields_does_not_add_section(self):
+        offer = OfferFactory.build()
+        context = NotificationMessageContext(offer=offer)
+        service = self._make_service()
+        msg = service.get_message_for_offer(context)
+        assert "\U0001f3f7\ufe0f" not in msg
+
+    def test_mixed_types_rendered_correctly(self):
+        offer = OfferFactory.build()
+        context = NotificationMessageContext(
+            offer=offer,
+            extracted_fields={
+                "price_per_m2": 42.5,
+                "floor": 4,
+                "has_elevator": False,
+                "notes": "Great location",
+            },
+        )
+        service = self._make_service()
+        msg = service.get_message_for_offer(context)
+        assert "42.5" in msg
+        assert "4" in msg
+        assert "No" in msg
+        assert "Great location" in msg
