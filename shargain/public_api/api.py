@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
-from ninja.errors import ConfigError as NinjaConfigError, HttpError
+from ninja.errors import ConfigError as NinjaConfigError
+from ninja.errors import HttpError
 from pydantic.alias_generators import to_camel
 from pydantic.networks import HttpUrl
 
@@ -52,7 +53,7 @@ from shargain.offers.application.queries.get_target import (
     get_target_by_user,
 )
 from shargain.offers.application.queries.list_targets import list_targets
-from shargain.offers.schemas.offer_filter import validate_filters
+from shargain.offers.schemas.offer_filter import validate_filters_for_url
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
@@ -370,7 +371,7 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
 
     # Validate filter structure before saving
     try:
-        validated_filters = validate_filters(filters_dict)
+        validated_filters = validate_filters_for_url(filters_dict, str(payload.url))
     except ValueError as e:
         raise HttpError(400, str(e)) from e
 
@@ -429,6 +430,18 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
     """Update an existing scraping URL."""
     actor = get_actor(request)
     filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
+
+    if filters_dict:
+        from shargain.offers.models import ScrapingUrl
+
+        try:
+            existing_url = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
+        except ScrapingUrl.DoesNotExist as e:
+            raise HttpError(404, "Scraping URL not found") from e
+        try:
+            filters_dict = validate_filters_for_url(filters_dict, existing_url.url)
+        except ValueError as e:
+            raise HttpError(400, str(e)) from e
 
     try:
         waypoints_list = (
