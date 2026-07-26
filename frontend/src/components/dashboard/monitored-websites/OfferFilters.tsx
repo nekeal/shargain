@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { CheckCircle, ChevronDown, Filter, Plus, Save, X } from "lucide-react";
+import { CheckCircle, ChevronDown, Filter, Loader2, Plus, Save, X } from "lucide-react";
 import { createFilterSchemas } from "./filterValidation";
+import { useAvailableFields } from "@/hooks/useAvailableFields";
 import { useUpdateUrlMutation } from "./useMonitors";
-import type { FiltersConfigSchema, RuleGroupSchema } from "@/lib/api/types.gen";
+import type { AvailableFieldSchema, FiltersConfigSchema, RuleGroupSchema } from "@/lib/api/types.gen";
 import type { ZodIssue, z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,9 +31,9 @@ interface OfferFiltersProps {
   initialFilters: FiltersConfigSchema | null;
 }
 
-const createEmptyGroup = (): RuleGroupSchema => ({
+const createEmptyGroup = (firstField: string): RuleGroupSchema => ({
   logic: "and",
-  rules: [{ field: "title", operator: "contains", value: "", caseSensitive: false }],
+  rules: [{ field: firstField, operator: "contains", value: "", caseSensitive: false }],
 });
 
 const stableKeySort = (_key: string, value: unknown) => {
@@ -61,6 +62,10 @@ export function OfferFilters({
   );
   const [isOpen, setIsOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<z.ZodError | null>(null);
+
+  const { data: availableFieldsData, isLoading: fieldsLoading, isError: fieldsError } = useAvailableFields(urlId);
+  const availableFields = availableFieldsData?.fields ?? [];
+  const firstField = availableFields.length > 0 ? availableFields[0].name : "title";
 
   const mutation = useUpdateUrlMutation(targetId, urlId);
   const savedSnapshot = useRef(initialFilters);
@@ -118,7 +123,7 @@ export function OfferFilters({
     setIsOpen(open);
     // Auto-create first group when opening if no filters exist
     if (open && (!filters || filters.ruleGroups.length === 0)) {
-      handleFiltersChange({ ruleGroups: [createEmptyGroup()] });
+      handleFiltersChange({ ruleGroups: [createEmptyGroup(firstField)] });
     }
   };
 
@@ -144,6 +149,26 @@ export function OfferFilters({
   };
 
   const hasChanges = JSON.stringify(savedSnapshot.current, stableKeySort) !== JSON.stringify(filters, stableKeySort);
+
+  if (fieldsLoading) {
+    return (
+      <div className="flex items-center gap-2 mt-3 px-3 py-2 text-sm text-muted-foreground bg-muted/80 rounded-md">
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        <span>{t("dashboard.loading")}</span>
+      </div>
+    );
+  }
+
+  if (fieldsError) {
+    return (
+      <Alert variant="destructive" className="mt-3 py-2">
+        <AlertTitle className="text-sm">{t("filters.errors.loadFailed")}</AlertTitle>
+        <AlertDescription className="text-xs">
+          {t("filters.errors.loadFailedDescription")}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
@@ -257,9 +282,7 @@ export function OfferFilters({
                             const newGroups = filters.ruleGroups.map((g, gIdx) => {
                               if (gIdx !== groupIndex) return g;
                               const newRules = g.rules.map((r, rIdx) =>
-                                rIdx === ruleIndex
-                                  ? { ...r, field: value as "title" }
-                                  : r
+                                rIdx === ruleIndex ? { ...r, field: value } : r
                               );
                               return { ...g, rules: newRules };
                             });
@@ -270,39 +293,49 @@ export function OfferFilters({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="title" className="text-xs">
-                              {t("filters.field.title")}
-                            </SelectItem>
+                            {availableFields.map((field: AvailableFieldSchema) => (
+                              <SelectItem key={field.name} value={field.name} className="text-xs">
+                                {field.label}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
 
-                        <Select
-                          value={rule.operator}
-                          onValueChange={(value) => {
-                            const newGroups = filters.ruleGroups.map((g, gIdx) => {
-                              if (gIdx !== groupIndex) return g;
-                              const newRules = g.rules.map((r, rIdx) =>
-                                rIdx === ruleIndex
-                                  ? { ...r, operator: value as "contains" | "not_contains" }
-                                  : r
-                              );
-                              return { ...g, rules: newRules };
-                            });
-                            handleFiltersChange({ ...filters, ruleGroups: newGroups });
-                          }}
-                        >
-                          <SelectTrigger className="h-8 flex-1 sm:w-[150px] sm:flex-none text-xs px-2 bg-background">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="contains" className="text-xs">
-                              {t("filters.operator.contains")}
-                            </SelectItem>
-                            <SelectItem value="not_contains" className="text-xs">
-                              {t("filters.operator.not_contains")}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {(() => {
+                          const selectedField = availableFields.find(f => f.name === rule.field);
+                          const operators = selectedField?.operators ?? [];
+                          return (
+                            <Select
+                              value={rule.operator}
+                              onValueChange={(value) => {
+                                const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                                  if (gIdx !== groupIndex) return g;
+                                  const newRules = g.rules.map((r, rIdx) =>
+                                    rIdx === ruleIndex ? { ...r, operator: value } : r
+                                  );
+                                  return { ...g, rules: newRules };
+                                });
+                                handleFiltersChange({ ...filters, ruleGroups: newGroups });
+                              }}
+                            >
+                              <SelectTrigger className="h-8 flex-1 sm:w-[150px] sm:flex-none text-xs px-2 bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {operators.length === 0 && (
+                                  <SelectItem value="contains" className="text-xs">
+                                    {t("filters.operator.contains")}
+                                  </SelectItem>
+                                )}
+                                {operators.map((op) => (
+                                  <SelectItem key={op.value} value={op.value} className="text-xs">
+                                    {op.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+                        })()}
 
                         {group.rules.length > 1 && (
                           <button
@@ -385,8 +418,8 @@ export function OfferFilters({
                         rules: [
                           ...g.rules,
                           {
-                            field: "title" as const,
-                            operator: "contains" as const,
+                            field: firstField,
+                            operator: "contains",
                             value: "",
                             caseSensitive: false,
                           },
@@ -443,7 +476,7 @@ export function OfferFilters({
                   ? { ...g, logicWithNext: "or" as const }
                   : g
               ),
-              createEmptyGroup(),
+              createEmptyGroup(firstField),
             ];
             handleFiltersChange({ ruleGroups: newGroups });
           }}

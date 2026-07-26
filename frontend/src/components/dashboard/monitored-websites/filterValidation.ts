@@ -6,16 +6,14 @@ export const FILTER_CONSTRAINTS = {
   MAX_RULE_GROUPS: 5,
   MAX_RULES_PER_GROUP: 10,
   MAX_VALUE_LENGTH: 200,
-  ALLOWED_FIELDS: ["title"] as const,
-  ALLOWED_OPERATORS: ["contains", "not_contains"] as const,
   ALLOWED_LOGIC: ["and", "or"] as const,
 } as const;
 
 // Schema factory - accepts translation function for localized messages
 export const createFilterSchemas = (t: TFunction) => {
   const filterRuleSchema = z.object({
-    field: z.enum(FILTER_CONSTRAINTS.ALLOWED_FIELDS),
-    operator: z.enum(FILTER_CONSTRAINTS.ALLOWED_OPERATORS),
+    field: z.string().min(1, { message: t("filters.errors.invalidField") }),
+    operator: z.string().min(1, { message: t("filters.errors.invalidOperator") }),
     value: z
       .string()
       .min(1, { message: t("filters.errors.valueEmpty") })
@@ -64,8 +62,8 @@ export const createFilterSchemas = (t: TFunction) => {
 
 // Base schemas for type inference (without translations)
 export const baseFilterRuleSchema = z.object({
-  field: z.enum(FILTER_CONSTRAINTS.ALLOWED_FIELDS),
-  operator: z.enum(FILTER_CONSTRAINTS.ALLOWED_OPERATORS),
+  field: z.string().min(1),
+  operator: z.string().min(1),
   value: z.string().min(1).max(FILTER_CONSTRAINTS.MAX_VALUE_LENGTH),
   caseSensitive: z.boolean().default(false),
 });

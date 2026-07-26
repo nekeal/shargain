@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BellRing, CheckCircle, ChevronDown, MapPin, Plus, Save, X } from "lucide-react";
+import { BellRing, CheckCircle, ChevronDown, List, Loader2, MapPin, Plus, Save, X } from "lucide-react";
+import { useAvailableFields } from "@/hooks/useAvailableFields";
 import { useUpdateUrlMutation } from "./useMonitors";
-import type { WaypointSchema } from "@/lib/api/types.gen";
+import type { AvailableFieldSchema, NotificationFieldsSchema, WaypointSchema } from "@/lib/api/types.gen";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ interface UrlNotificationSettingsProps {
   urlId: number;
   initialShowLocationMap: boolean;
   initialWaypoints?: Array<WaypointSchema> | null;
+  initialNotificationFields?: NotificationFieldsSchema | null;
 }
 
 interface WaypointRowProps {
@@ -193,19 +195,33 @@ export function UrlNotificationSettings({
   urlId,
   initialShowLocationMap,
   initialWaypoints = [],
+  initialNotificationFields = null,
 }: UrlNotificationSettingsProps) {
   const { t } = useTranslation();
   const [showLocationMap, setShowLocationMap] = useState(initialShowLocationMap);
   const [waypoints, setWaypoints] = useState<Array<WaypointSchema>>(initialWaypoints ?? []);
+  const [selectedFields, setSelectedFields] = useState<Array<string>>(initialNotificationFields?.fields ?? []);
   const [isOpen, setIsOpen] = useState(false);
   const [pasteTargetIndex, setPasteTargetIndex] = useState<number | null>(null);
+
+  const { data: availableFieldsData, isLoading: fieldsLoading } = useAvailableFields(urlId);
+  const availableFields = availableFieldsData?.fields ?? [];
 
   const mutation = useUpdateUrlMutation(targetId, urlId);
 
   useEffect(() => {
     setShowLocationMap(initialShowLocationMap);
     setWaypoints(initialWaypoints ?? []);
-  }, [initialShowLocationMap, initialWaypoints]);
+    setSelectedFields(initialNotificationFields?.fields ?? []);
+  }, [initialShowLocationMap, initialWaypoints, initialNotificationFields]);
+
+  const toggleField = (fieldName: string) => {
+    setSelectedFields((prev) =>
+      prev.includes(fieldName)
+        ? prev.filter((f) => f !== fieldName)
+        : [...prev, fieldName]
+    );
+  };
 
   const addWaypoint = () => {
     setWaypoints((prev) => [...prev, { name: "", lat: 0, lon: 0 }]);
@@ -253,12 +269,14 @@ export function UrlNotificationSettings({
     mutation.mutate({
       showLocationMapInNotifications: showLocationMap,
       waypoints: waypoints,
+      notificationFields: selectedFields.length > 0 ? { fields: selectedFields } : null,
     });
   };
 
   const hasChanges =
     showLocationMap !== initialShowLocationMap ||
-    JSON.stringify(waypoints) !== JSON.stringify(initialWaypoints ?? []);
+    JSON.stringify(waypoints) !== JSON.stringify(initialWaypoints ?? []) ||
+    JSON.stringify(selectedFields) !== JSON.stringify(initialNotificationFields?.fields ?? []);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-2">
@@ -335,6 +353,49 @@ export function UrlNotificationSettings({
             </button>
           </div>
         )}
+
+        {/* Notification fields selection */}
+        <div className="p-3 bg-background/50 border border-border rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <List className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {t("urlSettings.notificationFields")}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            {t("urlSettings.selectFields")}
+          </p>
+          {fieldsLoading ? (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>{t("dashboard.loading")}</span>
+            </div>
+          ) : availableFields.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              {t("urlSettings.noFieldsAvailable")}
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {availableFields.map((field: AvailableFieldSchema) => (
+                <label
+                  key={field.name}
+                  className="flex items-center gap-2 cursor-pointer py-0.5"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedFields.includes(field.name)}
+                    onChange={() => toggleField(field.name)}
+                    className="w-3.5 h-3.5 rounded border-border accent-primary"
+                  />
+                  <span className="text-xs">{field.label}</span>
+                  {field.unit && (
+                    <span className="text-[10px] text-muted-foreground">({field.unit})</span>
+                  )}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-end pt-2">
           <Button

@@ -21,6 +21,14 @@ vi.mock('./useMonitors', () => ({
   }),
 }))
 
+vi.mock('@/hooks/useAvailableFields', () => ({
+  useAvailableFields: () => ({
+    data: { fields: [{ name: 'title', label: 'Title', type: 'string', operators: [{ value: 'contains', label: 'contains' }, { value: 'not_contains', label: 'does not contain' }] }] },
+    isLoading: false,
+    isError: false,
+  }),
+}))
+
 describe('UrlNotificationSettings', () => {
   let queryClient: QueryClient
 
@@ -168,6 +176,7 @@ describe('UrlNotificationSettings', () => {
       expect(mockMutate).toHaveBeenCalledWith({
         showLocationMapInNotifications: true,
         waypoints: [{ name: 'Test Waypoint', lat: 0, lon: 0 }],
+        notificationFields: null,
       })
     })
   })

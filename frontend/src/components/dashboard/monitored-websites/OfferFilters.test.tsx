@@ -48,6 +48,15 @@ vi.mock('./useMonitors', () => ({
   }),
 }))
 
+// Mock useAvailableFields
+vi.mock('@/hooks/useAvailableFields', () => ({
+  useAvailableFields: () => ({
+    data: { fields: [{ name: 'title', label: 'Title', type: 'string', operators: [{ value: 'contains', label: 'contains' }, { value: 'not_contains', label: 'does not contain' }] }] },
+    isLoading: false,
+    isError: false,
+  }),
+}))
+
 describe('OfferFilters', () => {
   let queryClient: QueryClient
 
