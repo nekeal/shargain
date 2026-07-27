@@ -187,7 +187,7 @@ class OfferBatchCreateService:
             distances = []
             if show_location:
                 # TODO: Move domain/metadata to ExtractedOffer.fields when plugins extract them
-                parser = LocationParserFactory.get_parser(extracted.offer.domain, extracted.offer.metadata)
+                parser = LocationParserFactory.get_parser(extracted.domain, extracted.metadata)
                 map_url = parser.get_map_url()
                 location_name = parser.get_location_name()
                 is_exact = parser.is_location_exact()
@@ -201,7 +201,7 @@ class OfferBatchCreateService:
 
             contexts.append(
                 NotificationMessageContext(
-                    offer=extracted.offer,
+                    offer=extracted._offer,
                     map_url=map_url,
                     location_name=location_name,
                     is_exact_location=is_exact,

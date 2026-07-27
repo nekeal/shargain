@@ -68,7 +68,7 @@ class TestExtractedOffer:
             _offer=offer,
             fields={"price_per_m2": 8500, "rooms": 3},
         )
-        assert extracted.offer is offer
+        assert extracted._offer is offer
         assert extracted.fields["price_per_m2"] == 8500
         assert extracted.fields["rooms"] == 3
 

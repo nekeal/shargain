@@ -54,10 +54,6 @@ class ExtractedOffer:
     fields: dict[str, int | float | str | bool | None]
 
     @property
-    def offer(self) -> Offer:
-        return self._offer
-
-    @property
     def id(self) -> int:
         return self._offer.id
 
