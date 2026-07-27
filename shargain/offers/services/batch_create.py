@@ -156,7 +156,7 @@ class OfferBatchCreateService:
     def _extract_offers(offers, list_url):
         return [
             ExtractedOffer(
-                offer=offer,
+                _offer=offer,
                 fields=OfferFieldResolver.extract(offer, ListUrl(list_url)),
             )
             for offer in offers
@@ -186,6 +186,7 @@ class OfferBatchCreateService:
             map_url, location_name, is_exact = None, None, False
             distances = []
             if show_location:
+                # TODO: Move domain/metadata to ExtractedOffer.fields when plugins extract them
                 parser = LocationParserFactory.get_parser(extracted.offer.domain, extracted.offer.metadata)
                 map_url = parser.get_map_url()
                 location_name = parser.get_location_name()

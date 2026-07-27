@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, NewType
 
@@ -43,8 +44,46 @@ class FieldDefinition:
 
 @dataclass
 class ExtractedOffer:
-    offer: Offer
+    """Extracted offer data for filtering and notifications.
+
+    TODO: Once location parser is refactored as a plugin, remove `_offer` and
+    include required fields directly (id, url, title, price, published_at, domain, metadata).
+    """
+
+    _offer: Offer
     fields: dict[str, int | float | str | bool | None]
+
+    @property
+    def offer(self) -> Offer:
+        return self._offer
+
+    @property
+    def id(self) -> int:
+        return self._offer.id
+
+    @property
+    def url(self) -> str:
+        return self._offer.url
+
+    @property
+    def title(self) -> str:
+        return self._offer.title
+
+    @property
+    def price(self) -> int | None:
+        return self._offer.price
+
+    @property
+    def published_at(self) -> datetime | None:
+        return self._offer.published_at
+
+    @property
+    def domain(self) -> str:
+        return self._offer.domain
+
+    @property
+    def metadata(self) -> dict:
+        return self._offer.metadata
 
 
 class NotificationFieldsSelection(BaseModel):

@@ -11,19 +11,19 @@ class TestOfferFilterService:
 
     @pytest.fixture
     def offer_apartment(self):
-        return ExtractedOffer(offer=None, fields={"title": "Beautiful apartment in city center"})
+        return ExtractedOffer(_offer=None, fields={"title": "Beautiful apartment in city center"})
 
     @pytest.fixture
     def offer_studio(self):
-        return ExtractedOffer(offer=None, fields={"title": "Cozy studio apartment for rent"})
+        return ExtractedOffer(_offer=None, fields={"title": "Cozy studio apartment for rent"})
 
     @pytest.fixture
     def offer_flat(self):
-        return ExtractedOffer(offer=None, fields={"title": "Modern flat with great view"})
+        return ExtractedOffer(_offer=None, fields={"title": "Modern flat with great view"})
 
     @pytest.fixture
     def offer_house(self):
-        return ExtractedOffer(offer=None, fields={"title": "Spacious house with garden"})
+        return ExtractedOffer(_offer=None, fields={"title": "Spacious house with garden"})
 
     def test_no_filters_passes_all(self, offer_apartment, offer_studio, offer_flat, offer_house):
         service = OfferFilterService(None)
@@ -114,7 +114,7 @@ class TestOfferFilterService:
         assert offer_house not in filtered
 
     def test_and_logic_between_groups(self, offer_apartment, offer_studio, offer_flat):
-        offer_apartment_with_flat = ExtractedOffer(offer=None, fields={"title": "Modern apartment flat"})
+        offer_apartment_with_flat = ExtractedOffer(_offer=None, fields={"title": "Modern apartment flat"})
         service = OfferFilterService(
             {
                 "ruleGroups": [
@@ -134,7 +134,7 @@ class TestOfferFilterService:
         assert offer_apartment_with_flat in filtered
 
     def test_complex_filter_and_or_combination(self, offer_apartment, offer_studio, offer_flat, offer_house):
-        offer_house_with_garden = ExtractedOffer(offer=None, fields={"title": "A beautiful house with a garden"})
+        offer_house_with_garden = ExtractedOffer(_offer=None, fields={"title": "A beautiful house with a garden"})
         service = OfferFilterService(
             {
                 "ruleGroups": [
@@ -183,7 +183,7 @@ class TestOfferFilterService:
         assert offer_apartment in filtered
 
     def test_case_insensitive_matching(self):
-        offer_upper = ExtractedOffer(offer=None, fields={"title": "LUXURY APARTMENT"})
+        offer_upper = ExtractedOffer(_offer=None, fields={"title": "LUXURY APARTMENT"})
         service = OfferFilterService(
             {"ruleGroups": [{"rules": [{"field": "title", "operator": "contains", "value": "apartment"}]}]}
         )
@@ -193,7 +193,7 @@ class TestOfferFilterService:
         assert offer_upper in filtered
 
     def test_case_sensitive_matching(self):
-        offer_upper = ExtractedOffer(offer=None, fields={"title": "LUXURY APARTMENT"})
+        offer_upper = ExtractedOffer(_offer=None, fields={"title": "LUXURY APARTMENT"})
         service = OfferFilterService(
             {
                 "ruleGroups": [
@@ -215,7 +215,7 @@ class TestOfferFilterService:
         assert len(filtered) == 0
 
     def test_unicode_and_special_chars(self):
-        offer_unicode = ExtractedOffer(offer=None, fields={"title": "Apartament w Krakowie - świetna lokalizacja!"})
+        offer_unicode = ExtractedOffer(_offer=None, fields={"title": "Apartament w Krakowie - świetna lokalizacja!"})
         service = OfferFilterService(
             {"ruleGroups": [{"rules": [{"field": "title", "operator": "contains", "value": "świetna"}]}]}
         )
@@ -232,7 +232,7 @@ class TestOfferFilterService:
             service.apply([offer_apartment])
 
     def test_field_not_in_extracted_returns_false(self):
-        offer = ExtractedOffer(offer=None, fields={"title": "Some offer"})
+        offer = ExtractedOffer(_offer=None, fields={"title": "Some offer"})
         service = OfferFilterService(
             {"ruleGroups": [{"rules": [{"field": "price", "operator": "equals", "value": "100"}]}]}
         )
@@ -273,8 +273,8 @@ class TestOfferFilterService:
         assert offer_studio in filtered
 
     def test_filter_price_greater_than(self):
-        offer_cheap = ExtractedOffer(offer=None, fields={"title": "Cheap", "price": 500})
-        offer_expensive = ExtractedOffer(offer=None, fields={"title": "Expensive", "price": 1500})
+        offer_cheap = ExtractedOffer(_offer=None, fields={"title": "Cheap", "price": 500})
+        offer_expensive = ExtractedOffer(_offer=None, fields={"title": "Expensive", "price": 1500})
         service = OfferFilterService(
             {"ruleGroups": [{"rules": [{"field": "price", "operator": "greater_than", "value": "1000"}]}]}
         )
@@ -284,8 +284,8 @@ class TestOfferFilterService:
         assert offer_expensive in filtered
 
     def test_filter_price_less_than(self):
-        offer_cheap = ExtractedOffer(offer=None, fields={"title": "Cheap", "price": 500})
-        offer_expensive = ExtractedOffer(offer=None, fields={"title": "Expensive", "price": 1500})
+        offer_cheap = ExtractedOffer(_offer=None, fields={"title": "Cheap", "price": 500})
+        offer_expensive = ExtractedOffer(_offer=None, fields={"title": "Expensive", "price": 1500})
         service = OfferFilterService(
             {"ruleGroups": [{"rules": [{"field": "price", "operator": "less_than", "value": "1000"}]}]}
         )
@@ -295,9 +295,9 @@ class TestOfferFilterService:
         assert offer_cheap in filtered
 
     def test_filter_price_gte(self):
-        offer_cheap = ExtractedOffer(offer=None, fields={"title": "Cheap", "price": 500})
-        offer_exact = ExtractedOffer(offer=None, fields={"title": "Exact", "price": 1000})
-        offer_expensive = ExtractedOffer(offer=None, fields={"title": "Expensive", "price": 1500})
+        offer_cheap = ExtractedOffer(_offer=None, fields={"title": "Cheap", "price": 500})
+        offer_exact = ExtractedOffer(_offer=None, fields={"title": "Exact", "price": 1000})
+        offer_expensive = ExtractedOffer(_offer=None, fields={"title": "Expensive", "price": 1500})
         service = OfferFilterService(
             {"ruleGroups": [{"rules": [{"field": "price", "operator": "gte", "value": "1000"}]}]}
         )
@@ -308,9 +308,9 @@ class TestOfferFilterService:
         assert offer_expensive in filtered
 
     def test_filter_price_lte(self):
-        offer_cheap = ExtractedOffer(offer=None, fields={"title": "Cheap", "price": 500})
-        offer_exact = ExtractedOffer(offer=None, fields={"title": "Exact", "price": 1000})
-        offer_expensive = ExtractedOffer(offer=None, fields={"title": "Expensive", "price": 1500})
+        offer_cheap = ExtractedOffer(_offer=None, fields={"title": "Cheap", "price": 500})
+        offer_exact = ExtractedOffer(_offer=None, fields={"title": "Exact", "price": 1000})
+        offer_expensive = ExtractedOffer(_offer=None, fields={"title": "Expensive", "price": 1500})
         service = OfferFilterService(
             {"ruleGroups": [{"rules": [{"field": "price", "operator": "lte", "value": "1000"}]}]}
         )
@@ -321,8 +321,8 @@ class TestOfferFilterService:
         assert offer_exact in filtered
 
     def test_filter_rooms_equals(self):
-        offer_2rooms = ExtractedOffer(offer=None, fields={"title": "Two rooms", "rooms": 2})
-        offer_3rooms = ExtractedOffer(offer=None, fields={"title": "Three rooms", "rooms": 3})
+        offer_2rooms = ExtractedOffer(_offer=None, fields={"title": "Two rooms", "rooms": 2})
+        offer_3rooms = ExtractedOffer(_offer=None, fields={"title": "Three rooms", "rooms": 3})
         service = OfferFilterService(
             {"ruleGroups": [{"rules": [{"field": "rooms", "operator": "equals", "value": "2"}]}]}
         )
@@ -332,9 +332,9 @@ class TestOfferFilterService:
         assert offer_2rooms in filtered
 
     def test_multiple_groups_with_and_logic(self):
-        offer_pass = ExtractedOffer(offer=None, fields={"title": "Nice flat", "price": 1500, "rooms": 2})
-        offer_too_pricey = ExtractedOffer(offer=None, fields={"title": "Expensive flat", "price": 500, "rooms": 2})
-        offer_too_many_rooms = ExtractedOffer(offer=None, fields={"title": "Big flat", "price": 1500, "rooms": 5})
+        offer_pass = ExtractedOffer(_offer=None, fields={"title": "Nice flat", "price": 1500, "rooms": 2})
+        offer_too_pricey = ExtractedOffer(_offer=None, fields={"title": "Expensive flat", "price": 500, "rooms": 2})
+        offer_too_many_rooms = ExtractedOffer(_offer=None, fields={"title": "Big flat", "price": 1500, "rooms": 5})
         service = OfferFilterService(
             {
                 "ruleGroups": [
@@ -353,9 +353,9 @@ class TestOfferFilterService:
         assert offer_pass in filtered
 
     def test_multiple_groups_with_or_logic(self):
-        offer_cheap = ExtractedOffer(offer=None, fields={"title": "Cheap", "price": 100})
-        offer_big = ExtractedOffer(offer=None, fields={"title": "Big", "rooms": 10})
-        offer_normal = ExtractedOffer(offer=None, fields={"title": "Normal", "price": 500, "rooms": 3})
+        offer_cheap = ExtractedOffer(_offer=None, fields={"title": "Cheap", "price": 100})
+        offer_big = ExtractedOffer(_offer=None, fields={"title": "Big", "rooms": 10})
+        offer_normal = ExtractedOffer(_offer=None, fields={"title": "Normal", "price": 500, "rooms": 3})
         service = OfferFilterService(
             {
                 "ruleGroups": [

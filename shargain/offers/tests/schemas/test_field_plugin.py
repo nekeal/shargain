@@ -65,7 +65,7 @@ class TestExtractedOffer:
     def test_holds_offer_and_fields(self):
         offer = OfferFactory.build()
         extracted = ExtractedOffer(
-            offer=offer,
+            _offer=offer,
             fields={"price_per_m2": 8500, "rooms": 3},
         )
         assert extracted.offer is offer
@@ -74,5 +74,5 @@ class TestExtractedOffer:
 
     def test_fields_can_be_empty(self):
         offer = OfferFactory.build()
-        extracted = ExtractedOffer(offer=offer, fields={})
+        extracted = ExtractedOffer(_offer=offer, fields={})
         assert extracted.fields == {}
