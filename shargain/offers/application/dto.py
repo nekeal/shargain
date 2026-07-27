@@ -9,6 +9,7 @@ import dataclasses
 from typing import Self, TypedDict
 
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
+from shargain.offers.schemas.field_plugin import NotificationFieldsSelection
 
 
 class WaypointData(TypedDict):
@@ -29,7 +30,7 @@ class ScrapingUrlDTO:
     filters: dict | None = None
     show_location_map_in_notifications: bool = False
     waypoints: list[WaypointData] | None = None
-    notification_fields: dict | None = None
+    notification_fields: NotificationFieldsSelection | None = None
 
     @classmethod
     def from_orm(cls, url: ScrapingUrl, last_checked_at: str | None = None) -> Self:
