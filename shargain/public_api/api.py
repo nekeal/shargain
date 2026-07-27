@@ -54,7 +54,7 @@ from shargain.offers.application.queries.get_target import (
     get_target_by_user,
 )
 from shargain.offers.application.queries.list_targets import list_targets
-from shargain.offers.schemas.offer_filter import validate_filters_for_url
+from shargain.offers.services.filter_validation import validate_filters_for_url
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
