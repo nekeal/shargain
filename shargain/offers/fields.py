@@ -49,7 +49,7 @@ class PydanticField(models.JSONField):
         if value is None:
             return None
         if isinstance(value, self.pydantic_model):
-            value = value.model_dump()
+            return super().get_prep_value(value.model_dump())
         return super().get_prep_value(value)
 
     def deconstruct(self):

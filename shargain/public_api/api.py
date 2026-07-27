@@ -2,6 +2,7 @@ from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
 from ninja.errors import ConfigError as NinjaConfigError
 from ninja.errors import HttpError
+from pydantic import Field
 from pydantic.alias_generators import to_camel
 from pydantic.networks import HttpUrl
 
@@ -177,6 +178,10 @@ class WaypointSchema(BaseSchema):
     lon: float
 
 
+class NotificationFieldsSchema(BaseSchema):
+    fields: list[str] = Field(default_factory=list)
+
+
 class ScrapingUrlResponse(BaseSchema):
     id: int
     url: str
@@ -186,6 +191,7 @@ class ScrapingUrlResponse(BaseSchema):
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool = False
     waypoints: list[WaypointSchema] | None = None
+    notification_fields: NotificationFieldsSchema | None = None
 
 
 class TargetResponse(BaseSchema):
@@ -357,6 +363,7 @@ class UpdateScrapingUrlRequest(BaseSchema):
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool | None = None
     waypoints: list[WaypointSchema] | None = None
+    notification_fields: NotificationFieldsSchema | None = None
 
 
 @router.post(
@@ -447,12 +454,16 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
         waypoints_list = (
             [WaypointData(name=w.name, lat=w.lat, lon=w.lon) for w in payload.waypoints] if payload.waypoints else None
         )
+        notification_fields_dict = (
+            payload.notification_fields.model_dump(mode="json") if payload.notification_fields else None
+        )
         return update_scraping_url(
             actor=actor,
             url_id=url_id,
             filters=filters_dict,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
             waypoints=waypoints_list,
+            notification_fields=notification_fields_dict,
         )
     except ScrapingUrlDoesNotExist as exc:
         raise HttpError(404, "Scraping URL not found") from exc
