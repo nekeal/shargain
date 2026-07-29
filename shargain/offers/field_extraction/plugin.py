@@ -8,6 +8,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, NewType
 
+from django.utils.translation import gettext_lazy as _
 from pydantic import BaseModel
 
 if TYPE_CHECKING:
@@ -33,6 +34,21 @@ class Operator(StrEnum):
     LESS_THAN = "less_than"
     GTE = "gte"
     LTE = "lte"
+
+    @property
+    def label(self) -> str:
+        return _OPERATOR_LABELS[self]
+
+_OPERATOR_LABELS: dict[Operator, str] = {
+    Operator.CONTAINS: _("Contains"),
+    Operator.NOT_CONTAINS: _("Does not contain"),
+    Operator.EQUALS: _("Equals"),
+    Operator.NOT_EQUALS: _("Not equals"),
+    Operator.GREATER_THAN: _("Greater than"),
+    Operator.LESS_THAN: _("Less than"),
+    Operator.GTE: _("Greater than or equal"),
+    Operator.LTE: _("Less than or equal"),
+}
 
 
 @dataclass(frozen=True)

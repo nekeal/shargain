@@ -9,17 +9,6 @@ from shargain.offers.field_extraction.plugin import BaseFieldPlugin, ExtractedFi
 if TYPE_CHECKING:
     from shargain.offers.models import Offer
 
-OPERATOR_LABELS: dict[Operator, str] = {
-    Operator.CONTAINS: "Contains",
-    Operator.NOT_CONTAINS: "Does not contain",
-    Operator.EQUALS: "Equals",
-    Operator.NOT_EQUALS: "Not equals",
-    Operator.GREATER_THAN: "Greater than",
-    Operator.LESS_THAN: "Less than",
-    Operator.GTE: "Greater than or equal",
-    Operator.LTE: "Less than or equal",
-}
-
 TYPE_OPERATORS: dict[FieldType, list[Operator]] = {
     FieldType.STRING: [Operator.CONTAINS, Operator.NOT_CONTAINS, Operator.EQUALS],
     FieldType.NUMBER: [

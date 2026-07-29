@@ -4,6 +4,14 @@ from shargain.offers.field_extraction import ExtractedOffer, FieldDefinition, Fi
 from shargain.offers.tests.factories import OfferFactory
 
 
+class TestOperator:
+    def test_all_operators_have_labels(self):
+        for op in Operator:
+            label = str(op.label)
+            assert len(label) > 0, f"Operator {op.value!r} has empty label"
+            assert label != op.value, f"Operator {op.value!r} label equals its value"
+
+
 class TestFieldDefinition:
     def test_custom_allowed_operators(self):
         fd = FieldDefinition(

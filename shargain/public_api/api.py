@@ -259,7 +259,7 @@ def get_available_fields(request: HttpRequest, url_id: int):
     except ScrapingUrl.DoesNotExist as e:
         raise HttpError(404, "Scraping URL not found") from e
 
-    from shargain.offers.field_extraction import OPERATOR_LABELS, ListUrl, OfferFieldResolver
+    from shargain.offers.field_extraction import ListUrl, OfferFieldResolver
 
     fields = OfferFieldResolver.get_fields(ListUrl(url_dto.url))
 
@@ -273,7 +273,7 @@ def get_available_fields(request: HttpRequest, url_id: int):
                 operators=[
                     FieldOperatorSchema(
                         value=op.value,
-                        label=OPERATOR_LABELS.get(op, op.value),
+                        label=str(op.label),
                     )
                     for op in (f.allowed_operators or [])
                 ],
