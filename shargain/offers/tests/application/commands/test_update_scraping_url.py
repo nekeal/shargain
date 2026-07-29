@@ -61,6 +61,17 @@ class TestUpdateScrapingUrl:
 
         assert result_dto.waypoints == new_waypoints
 
+    def test_update_scraping_url_notification_fields_succeeds(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target)
+        actor = Actor(user_id=scraping_target.owner_id)
+        new_notification_fields = {"fields": ["title", "price"]}
+
+        result_dto = update_scraping_url(
+            actor=actor, url_id=scraping_url.id, notification_fields=new_notification_fields
+        )
+
+        assert result_dto.notification_fields == new_notification_fields
+
     def test_update_scraping_url_for_non_existent_url_raises_error(self):
         actor = Actor(user_id=1)
 

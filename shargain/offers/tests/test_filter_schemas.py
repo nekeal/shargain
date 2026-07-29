@@ -88,13 +88,13 @@ class TestFilterRule:
                 value="test",
             )
 
-    def test_rule_rejects_invalid_field(self):
-        """Test that invalid fields are rejected."""
+    def test_rule_rejects_blank_value(self):
+        """Test that blank values are rejected."""
         with pytest.raises(ValidationError):
             FilterRule(
-                field="invalid_field",  # type: ignore
+                field="title",
                 operator=FilterOperator.CONTAINS,
-                value="test",
+                value="   ",
             )
 
 
@@ -245,7 +245,7 @@ class TestValidateFilters:
 
     def test_validate_filters_with_invalid_config(self):
         """Test that invalid config raises ValueError."""
-        invalid_config = {"ruleGroups": [{"rules": [{"field": "invalid", "operator": "contains", "value": "test"}]}]}
+        invalid_config = {"ruleGroups": [{"rules": [{"field": "title", "operator": "contains", "value": ""}]}]}
         with pytest.raises(ValueError, match="Invalid filter configuration"):
             validate_filters(invalid_config)
 
