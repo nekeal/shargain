@@ -4,15 +4,15 @@ from unittest.mock import Mock, PropertyMock
 
 import pytest
 
-from shargain.offers.models import Offer
-from shargain.offers.schemas.field_plugin import (
+from shargain.offers.field_extraction import (
     BaseFieldPlugin,
     FieldDefinition,
     FieldType,
     ListUrl,
+    OfferFieldResolver,
     Operator,
 )
-from shargain.offers.services.offer_field_resolver import OfferFieldResolver
+from shargain.offers.models import Offer
 
 
 @pytest.fixture(autouse=True)
@@ -110,7 +110,7 @@ class TestOfferFieldResolver:
 
 class TestGetOperatorsForType:
     def test_string_type(self):
-        from shargain.offers.services.offer_field_resolver import get_operators_for_type
+        from shargain.offers.field_extraction import get_operators_for_type
 
         ops = get_operators_for_type(FieldType.STRING)
         assert Operator.CONTAINS in ops
@@ -118,7 +118,7 @@ class TestGetOperatorsForType:
         assert Operator.EQUALS in ops
 
     def test_number_type(self):
-        from shargain.offers.services.offer_field_resolver import get_operators_for_type
+        from shargain.offers.field_extraction import get_operators_for_type
 
         ops = get_operators_for_type(FieldType.NUMBER)
         assert Operator.EQUALS in ops
@@ -128,14 +128,14 @@ class TestGetOperatorsForType:
         assert Operator.LTE in ops
 
     def test_boolean_type(self):
-        from shargain.offers.services.offer_field_resolver import get_operators_for_type
+        from shargain.offers.field_extraction import get_operators_for_type
 
         ops = get_operators_for_type(FieldType.BOOLEAN)
         assert Operator.EQUALS in ops
         assert len(ops) == 1
 
     def test_custom_operators_override_defaults(self):
-        from shargain.offers.services.offer_field_resolver import get_operators_for_type
+        from shargain.offers.field_extraction import get_operators_for_type
 
         custom = [Operator.CONTAINS]
         result = get_operators_for_type(FieldType.NUMBER, custom)
@@ -143,7 +143,7 @@ class TestGetOperatorsForType:
 
     def test_get_fields_resolves_operators_from_type(self):
         OfferFieldResolver._plugins = []
-        from shargain.offers.services.source_plugins.core_fields import core_fields
+        from shargain.offers.field_extraction.plugins.core_fields import core_fields
 
         OfferFieldResolver.register(core_fields)
         url = ListUrl("https://example.com/")

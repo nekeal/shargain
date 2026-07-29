@@ -2,7 +2,7 @@
 
 import pytest
 
-from shargain.offers.schemas.field_plugin import ExtractedOffer, FieldDefinition, FieldType, ListUrl, Operator
+from shargain.offers.field_extraction import ExtractedOffer, FieldDefinition, FieldType, ListUrl, Operator
 from shargain.offers.tests.factories import OfferFactory
 
 

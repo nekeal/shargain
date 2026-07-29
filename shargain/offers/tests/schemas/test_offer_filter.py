@@ -2,7 +2,7 @@
 
 import pytest
 
-from shargain.offers.services.filter_validation import validate_filters_for_url
+from shargain.offers.filtering import validate_filters_for_url
 
 
 class TestValidateFiltersForUrl:

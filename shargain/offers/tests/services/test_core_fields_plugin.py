@@ -1,7 +1,7 @@
 """Tests for CoreFieldsPlugin."""
 
-from shargain.offers.schemas.field_plugin import FieldType, ListUrl
-from shargain.offers.services.source_plugins.core_fields import core_fields
+from shargain.offers.field_extraction import FieldType, ListUrl
+from shargain.offers.field_extraction.plugins.core_fields import core_fields
 from shargain.offers.tests.factories import OfferFactory
 
 

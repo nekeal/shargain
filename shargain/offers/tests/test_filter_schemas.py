@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from shargain.offers.schemas.offer_filter import (
+from shargain.offers.filtering import (
     FilterField,
     FilterOperator,
     FilterRule,

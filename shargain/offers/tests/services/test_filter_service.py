@@ -2,8 +2,8 @@
 
 import pytest
 
-from shargain.offers.schemas.field_plugin import ExtractedOffer
-from shargain.offers.services.filter_service import OfferFilterService
+from shargain.offers.field_extraction import ExtractedOffer
+from shargain.offers.filtering import OfferFilterService
 
 
 class TestOfferFilterService:
