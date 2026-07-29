@@ -1,7 +1,13 @@
 """Registry and resolver for field plugins."""
 
-from shargain.offers.models import Offer
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from shargain.offers.field_extraction.plugin import BaseFieldPlugin, FieldDefinition, FieldType, ListUrl, Operator
+
+if TYPE_CHECKING:
+    from shargain.offers.models import Offer
 
 OPERATOR_LABELS: dict[Operator, str] = {
     Operator.CONTAINS: "Contains",

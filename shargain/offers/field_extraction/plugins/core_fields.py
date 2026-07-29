@@ -1,12 +1,18 @@
 """Core Fields Plugin -- applies to all URLs, extracts basic offer fields."""
 
-from shargain.offers.models import Offer
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from shargain.offers.field_extraction.plugin import (
     BaseFieldPlugin,
     FieldDefinition,
     FieldType,
     ListUrl,
 )
+
+if TYPE_CHECKING:
+    from shargain.offers.models import Offer
 
 
 class CoreFieldsPlugin(BaseFieldPlugin):
