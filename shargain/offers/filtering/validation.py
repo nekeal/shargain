@@ -1,8 +1,8 @@
 """URL-aware filter validation service."""
 
-from shargain.offers.schemas.field_plugin import ListUrl
-from shargain.offers.schemas.offer_filter import validate_filters
-from shargain.offers.services.offer_field_resolver import OfferFieldResolver
+from shargain.offers.field_extraction.plugin import ListUrl
+from shargain.offers.filtering.schemas import validate_filters
+from shargain.offers.field_extraction.resolver import OfferFieldResolver
 
 
 def validate_filters_for_url(filters_data: dict | None, url: str) -> dict | None:

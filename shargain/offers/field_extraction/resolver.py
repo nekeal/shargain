@@ -1,7 +1,7 @@
 """Registry and resolver for field plugins."""
 
 from shargain.offers.models import Offer
-from shargain.offers.schemas.field_plugin import BaseFieldPlugin, FieldDefinition, FieldType, ListUrl, Operator
+from shargain.offers.field_extraction.plugin import BaseFieldPlugin, FieldDefinition, FieldType, ListUrl, Operator
 
 OPERATOR_LABELS: dict[Operator, str] = {
     Operator.CONTAINS: "Contains",

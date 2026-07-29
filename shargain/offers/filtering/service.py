@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from typing import Any
 
-from shargain.offers.schemas.field_plugin import ExtractedOffer
+from shargain.offers.field_extraction.plugin import ExtractedOffer
 
 
 class OfferFilterService:
