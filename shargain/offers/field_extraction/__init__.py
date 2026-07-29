@@ -1,5 +1,7 @@
 from shargain.offers.field_extraction.plugin import (
     BaseFieldPlugin,
+    ExtractedFieldEntry,
+    ExtractedFieldValue,
     ExtractedOffer,
     FieldDefinition,
     FieldType,
@@ -16,6 +18,8 @@ from shargain.offers.field_extraction.resolver import (
 
 __all__ = [
     "BaseFieldPlugin",
+    "ExtractedFieldEntry",
+    "ExtractedFieldValue",
     "ExtractedOffer",
     "FieldDefinition",
     "FieldType",

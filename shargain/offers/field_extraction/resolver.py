@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from shargain.offers.field_extraction.plugin import BaseFieldPlugin, FieldDefinition, FieldType, ListUrl, Operator
+from shargain.offers.field_extraction.plugin import BaseFieldPlugin, ExtractedFieldValue, FieldDefinition, FieldType, ListUrl, Operator
 
 if TYPE_CHECKING:
     from shargain.offers.models import Offer
@@ -77,8 +77,8 @@ class OfferFieldResolver:
         return result
 
     @classmethod
-    def extract(cls, offer: Offer, url: ListUrl) -> dict[str, int | float | str | bool | None]:
-        result: dict[str, int | float | str | bool | None] = {}
+    def extract(cls, offer: Offer, url: ListUrl) -> dict[str, ExtractedFieldValue]:
+        result: dict[str, ExtractedFieldValue] = {}
 
         for plugin in cls._plugins:
             if not plugin.matches(url):

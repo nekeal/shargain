@@ -8,8 +8,7 @@ pytestmark = pytest.mark.django_db
 
 
 class TestAvailableFieldsEndpoint:
-    def test_returns_fields_for_url(self, client, django_user_model):
-        user = django_user_model.objects.create_user(username="test", password="pass")
+    def test_returns_fields_for_url(self, client, user):
         client.force_login(user)
         target = ScrappingTargetFactory(owner=user)
         url = ScrapingUrlFactory(scraping_target=target, url="https://olx.pl/oferty/")
@@ -21,8 +20,7 @@ class TestAvailableFieldsEndpoint:
         assert "title" in field_names
         assert "price" in field_names
 
-    def test_returns_404_for_non_existent_url(self, client, django_user_model):
-        user = django_user_model.objects.create_user(username="test", password="pass")
+    def test_returns_404_for_non_existent_url(self, client, user):
         client.force_login(user)
         response = client.get("/api/public/urls/99999/available-fields")
         assert response.status_code == 404
@@ -31,8 +29,7 @@ class TestAvailableFieldsEndpoint:
         response = client.get("/api/public/urls/1/available-fields")
         assert response.status_code == 401
 
-    def test_operator_labels_are_provided(self, client, django_user_model):
-        user = django_user_model.objects.create_user(username="test", password="pass")
+    def test_operator_labels_are_provided(self, client, user):
         client.force_login(user)
         target = ScrappingTargetFactory(owner=user)
         url = ScrapingUrlFactory(scraping_target=target, url="https://example.com/")

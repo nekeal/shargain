@@ -5,7 +5,7 @@ from opentelemetry import trace
 
 from shargain.notifications.services.notifications import NewOfferNotificationService, NotificationMessageContext
 from shargain.offers.application.commands.record_checkin import record_checkin
-from shargain.offers.field_extraction import ExtractedOffer, ListUrl, OfferFieldResolver
+from shargain.offers.field_extraction import ExtractedFieldEntry, ExtractedOffer, ListUrl, OfferFieldResolver
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
 from shargain.offers.signals import offers_batch_created
@@ -205,7 +205,11 @@ class OfferBatchCreateService:
                     location_name=location_name,
                     is_exact_location=is_exact,
                     distances=distances,
-                    extracted_fields={k: v for k, v in extracted.fields.items() if k in selected},
+                    extracted_fields=[
+                        ExtractedFieldEntry(name=k, value=v)
+                        for k, v in extracted.fields.items()
+                        if k in selected
+                    ],
                 )
             )
         return contexts

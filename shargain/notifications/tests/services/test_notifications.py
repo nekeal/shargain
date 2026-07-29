@@ -7,6 +7,7 @@ from shargain.notifications.services.notifications import (
     NotificationMessageContext,
 )
 from shargain.notifications.tests.factories import NotificationConfigFactory
+from shargain.offers.field_extraction import ExtractedFieldEntry
 from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
 
 
@@ -83,20 +84,28 @@ class TestExtractedFieldsInMessage:
         return NewOfferNotificationService([], target, "NOTIFICATION TITLE")
 
     @staticmethod
-    def _make_context(extracted_fields=None):
+    def _make_context(fields: list[ExtractedFieldEntry] | None = None):
         return NotificationMessageContext(
             offer=OfferFactory.build(),
-            extracted_fields=extracted_fields or {},
+            extracted_fields=fields or [],
         )
 
     @pytest.mark.parametrize(
         ("fields", "assertions"),
         [
-            ({"price_per_m2": 42, "rooms": 3}, ["Price Per M2: 42", "Rooms: 3"]),
-            ({"has_balcony": True}, ["Yes"]),
-            ({"has_elevator": False}, ["No"]),
             (
-                {"price_per_m2": 42.5, "floor": 4, "has_elevator": False, "notes": "Great location"},
+                [ExtractedFieldEntry(name="price_per_m2", value=42), ExtractedFieldEntry(name="rooms", value=3)],
+                ["Price Per M2: 42", "Rooms: 3"],
+            ),
+            ([ExtractedFieldEntry(name="has_balcony", value=True)], ["Yes"]),
+            ([ExtractedFieldEntry(name="has_elevator", value=False)], ["No"]),
+            (
+                [
+                    ExtractedFieldEntry(name="price_per_m2", value=42.5),
+                    ExtractedFieldEntry(name="floor", value=4),
+                    ExtractedFieldEntry(name="has_elevator", value=False),
+                    ExtractedFieldEntry(name="notes", value="Great location"),
+                ],
                 ["42.5", "4", "No", "Great location"],
             ),
         ],

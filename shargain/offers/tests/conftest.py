@@ -7,8 +7,8 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor, SpanExporter
 
 from shargain.accounts.models import CustomUser
 from shargain.accounts.tests.factories import UserFactory
-from shargain.offers.models import ScrappingTarget
-from shargain.offers.tests.factories import ScrappingTargetFactory
+from shargain.offers.models import Offer, ScrappingTarget
+from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
 
 
 class InMemorySpanExporter(SpanExporter):
@@ -47,3 +47,8 @@ def user(db) -> CustomUser:
 @pytest.fixture
 def scraping_target(user) -> ScrappingTarget:
     return ScrappingTargetFactory(owner=user)
+
+
+@pytest.fixture
+def offer() -> Offer:
+    return OfferFactory.build()

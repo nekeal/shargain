@@ -13,6 +13,8 @@ from pydantic import BaseModel
 if TYPE_CHECKING:
     from shargain.offers.models import Offer
 
+ExtractedFieldValue = int | float | str | bool | None
+
 ListUrl = NewType("ListUrl", str)
 
 
@@ -51,7 +53,7 @@ class ExtractedOffer:
     """
 
     _offer: Offer
-    fields: dict[str, int | float | str | bool | None]
+    fields: dict[str, ExtractedFieldValue]
 
     @property
     def id(self) -> int:
@@ -82,6 +84,11 @@ class ExtractedOffer:
         return self._offer.metadata
 
 
+class ExtractedFieldEntry(BaseModel):
+    name: str
+    value: ExtractedFieldValue
+
+
 class NotificationFieldsSelection(BaseModel):
     fields: list[str] = []
 
@@ -101,5 +108,5 @@ class BaseFieldPlugin(ABC):
         """The fields this plugin can extract."""
 
     @abstractmethod
-    def extract(self, offer: Offer, url: ListUrl) -> dict[str, int | float | str | bool | None]:
+    def extract(self, offer: Offer, url: ListUrl) -> dict[str, ExtractedFieldValue]:
         """Return {field_name: value} for all declared fields."""

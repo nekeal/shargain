@@ -55,8 +55,9 @@ class TestRefactoredNotify:
             contexts = mock_notification.call_args[0][0]
             assert len(contexts) == 1
             assert contexts[0].offer.title == "Beautiful apartment"
-            assert "title" in contexts[0].extracted_fields
-            assert "price" in contexts[0].extracted_fields
+            field_names = {f.name for f in contexts[0].extracted_fields}
+            assert "title" in field_names
+            assert "price" in field_names
 
 
 @pytest.mark.django_db
