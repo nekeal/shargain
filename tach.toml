@@ -16,35 +16,19 @@ exclude = [
 forbid_circular_dependencies = true
 ignore_type_checking_imports = true
 
-# Utility root — submodules can import models without explicit depends_on
-[[modules]]
-path = "shargain.offers"
-utility = true
-depends_on = []
-
 # Layer 1: plugin system
-# TODO: Should not depend on shargain.offers — extract a types-only dependency once location parser is a plugin
+# TODO: depends_on should be empty once location parser is a plugin
+# (currently imports Offer from shargain.offers.models under TYPE_CHECKING only)
 [[modules]]
 path = "shargain.offers.field_extraction"
-depends_on = ["shargain.offers"]
+depends_on = []
 
-# Layer 2: filtering depends on field_extraction
-# TODO: Should not depend on shargain.offers — filtering should work purely on ExtractedOffer
+# Layer 2: filtering depends on field_extraction's public API
 [[modules]]
 path = "shargain.offers.filtering"
-depends_on = ["shargain.offers.field_extraction", "shargain.offers"]
+depends_on = ["shargain.offers.field_extraction"]
 
-# Layer 3: orchestrator depends on both
-[[modules]]
-path = "shargain.offers.services"
-depends_on = ["shargain.offers.filtering", "shargain.offers.field_extraction", "shargain.offers"]
-
-# Layer 4: CQRS commands/queries
-[[modules]]
-path = "shargain.offers.application"
-depends_on = ["shargain.offers.services", "shargain.offers"]
-
-# Everything outside offers — not checked
+# Everything else — not checked
 [[modules]]
 path = "*"
 unchecked = true
