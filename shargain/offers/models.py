@@ -11,8 +11,8 @@ from django_better_admin_arrayfield.models.fields import ArrayField
 
 from shargain.accounts.models import CustomUser
 from shargain.commons.models import TimeStampedModel
+from shargain.offers.field_extraction import NotificationFieldsSelection
 from shargain.offers.fields import PydanticField
-from shargain.offers.schemas.field_plugin import NotificationFieldsSelection
 
 
 class ScrappingTarget(models.Model):  # type: ignore[django-manager-missing]

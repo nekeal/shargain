@@ -7,8 +7,7 @@ class OffersConfig(AppConfig):
     verbose_name = _("Offers")
 
     def ready(self):
-        from shargain.offers.services.offer_field_resolver import OfferFieldResolver
-        from shargain.offers.services.source_plugins import registered_plugins
+        from shargain.offers.field_extraction import OfferFieldResolver, registered_plugins
 
         for plugin in registered_plugins:
             OfferFieldResolver.register(plugin)

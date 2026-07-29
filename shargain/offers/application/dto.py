@@ -8,8 +8,8 @@ and the presentation layer (e.g., API views).
 import dataclasses
 from typing import Self, TypedDict
 
+from shargain.offers.field_extraction import NotificationFieldsSelection
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
-from shargain.offers.schemas.field_plugin import NotificationFieldsSelection
 
 
 class WaypointData(TypedDict):

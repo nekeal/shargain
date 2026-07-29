@@ -5,10 +5,9 @@ from opentelemetry import trace
 
 from shargain.notifications.services.notifications import NewOfferNotificationService, NotificationMessageContext
 from shargain.offers.application.commands.record_checkin import record_checkin
+from shargain.offers.field_extraction import ExtractedOffer, ListUrl, OfferFieldResolver
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
-from shargain.offers.schemas.field_plugin import ExtractedOffer, ListUrl
 from shargain.offers.serializers import OfferBatchCreateSerializer
-from shargain.offers.services.offer_field_resolver import OfferFieldResolver
 from shargain.offers.signals import offers_batch_created
 from shargain.quotas.services.quota import QuotaService
 
@@ -166,7 +165,7 @@ class OfferBatchCreateService:
     def _filter_offers(extracted_offers, scraping_url):
         if not scraping_url or not scraping_url.filters:
             return extracted_offers
-        from shargain.offers.services.filter_service import OfferFilterService
+        from shargain.offers.filtering import OfferFilterService
 
         return OfferFilterService(scraping_url.filters).apply(extracted_offers)
 

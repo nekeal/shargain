@@ -1,8 +1,8 @@
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
 from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist
+from shargain.offers.field_extraction import NotificationFieldsSelection
 from shargain.offers.models import ScrapingUrl
-from shargain.offers.schemas.field_plugin import NotificationFieldsSelection
 
 
 def update_scraping_url(

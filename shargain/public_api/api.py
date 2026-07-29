@@ -54,7 +54,7 @@ from shargain.offers.application.queries.get_target import (
     get_target_by_user,
 )
 from shargain.offers.application.queries.list_targets import list_targets
-from shargain.offers.services.filter_validation import validate_filters_for_url
+from shargain.offers.filtering import validate_filters_for_url
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
@@ -259,8 +259,7 @@ def get_available_fields(request: HttpRequest, url_id: int):
     except ScrapingUrl.DoesNotExist as e:
         raise HttpError(404, "Scraping URL not found") from e
 
-    from shargain.offers.schemas.field_plugin import ListUrl
-    from shargain.offers.services.offer_field_resolver import OPERATOR_LABELS, OfferFieldResolver
+    from shargain.offers.field_extraction import OPERATOR_LABELS, ListUrl, OfferFieldResolver
 
     fields = OfferFieldResolver.get_fields(ListUrl(url_dto.url))
 
