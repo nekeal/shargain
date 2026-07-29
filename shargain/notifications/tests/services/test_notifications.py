@@ -82,48 +82,34 @@ class TestExtractedFieldsInMessage:
         target = ScrappingTargetFactory(notification_config=config)
         return NewOfferNotificationService([], target, "NOTIFICATION TITLE")
 
-    def test_extracted_fields_appended_as_key_value(self):
-        offer = OfferFactory.build()
-        context = NotificationMessageContext(
-            offer=offer,
-            extracted_fields={"price_per_m2": 42, "rooms": 3},
+    @staticmethod
+    def _make_context(extracted_fields=None):
+        return NotificationMessageContext(
+            offer=OfferFactory.build(),
+            extracted_fields=extracted_fields or {},
         )
-        service = self._make_service()
-        msg = service.get_message_for_offer(context)
-        assert "Price Per M2: 42" in msg
-        assert "Rooms: 3" in msg
 
-    def test_boolean_fields_rendered_as_yes_no(self):
-        offer = OfferFactory.build()
-        context = NotificationMessageContext(
-            offer=offer,
-            extracted_fields={"has_balcony": True},
-        )
+    @pytest.mark.parametrize(
+        ("fields", "assertions"),
+        [
+            ({"price_per_m2": 42, "rooms": 3}, ["Price Per M2: 42", "Rooms: 3"]),
+            ({"has_balcony": True}, ["Yes"]),
+            ({"has_elevator": False}, ["No"]),
+            (
+                {"price_per_m2": 42.5, "floor": 4, "has_elevator": False, "notes": "Great location"},
+                ["42.5", "4", "No", "Great location"],
+            ),
+        ],
+    )
+    def test_extracted_fields_rendered(self, fields, assertions):
+        context = self._make_context(fields)
         service = self._make_service()
         msg = service.get_message_for_offer(context)
-        assert "Yes" in msg
+        for expected in assertions:
+            assert expected in msg
 
     def test_no_extracted_fields_does_not_add_section(self):
-        offer = OfferFactory.build()
-        context = NotificationMessageContext(offer=offer)
+        context = self._make_context()
         service = self._make_service()
         msg = service.get_message_for_offer(context)
         assert "\U0001f3f7\ufe0f" not in msg
-
-    def test_mixed_types_rendered_correctly(self):
-        offer = OfferFactory.build()
-        context = NotificationMessageContext(
-            offer=offer,
-            extracted_fields={
-                "price_per_m2": 42.5,
-                "floor": 4,
-                "has_elevator": False,
-                "notes": "Great location",
-            },
-        )
-        service = self._make_service()
-        msg = service.get_message_for_offer(context)
-        assert "42.5" in msg
-        assert "4" in msg
-        assert "No" in msg
-        assert "Great location" in msg

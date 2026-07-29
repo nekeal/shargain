@@ -13,7 +13,7 @@ from shargain.quotas.tests.factories import OfferQuotaFactory
 
 @pytest.mark.django_db
 class TestRefactoredNotify:
-    def test_notify_extracts_fields_via_resolver(self):
+    def test_notify_includes_only_selected_fields_in_context(self):
         notification_config = NotificationConfigFactory()
         scraping_target = ScrappingTargetFactory(
             notification_config=notification_config,
