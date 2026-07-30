@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
 from ninja.errors import ConfigError as NinjaConfigError
@@ -5,6 +9,9 @@ from ninja.errors import HttpError
 from pydantic import Field
 from pydantic.alias_generators import to_camel
 from pydantic.networks import HttpUrl
+
+if TYPE_CHECKING:
+    from django_stubs_ext import StrOrPromise
 
 from shargain.commons.application.actor import Actor
 from shargain.notifications.application.commands.create_notification_config import (
@@ -93,12 +100,12 @@ class BaseSchema(Schema):
 
 class FieldOperatorSchema(BaseSchema):
     value: str
-    label: str
+    label: StrOrPromise
 
 
 class AvailableFieldSchema(BaseSchema):
     name: str
-    label: str
+    label: StrOrPromise
     type: str
     unit: str | None = None
     operators: list[FieldOperatorSchema]

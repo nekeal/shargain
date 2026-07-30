@@ -12,6 +12,8 @@ from django.utils.translation import gettext_lazy as _
 from pydantic import BaseModel
 
 if TYPE_CHECKING:
+    from django_stubs_ext import StrOrPromise
+
     from shargain.offers.models import Offer
 
 ExtractedFieldValue = int | float | str | bool | None
@@ -36,10 +38,11 @@ class Operator(StrEnum):
     LTE = "lte"
 
     @property
-    def label(self) -> str:
+    def label(self) -> StrOrPromise:
         return _OPERATOR_LABELS[self]
 
-_OPERATOR_LABELS: dict[Operator, str] = {
+
+_OPERATOR_LABELS: dict[Operator, StrOrPromise] = {
     Operator.CONTAINS: _("Contains"),
     Operator.NOT_CONTAINS: _("Does not contain"),
     Operator.EQUALS: _("Equals"),
@@ -54,7 +57,7 @@ _OPERATOR_LABELS: dict[Operator, str] = {
 @dataclass(frozen=True)
 class FieldDefinition:
     name: str
-    label: str
+    label: StrOrPromise
     field_type: FieldType
     allowed_operators: list[Operator] | None = None
     unit: str | None = None

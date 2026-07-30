@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 default=None,
                 help_text=("Field names from plugins to include in notification messages"),
                 null=True,
-                pydantic_model=("shargain.offers.schemas.field_plugin.NotificationFieldsSelection"),
+                pydantic_model=("shargain.offers.field_extraction.plugin.NotificationFieldsSelection"),
                 verbose_name="Notification fields",
             ),
         ),
