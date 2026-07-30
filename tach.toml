@@ -14,13 +14,12 @@ exclude = [
 ]
 
 forbid_circular_dependencies = true
-ignore_type_checking_imports = true
 
 # Layer 1: plugin system
-# No hard dependencies — Offer import under TYPE_CHECKING only
+# TYPE_CHECKING-only imports from shargain.offers.models (Offer)
 [[modules]]
 path = "shargain.offers.field_extraction"
-depends_on = []
+depends_on = ["shargain.offers.models"]
 
 # Layer 2: filtering depends on field_extraction's public API
 [[modules]]
