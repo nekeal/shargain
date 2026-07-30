@@ -5,12 +5,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any, NotRequired, TypedDict
 
-from shargain.offers.field_extraction.plugin import ExtractedOffer
+from shargain.offers.field_extraction.plugin import ExtractedOffer, Operator
 
 
 class FilterRuleData(TypedDict):
     field: str
-    operator: str
+    operator: Operator
     value: str
     case_sensitive: NotRequired[bool]
 
@@ -86,22 +86,22 @@ class OfferFilterService:
         handler = self._get_operator_handler(operator)
         return handler(field_value, filter_value)
 
-    def _get_operator_handler(self, operator: str) -> Callable:
-        if operator == "contains":
+    def _get_operator_handler(self, operator: Operator) -> Callable:
+        if operator == Operator.CONTAINS:
             return _op_contains
-        elif operator == "not_contains":
+        elif operator == Operator.NOT_CONTAINS:
             return _op_not_contains
-        elif operator == "equals":
+        elif operator == Operator.EQUALS:
             return _op_equals
-        elif operator == "not_equals":
+        elif operator == Operator.NOT_EQUALS:
             return _op_not_equals
-        elif operator == "greater_than":
+        elif operator == Operator.GREATER_THAN:
             return lambda fv, fv2: _compare_numeric(fv, fv2, lambda a, b: a > b)
-        elif operator == "less_than":
+        elif operator == Operator.LESS_THAN:
             return lambda fv, fv2: _compare_numeric(fv, fv2, lambda a, b: a < b)
-        elif operator == "gte":
+        elif operator == Operator.GTE:
             return lambda fv, fv2: _compare_numeric(fv, fv2, lambda a, b: a >= b)
-        elif operator == "lte":
+        elif operator == Operator.LTE:
             return lambda fv, fv2: _compare_numeric(fv, fv2, lambda a, b: a <= b)
         else:
             raise ValueError(f"Unknown operator: {operator}")
