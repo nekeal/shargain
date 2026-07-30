@@ -206,9 +206,7 @@ class OfferBatchCreateService:
                     is_exact_location=is_exact,
                     distances=distances,
                     extracted_fields=[
-                        ExtractedFieldEntry(name=k, value=v)
-                        for k, v in extracted.fields.items()
-                        if k in selected
+                        ExtractedFieldEntry(name=k, value=v) for k, v in extracted.fields.items() if k in selected
                     ],
                 )
             )

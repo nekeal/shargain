@@ -28,14 +28,14 @@ class NotificationMessageContext:
         if not self.extracted_fields:
             return ""
         lines = []
-        for field in self.extracted_fields:
-            if field.value is None:
+        for entry in self.extracted_fields:
+            if entry.value is None:
                 continue
-            if isinstance(field.value, bool):
-                display = "Yes" if field.value else "No"
+            if isinstance(entry.value, bool):
+                display = "Yes" if entry.value else "No"
             else:
-                display = str(field.value)
-            lines.append(f"\n🏷️ {field.name.replace('_', ' ').title()}: {display}")
+                display = str(entry.value)
+            lines.append(f"\n🏷️ {entry.name.replace('_', ' ').title()}: {display}")
         return "".join(lines)
 
 

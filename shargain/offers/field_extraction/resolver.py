@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from shargain.offers.field_extraction.plugin import BaseFieldPlugin, ExtractedFieldValue, FieldDefinition, FieldType, ListUrl, Operator
+from shargain.offers.field_extraction.plugin import (
+    BaseFieldPlugin,
+    ExtractedFieldValue,
+    FieldDefinition,
+    FieldType,
+    ListUrl,
+    Operator,
+)
 
 if TYPE_CHECKING:
     from shargain.offers.models import Offer
