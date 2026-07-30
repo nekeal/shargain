@@ -17,8 +17,7 @@ forbid_circular_dependencies = true
 ignore_type_checking_imports = true
 
 # Layer 1: plugin system
-# TODO: depends_on should be empty once location parser is a plugin
-# (currently imports Offer from shargain.offers.models under TYPE_CHECKING only)
+# No hard dependencies — Offer import under TYPE_CHECKING only
 [[modules]]
 path = "shargain.offers.field_extraction"
 depends_on = []
