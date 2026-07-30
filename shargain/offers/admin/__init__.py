@@ -5,6 +5,7 @@ from django.db.models import QuerySet
 from django.db.models.expressions import F
 from django.http import HttpRequest
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
@@ -124,8 +125,6 @@ class StaleUrlFilter(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        from django.utils import timezone
-
         if self.value() == "stale":
             # Default to 24 hours as stale threshold
             stale_threshold = timezone.now() - timedelta(hours=24)

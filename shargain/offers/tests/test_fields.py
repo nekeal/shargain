@@ -6,7 +6,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from pydantic import BaseModel
 
-from shargain.offers.fields import PydanticField
+from shargain.offers.db_fields import PydanticField
 
 
 class SampleModel(BaseModel):

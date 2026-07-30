@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from django.utils.translation import gettext_lazy as _
+
 from shargain.offers.field_extraction.plugin import (
     BaseFieldPlugin,
     FieldDefinition,
@@ -24,8 +26,8 @@ class CoreFieldsPlugin(BaseFieldPlugin):
     @property
     def fields(self) -> list[FieldDefinition]:
         return [
-            FieldDefinition("title", "Title", FieldType.STRING),
-            FieldDefinition("price", "Price", FieldType.NUMBER, unit="z\u0142"),
+            FieldDefinition("title", _("Title"), FieldType.STRING),
+            FieldDefinition("price", _("Price"), FieldType.NUMBER, unit=_("z\u0142")),
         ]
 
     def extract(self, offer: Offer, url: ListUrl) -> dict:

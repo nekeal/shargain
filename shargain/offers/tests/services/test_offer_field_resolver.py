@@ -11,13 +11,15 @@ from shargain.offers.field_extraction import (
     ListUrl,
     OfferFieldResolver,
     Operator,
+    get_operators_for_type,
 )
+from shargain.offers.field_extraction.plugins.core_fields import core_fields
 from shargain.offers.models import Offer
 
 
 @pytest.fixture(autouse=True)
 def reset_plugins():
-    OfferFieldResolver._plugins = []
+    OfferFieldResolver.clear()
 
 
 @pytest.fixture
@@ -58,7 +60,7 @@ class TestOfferFieldResolver:
         assert plugin in OfferFieldResolver._plugins
 
     def test_get_fields_returns_matching_plugins_fields(self, plugin_alpha, plugin_beta):
-        OfferFieldResolver._plugins = [plugin_alpha, plugin_beta]
+        OfferFieldResolver.replace_plugins([plugin_alpha, plugin_beta])
         url = ListUrl("https://olx.pl/oferty/mieszkania/")
         fields = OfferFieldResolver.get_fields(url)
         names = [f.name for f in fields]
@@ -75,14 +77,14 @@ class TestOfferFieldResolver:
                 FieldDefinition("title", "Overridden", FieldType.STRING),
             ]
         )
-        OfferFieldResolver._plugins = [plugin_alpha, plugin_dup]
+        OfferFieldResolver.replace_plugins([plugin_alpha, plugin_dup])
         url = ListUrl("https://example.com/")
         fields = OfferFieldResolver.get_fields(url)
         title_field = [f for f in fields if f.name == "title"][0]
         assert title_field.label == "Title"
 
     def test_get_fields_non_matching_plugin_excluded(self, plugin_alpha, plugin_beta):
-        OfferFieldResolver._plugins = [plugin_alpha, plugin_beta]
+        OfferFieldResolver.replace_plugins([plugin_alpha, plugin_beta])
         url = ListUrl("https://otomoto.pl/cars/")
         fields = OfferFieldResolver.get_fields(url)
         names = [f.name for f in fields]
@@ -90,7 +92,7 @@ class TestOfferFieldResolver:
         assert "price_per_m2" not in names
 
     def test_extract_merges_from_matching_plugins(self, plugin_alpha, plugin_beta):
-        OfferFieldResolver._plugins = [plugin_alpha, plugin_beta]
+        OfferFieldResolver.replace_plugins([plugin_alpha, plugin_beta])
         url = ListUrl("https://olx.pl/oferty/mieszkania/")
         offer_mock = Mock()
         result = OfferFieldResolver.extract(offer_mock, url)
@@ -101,7 +103,7 @@ class TestOfferFieldResolver:
     def test_extract_no_matching_plugins_returns_empty(self):
         plugin = Mock(spec=BaseFieldPlugin)
         plugin.matches.return_value = False
-        OfferFieldResolver._plugins = [plugin]
+        OfferFieldResolver.replace_plugins([plugin])
         url = ListUrl("https://unknown.com/")
         offer_mock = Mock()
         result = OfferFieldResolver.extract(offer_mock, url)
@@ -110,16 +112,12 @@ class TestOfferFieldResolver:
 
 class TestGetOperatorsForType:
     def test_string_type(self):
-        from shargain.offers.field_extraction import get_operators_for_type
-
         ops = get_operators_for_type(FieldType.STRING)
         assert Operator.CONTAINS in ops
         assert Operator.NOT_CONTAINS in ops
         assert Operator.EQUALS in ops
 
     def test_number_type(self):
-        from shargain.offers.field_extraction import get_operators_for_type
-
         ops = get_operators_for_type(FieldType.NUMBER)
         assert Operator.EQUALS in ops
         assert Operator.GREATER_THAN in ops
@@ -128,23 +126,16 @@ class TestGetOperatorsForType:
         assert Operator.LTE in ops
 
     def test_boolean_type(self):
-        from shargain.offers.field_extraction import get_operators_for_type
-
         ops = get_operators_for_type(FieldType.BOOLEAN)
         assert Operator.EQUALS in ops
         assert len(ops) == 1
 
     def test_custom_operators_override_defaults(self):
-        from shargain.offers.field_extraction import get_operators_for_type
-
         custom = [Operator.CONTAINS]
         result = get_operators_for_type(FieldType.NUMBER, custom)
         assert result == custom
 
     def test_get_fields_resolves_operators_from_type(self):
-        OfferFieldResolver._plugins = []
-        from shargain.offers.field_extraction.plugins.core_fields import core_fields
-
         OfferFieldResolver.register(core_fields)
         url = ListUrl("https://example.com/")
         fields = OfferFieldResolver.get_fields(url)
@@ -169,7 +160,7 @@ class TestConcretePlugin:
             def extract(self, offer: Offer, url: ListUrl) -> dict:
                 return {"test_field": "hello"}
 
-        OfferFieldResolver.register(TestPlugin())
+        OfferFieldResolver.replace_plugins([TestPlugin()])
 
         fields = OfferFieldResolver.get_fields(ListUrl("https://example.com/"))
         assert len(fields) == 1

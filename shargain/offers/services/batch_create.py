@@ -6,8 +6,11 @@ from opentelemetry import trace
 from shargain.notifications.services.notifications import NewOfferNotificationService, NotificationMessageContext
 from shargain.offers.application.commands.record_checkin import record_checkin
 from shargain.offers.field_extraction import ExtractedFieldEntry, ExtractedOffer, ListUrl, OfferFieldResolver
+from shargain.offers.filtering import OfferFilterService
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
+from shargain.offers.services.geo_utils import haversine
+from shargain.offers.services.location_parsers import LocationParserFactory
 from shargain.offers.signals import offers_batch_created
 from shargain.quotas.services.quota import QuotaService
 
@@ -165,14 +168,10 @@ class OfferBatchCreateService:
     def _filter_offers(extracted_offers, scraping_url):
         if not scraping_url or not scraping_url.filters:
             return extracted_offers
-        from shargain.offers.filtering import OfferFilterService
-
         return OfferFilterService(scraping_url.filters).apply(extracted_offers)
 
     @staticmethod
     def _build_contexts(extracted_offers, scraping_url):
-        from shargain.offers.services.location_parsers import LocationParserFactory
-
         selected = set()
         if scraping_url and scraping_url.notification_fields:
             selected = set(scraping_url.notification_fields.fields)
@@ -192,8 +191,6 @@ class OfferBatchCreateService:
                 is_exact = parser.is_location_exact()
                 coords = parser.get_coordinates()
                 if coords and waypoints:
-                    from shargain.offers.services.geo_utils import haversine
-
                     distances = [
                         (str(wp["name"]), haversine(coords.lat, coords.lon, wp["lat"], wp["lon"])) for wp in waypoints
                     ]

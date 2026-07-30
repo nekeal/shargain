@@ -8,10 +8,15 @@ pytestmark = pytest.mark.django_db
 
 
 class TestAvailableFieldsEndpoint:
-    def test_returns_fields_for_url(self, client, user):
-        client.force_login(user)
+    @pytest.fixture
+    def target_and_url(self, user):
         target = ScrappingTargetFactory(owner=user)
         url = ScrapingUrlFactory(scraping_target=target, url="https://olx.pl/oferty/")
+        return target, url
+
+    def test_returns_fields_for_url(self, client, user, target_and_url):
+        client.force_login(user)
+        target, url = target_and_url
         response = client.get(f"/api/public/urls/{url.id}/available-fields")
         assert response.status_code == 200
         data = response.json()
@@ -29,10 +34,9 @@ class TestAvailableFieldsEndpoint:
         response = client.get("/api/public/urls/1/available-fields")
         assert response.status_code == 401
 
-    def test_operator_labels_are_provided(self, client, user):
+    def test_operator_labels_are_provided(self, client, user, target_and_url):
         client.force_login(user)
-        target = ScrappingTargetFactory(owner=user)
-        url = ScrapingUrlFactory(scraping_target=target, url="https://example.com/")
+        target, url = target_and_url
         response = client.get(f"/api/public/urls/{url.id}/available-fields")
         data = response.json()
         for field in data["fields"]:

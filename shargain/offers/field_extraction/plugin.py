@@ -60,7 +60,7 @@ class FieldDefinition:
     label: StrOrPromise
     field_type: FieldType
     allowed_operators: list[Operator] | None = None
-    unit: str | None = None
+    unit: StrOrPromise | None = None
 
 
 @dataclass
@@ -103,7 +103,8 @@ class ExtractedOffer:
         return self._offer.metadata
 
 
-class ExtractedFieldEntry(BaseModel):
+@dataclass(frozen=True)
+class ExtractedFieldEntry:
     name: str
     value: ExtractedFieldValue
 

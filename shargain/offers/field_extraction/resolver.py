@@ -47,6 +47,14 @@ class OfferFieldResolver:
         cls._plugins.append(plugin)
 
     @classmethod
+    def replace_plugins(cls, plugins: list[BaseFieldPlugin]) -> None:
+        cls._plugins = list(plugins)
+
+    @classmethod
+    def clear(cls) -> None:
+        cls._plugins.clear()
+
+    @classmethod
     def get_fields(cls, url: ListUrl) -> list[FieldDefinition]:
         seen_names: set[str] = set()
         result: list[FieldDefinition] = []

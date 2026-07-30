@@ -3,7 +3,7 @@
 import pytest
 
 from shargain.offers.field_extraction import ExtractedOffer
-from shargain.offers.filtering import OfferFilterService
+from shargain.offers.filtering import FilterOperator, OfferFilterService
 
 
 class TestOfferFilterService:
@@ -45,7 +45,11 @@ class TestOfferFilterService:
 
     def test_filter_title_contains(self, offer_apartment, offer_studio, offer_house):
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "title", "operator": "contains", "value": "apartment"}]}]}
+            {
+                "ruleGroups": [
+                    {"rules": [{"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "apartment"}]}
+                ]
+            }
         )
         offers = [offer_apartment, offer_studio, offer_house]
         filtered = service.apply(offers)
@@ -57,7 +61,11 @@ class TestOfferFilterService:
 
     def test_filter_title_not_contains(self, offer_apartment, offer_studio, offer_house):
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "title", "operator": "not_contains", "value": "studio"}]}]}
+            {
+                "ruleGroups": [
+                    {"rules": [{"field": "title", "operator": FilterOperator.NOT_CONTAINS.value, "value": "studio"}]}
+                ]
+            }
         )
         offers = [offer_apartment, offer_studio, offer_house]
         filtered = service.apply(offers)
@@ -73,8 +81,8 @@ class TestOfferFilterService:
                 "ruleGroups": [
                     {
                         "rules": [
-                            {"field": "title", "operator": "contains", "value": "apartment"},
-                            {"field": "title", "operator": "not_contains", "value": "studio"},
+                            {"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "apartment"},
+                            {"field": "title", "operator": FilterOperator.NOT_CONTAINS.value, "value": "studio"},
                         ]
                     }
                 ]
@@ -96,11 +104,11 @@ class TestOfferFilterService:
                         "logic": "and",
                         "logicWithNext": "or",
                         "rules": [
-                            {"field": "title", "operator": "contains", "value": "apartment"},
-                            {"field": "title", "operator": "not_contains", "value": "studio"},
+                            {"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "apartment"},
+                            {"field": "title", "operator": FilterOperator.NOT_CONTAINS.value, "value": "studio"},
                         ],
                     },
-                    {"rules": [{"field": "title", "operator": "contains", "value": "flat"}]},
+                    {"rules": [{"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "flat"}]},
                 ]
             }
         )
@@ -121,9 +129,9 @@ class TestOfferFilterService:
                     {
                         "logic": "and",
                         "logicWithNext": "and",
-                        "rules": [{"field": "title", "operator": "contains", "value": "apartment"}],
+                        "rules": [{"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "apartment"}],
                     },
-                    {"rules": [{"field": "title", "operator": "contains", "value": "flat"}]},
+                    {"rules": [{"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "flat"}]},
                 ]
             }
         )
@@ -142,21 +150,21 @@ class TestOfferFilterService:
                         "logic": "and",
                         "logicWithNext": "and",
                         "rules": [
-                            {"field": "title", "operator": "contains", "value": "apartment"},
+                            {"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "apartment"},
                         ],
                     },
                     {
                         "logic": "and",
                         "logicWithNext": "or",
                         "rules": [
-                            {"field": "title", "operator": "not_contains", "value": "studio"},
+                            {"field": "title", "operator": FilterOperator.NOT_CONTAINS.value, "value": "studio"},
                         ],
                     },
                     {
                         "logic": "and",
                         "rules": [
-                            {"field": "title", "operator": "contains", "value": "house"},
-                            {"field": "title", "operator": "contains", "value": "garden"},
+                            {"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "house"},
+                            {"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "garden"},
                         ],
                     },
                 ]
@@ -174,7 +182,11 @@ class TestOfferFilterService:
 
     def test_single_rule_single_group(self, offer_apartment, offer_house):
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "title", "operator": "contains", "value": "apartment"}]}]}
+            {
+                "ruleGroups": [
+                    {"rules": [{"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "apartment"}]}
+                ]
+            }
         )
         offers = [offer_apartment, offer_house]
         filtered = service.apply(offers)
@@ -185,7 +197,11 @@ class TestOfferFilterService:
     def test_case_insensitive_matching(self):
         offer_upper = ExtractedOffer(_offer=None, fields={"title": "LUXURY APARTMENT"})
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "title", "operator": "contains", "value": "apartment"}]}]}
+            {
+                "ruleGroups": [
+                    {"rules": [{"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "apartment"}]}
+                ]
+            }
         )
         filtered = service.apply([offer_upper])
 
@@ -201,7 +217,7 @@ class TestOfferFilterService:
                         "rules": [
                             {
                                 "field": "title",
-                                "operator": "contains",
+                                "operator": FilterOperator.CONTAINS.value,
                                 "value": "apartment",
                                 "case_sensitive": True,
                             }
@@ -217,7 +233,11 @@ class TestOfferFilterService:
     def test_unicode_and_special_chars(self):
         offer_unicode = ExtractedOffer(_offer=None, fields={"title": "Apartament w Krakowie - świetna lokalizacja!"})
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "title", "operator": "contains", "value": "świetna"}]}]}
+            {
+                "ruleGroups": [
+                    {"rules": [{"field": "title", "operator": FilterOperator.CONTAINS.value, "value": "świetna"}]}
+                ]
+            }
         )
         filtered = service.apply([offer_unicode])
 
@@ -234,7 +254,7 @@ class TestOfferFilterService:
     def test_field_not_in_extracted_returns_false(self):
         offer = ExtractedOffer(_offer=None, fields={"title": "Some offer"})
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "price", "operator": "equals", "value": "100"}]}]}
+            {"ruleGroups": [{"rules": [{"field": "price", "operator": FilterOperator.EQUALS.value, "value": "100"}]}]}
         )
         filtered = service.apply([offer])
 
@@ -244,7 +264,15 @@ class TestOfferFilterService:
         service = OfferFilterService(
             {
                 "ruleGroups": [
-                    {"rules": [{"field": "title", "operator": "equals", "value": "beautiful apartment in city center"}]}
+                    {
+                        "rules": [
+                            {
+                                "field": "title",
+                                "operator": FilterOperator.EQUALS.value,
+                                "value": "beautiful apartment in city center",
+                            }
+                        ]
+                    }
                 ]
             }
         )
@@ -260,7 +288,11 @@ class TestOfferFilterService:
                 "ruleGroups": [
                     {
                         "rules": [
-                            {"field": "title", "operator": "not_equals", "value": "beautiful apartment in city center"}
+                            {
+                                "field": "title",
+                                "operator": FilterOperator.NOT_EQUALS.value,
+                                "value": "beautiful apartment in city center",
+                            }
                         ]
                     }
                 ]
@@ -276,7 +308,11 @@ class TestOfferFilterService:
         offer_cheap = ExtractedOffer(_offer=None, fields={"title": "Cheap", "price": 500})
         offer_expensive = ExtractedOffer(_offer=None, fields={"title": "Expensive", "price": 1500})
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "price", "operator": "greater_than", "value": "1000"}]}]}
+            {
+                "ruleGroups": [
+                    {"rules": [{"field": "price", "operator": FilterOperator.GREATER_THAN.value, "value": "1000"}]}
+                ]
+            }
         )
         filtered = service.apply([offer_cheap, offer_expensive])
 
@@ -287,7 +323,11 @@ class TestOfferFilterService:
         offer_cheap = ExtractedOffer(_offer=None, fields={"title": "Cheap", "price": 500})
         offer_expensive = ExtractedOffer(_offer=None, fields={"title": "Expensive", "price": 1500})
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "price", "operator": "less_than", "value": "1000"}]}]}
+            {
+                "ruleGroups": [
+                    {"rules": [{"field": "price", "operator": FilterOperator.LESS_THAN.value, "value": "1000"}]}
+                ]
+            }
         )
         filtered = service.apply([offer_cheap, offer_expensive])
 
@@ -299,7 +339,7 @@ class TestOfferFilterService:
         offer_exact = ExtractedOffer(_offer=None, fields={"title": "Exact", "price": 1000})
         offer_expensive = ExtractedOffer(_offer=None, fields={"title": "Expensive", "price": 1500})
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "price", "operator": "gte", "value": "1000"}]}]}
+            {"ruleGroups": [{"rules": [{"field": "price", "operator": FilterOperator.GTE.value, "value": "1000"}]}]}
         )
         filtered = service.apply([offer_cheap, offer_exact, offer_expensive])
 
@@ -312,7 +352,7 @@ class TestOfferFilterService:
         offer_exact = ExtractedOffer(_offer=None, fields={"title": "Exact", "price": 1000})
         offer_expensive = ExtractedOffer(_offer=None, fields={"title": "Expensive", "price": 1500})
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "price", "operator": "lte", "value": "1000"}]}]}
+            {"ruleGroups": [{"rules": [{"field": "price", "operator": FilterOperator.LTE.value, "value": "1000"}]}]}
         )
         filtered = service.apply([offer_cheap, offer_exact, offer_expensive])
 
@@ -324,7 +364,7 @@ class TestOfferFilterService:
         offer_2rooms = ExtractedOffer(_offer=None, fields={"title": "Two rooms", "rooms": 2})
         offer_3rooms = ExtractedOffer(_offer=None, fields={"title": "Three rooms", "rooms": 3})
         service = OfferFilterService(
-            {"ruleGroups": [{"rules": [{"field": "rooms", "operator": "equals", "value": "2"}]}]}
+            {"ruleGroups": [{"rules": [{"field": "rooms", "operator": FilterOperator.EQUALS.value, "value": "2"}]}]}
         )
         filtered = service.apply([offer_2rooms, offer_3rooms])
 
@@ -340,9 +380,9 @@ class TestOfferFilterService:
                 "ruleGroups": [
                     {
                         "logicWithNext": "and",
-                        "rules": [{"field": "price", "operator": "greater_than", "value": "1000"}],
+                        "rules": [{"field": "price", "operator": FilterOperator.GREATER_THAN.value, "value": "1000"}],
                     },
-                    {"rules": [{"field": "rooms", "operator": "less_than", "value": "4"}]},
+                    {"rules": [{"field": "rooms", "operator": FilterOperator.LESS_THAN.value, "value": "4"}]},
                 ]
             }
         )
@@ -361,9 +401,9 @@ class TestOfferFilterService:
                 "ruleGroups": [
                     {
                         "logicWithNext": "or",
-                        "rules": [{"field": "price", "operator": "less_than", "value": "200"}],
+                        "rules": [{"field": "price", "operator": FilterOperator.LESS_THAN.value, "value": "200"}],
                     },
-                    {"rules": [{"field": "rooms", "operator": "greater_than", "value": "5"}]},
+                    {"rules": [{"field": "rooms", "operator": FilterOperator.GREATER_THAN.value, "value": "5"}]},
                 ]
             }
         )

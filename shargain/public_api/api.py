@@ -1,6 +1,5 @@
 from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
-from ninja.errors import ConfigError as NinjaConfigError
 from ninja.errors import HttpError
 from pydantic import Field
 from pydantic.alias_generators import to_camel
@@ -54,7 +53,9 @@ from shargain.offers.application.queries.get_target import (
     get_target_by_user,
 )
 from shargain.offers.application.queries.list_targets import list_targets
+from shargain.offers.field_extraction import ListUrl, OfferFieldResolver
 from shargain.offers.filtering import validate_filters_for_url
+from shargain.offers.models import ScrapingUrl
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
@@ -69,15 +70,8 @@ from .auth import router as protected_router
 router = NinjaAPI(csrf=True)
 
 # Include both routers
-try:
-    router.add_router("/auth", auth_router)
-except NinjaConfigError:
-    pass
-
-try:
-    router.add_router("/", protected_router)
-except NinjaConfigError:
-    pass
+router.add_router("/auth", auth_router)
+router.add_router("/", protected_router)
 
 
 class ErrorSchema(Schema):
@@ -252,14 +246,11 @@ def get_actor(request: HttpRequest) -> Actor:
 )
 def get_available_fields(request: HttpRequest, url_id: int):
     actor = get_actor(request)
-    from shargain.offers.models import ScrapingUrl
 
     try:
         url_dto = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
     except ScrapingUrl.DoesNotExist as e:
         raise HttpError(404, "Scraping URL not found") from e
-
-    from shargain.offers.field_extraction import ListUrl, OfferFieldResolver
 
     fields = OfferFieldResolver.get_fields(ListUrl(url_dto.url))
 
@@ -269,7 +260,7 @@ def get_available_fields(request: HttpRequest, url_id: int):
                 name=f.name,
                 label=str(f.label),
                 type=f.field_type.value,
-                unit=f.unit,
+                unit=str(f.unit) if f.unit else None,
                 operators=[
                     FieldOperatorSchema(
                         value=op.value,
@@ -438,8 +429,6 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
     filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
 
     if filters_dict:
-        from shargain.offers.models import ScrapingUrl
-
         try:
             existing_url = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
         except ScrapingUrl.DoesNotExist as e:

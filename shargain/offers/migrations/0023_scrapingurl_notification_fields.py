@@ -2,7 +2,7 @@
 
 from django.db import migrations
 
-import shargain.offers.fields
+import shargain.offers.db_fields
 
 
 class Migration(migrations.Migration):
@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="scrapingurl",
             name="notification_fields",
-            field=shargain.offers.fields.PydanticField(
+            field=shargain.offers.db_fields.PydanticField(
                 blank=True,
                 default=None,
                 help_text=("Field names from plugins to include in notification messages"),

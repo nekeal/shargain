@@ -1,5 +1,7 @@
 """Service for filtering offers based on configured rules before sending notifications."""
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import Any
 
@@ -46,17 +48,11 @@ class OfferFilterService:
         rules = group.get("rules", [])
         group_logic = group.get("logic", "and")
         if group_logic == "and":
-            for rule in rules:
-                if not self._evaluate_rule(offer, rule):
-                    return False
-            return True
+            return all(self._evaluate_rule(offer, rule) for rule in rules)
         else:
-            for rule in rules:
-                if self._evaluate_rule(offer, rule):
-                    return True
-            return False
+            return any(self._evaluate_rule(offer, rule) for rule in rules)
 
-    def _evaluate_rule(self, offer: ExtractedOffer | Any, rule: dict) -> bool:
+    def _evaluate_rule(self, offer: ExtractedOffer, rule: dict) -> bool:
         field_name = rule["field"]
         operator = rule["operator"]
         filter_value = rule["value"]
