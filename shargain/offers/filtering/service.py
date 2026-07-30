@@ -3,9 +3,26 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 
 from shargain.offers.field_extraction.plugin import ExtractedOffer
+
+
+class FilterRuleData(TypedDict):
+    field: str
+    operator: str
+    value: str
+    case_sensitive: NotRequired[bool]
+
+
+class RuleGroupData(TypedDict):
+    rules: list[FilterRuleData]
+    logic: NotRequired[str]
+    logicWithNext: NotRequired[str]
+
+
+class FiltersData(TypedDict, total=False):
+    ruleGroups: list[RuleGroupData]
 
 
 class OfferFilterService:
@@ -14,7 +31,7 @@ class OfferFilterService:
     Operates on ExtractedOffer fields only — does not access the Offer model.
     """
 
-    def __init__(self, filters: dict | None):
+    def __init__(self, filters: FiltersData | None):
         self.filters = filters or {}
 
     def apply(self, offers: list[ExtractedOffer]) -> list[ExtractedOffer]:
@@ -44,7 +61,7 @@ class OfferFilterService:
                 result = result or next_result
         return result
 
-    def _evaluate_group(self, offer: ExtractedOffer, group: dict) -> bool:
+    def _evaluate_group(self, offer: ExtractedOffer, group: RuleGroupData) -> bool:
         rules = group.get("rules", [])
         group_logic = group.get("logic", "and")
         if group_logic == "and":
@@ -52,15 +69,12 @@ class OfferFilterService:
         else:
             return any(self._evaluate_rule(offer, rule) for rule in rules)
 
-    def _evaluate_rule(self, offer: ExtractedOffer, rule: dict) -> bool:
+    def _evaluate_rule(self, offer: ExtractedOffer, rule: FilterRuleData) -> bool:
         field_name = rule["field"]
         operator = rule["operator"]
         filter_value = rule["value"]
 
-        if isinstance(offer, ExtractedOffer):
-            field_value = offer.fields.get(field_name)
-        else:
-            field_value = getattr(offer, field_name, "")
+        field_value = offer.fields.get(field_name)
         if field_value is None:
             return False
 
