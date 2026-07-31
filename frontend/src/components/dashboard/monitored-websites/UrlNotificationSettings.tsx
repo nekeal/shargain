@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BellRing, CheckCircle, ChevronDown, List, Loader2, MapPin, Plus, Save, X } from "lucide-react";
-import { useAvailableFields } from "@/hooks/useAvailableFields";
 import { useUpdateUrlMutation } from "./useMonitors";
-import type { AvailableFieldSchema, NotificationFieldsSchema, WaypointSchema } from "@/lib/api/types.gen";
+import { NotificationFieldsPicker } from "./NotificationFieldsPicker";
+import type { NotificationFieldsSchema, WaypointSchema } from "@/lib/api/types.gen";
+import { useAvailableFields } from "@/hooks/useAvailableFields";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -215,14 +216,6 @@ export function UrlNotificationSettings({
     setSelectedFields(initialNotificationFields?.fields ?? []);
   }, [initialShowLocationMap, initialWaypoints, initialNotificationFields]);
 
-  const toggleField = (fieldName: string) => {
-    setSelectedFields((prev) =>
-      prev.includes(fieldName)
-        ? prev.filter((f) => f !== fieldName)
-        : [...prev, fieldName]
-    );
-  };
-
   const addWaypoint = () => {
     setWaypoints((prev) => [...prev, { name: "", lat: 0, lon: 0 }]);
   };
@@ -379,25 +372,11 @@ export function UrlNotificationSettings({
               {t("urlSettings.noFieldsAvailable")}
             </p>
           ) : (
-            <div className="space-y-1.5">
-              {availableFields.map((field: AvailableFieldSchema) => (
-                <label
-                  key={field.name}
-                  className="flex items-center gap-2 cursor-pointer py-0.5"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedFields.includes(field.name)}
-                    onChange={() => toggleField(field.name)}
-                    className="w-3.5 h-3.5 rounded border-border accent-primary"
-                  />
-                  <span className="text-xs">{field.label}</span>
-                  {field.unit && (
-                    <span className="text-[10px] text-muted-foreground">({field.unit})</span>
-                  )}
-                </label>
-              ))}
-            </div>
+            <NotificationFieldsPicker
+              availableFields={availableFields}
+              selectedFields={selectedFields}
+              onChange={setSelectedFields}
+            />
           )}
         </div>
 

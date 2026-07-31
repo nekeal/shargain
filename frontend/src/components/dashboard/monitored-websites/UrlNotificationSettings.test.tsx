@@ -153,7 +153,7 @@ describe('UrlNotificationSettings', () => {
     })
   })
 
-  it('renders field checkboxes when fields are available', async () => {
+  it('opens the field picker with available fields', async () => {
     renderWithProviders(
       <UrlNotificationSettings
         targetId={1}
@@ -166,6 +166,11 @@ describe('UrlNotificationSettings', () => {
       name: /filters.notificationSettingsExpand/,
     })
     fireEvent.click(trigger)
+
+    const pickerTrigger = await screen.findByRole('button', {
+      name: /urlSettings\.triggerPlaceholder/,
+    })
+    fireEvent.click(pickerTrigger)
 
     await waitFor(() => {
       expect(screen.getByText('Title')).toBeInTheDocument()
@@ -186,8 +191,13 @@ describe('UrlNotificationSettings', () => {
     })
     fireEvent.click(trigger)
 
-    const checkbox = screen.getByLabelText('Title')
-    fireEvent.click(checkbox)
+    const pickerTrigger = await screen.findByRole('button', {
+      name: /urlSettings\.triggerPlaceholder/,
+    })
+    fireEvent.click(pickerTrigger)
+
+    fireEvent.click(await screen.findByText('Title'))
+    fireEvent.click(pickerTrigger)
 
     const saveButton = screen.getByRole('button', { name: /filters.save/ })
     fireEvent.click(saveButton)

@@ -300,7 +300,15 @@
   "urlSettings": {
     "notificationFields": "Pola w powiadomieniu",
     "selectFields": "Wybierz pola, które mają być widoczne w powiadomieniu",
-    "noFieldsAvailable": "Brak dodatkowych pól"
+    "noFieldsAvailable": "Brak dodatkowych pól",
+    "triggerPlaceholder": "Wybierz pola",
+    "searchPlaceholder": "Szukaj pól…",
+    "selectedCount": "Wybrano {{selected}} z {{total}}",
+    "selectAll": "Zaznacz wszystko",
+    "clear": "Wyczyść",
+    "noResults": "Brak pól pasujących do „{{query}}”",
+    "addFields": "Dodaj pola",
+    "removeField": "Usuń {{label}}"
   },
   "notifications": {
     "title": "Konfiguracje powiadomień",
