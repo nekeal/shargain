@@ -291,9 +291,24 @@
       "invalidField": "Invalid filter field",
       "invalidLogic": "Invalid logic operator",
       "noGroups": "At least one rule group is required",
-      "saveFailed": "Failed to save filters. Please try again."
+      "saveFailed": "Failed to save filters. Please try again.",
+      "loadFailed": "Failed to load filter fields",
+      "loadFailedDescription": "Could not load available fields for this URL. Please try again."
     },
     "saveSuccess": "Filters saved successfully"
+  },
+  "urlSettings": {
+    "notificationFields": "Fields in notification",
+    "selectFields": "Select which fields to include in the notification message",
+    "noFieldsAvailable": "No additional fields available",
+    "triggerPlaceholder": "Select fields",
+    "searchPlaceholder": "Search fields…",
+    "selectedCount": "{{selected}} of {{total}} selected",
+    "selectAll": "Select all",
+    "clear": "Clear",
+    "noResults": "No fields match “{{query}}”",
+    "addFields": "Add fields",
+    "removeField": "Remove {{label}}"
   },
   "notifications": {
     "title": "Notification Configurations",

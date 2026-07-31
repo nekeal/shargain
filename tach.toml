@@ -1,0 +1,33 @@
+source_roots = ["."]
+
+exclude = [
+    "**/__pycache__",
+    "**/migrations/",
+    "**/tests/",
+    "**/tests.py",
+    ".git/",
+    "deployment/",
+    "docs/",
+    "fixtures/",
+    "frontend/",
+    "venv/",
+]
+
+forbid_circular_dependencies = true
+
+# Layer 1: plugin system
+# TYPE_CHECKING-only imports from shargain.offers.models (Offer)
+[[modules]]
+path = "shargain.offers.field_extraction"
+depends_on = ["shargain.offers.models"]
+
+# Layer 2: filtering depends on field_extraction's public API
+[[modules]]
+path = "shargain.offers.filtering"
+depends_on = ["shargain.offers.field_extraction"]
+
+# Everything else — not checked
+[[modules]]
+path = "*"
+unchecked = true
+depends_on = []

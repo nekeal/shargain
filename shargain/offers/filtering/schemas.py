@@ -4,22 +4,24 @@ This module provides Pydantic models for validating filter configurations
 that determine which scraped offers trigger notifications.
 """
 
+from __future__ import annotations
+
 from enum import StrEnum
 
 from pydantic import BaseModel, Field, field_validator
 
 
 class FilterOperator(StrEnum):
-    """Supported filter operators for matching offer fields.
-
-    Future operators (not yet implemented):
-    - equals: Exact match
-    - not_equals: Not an exact match
-    - regex: Regular expression match
-    """
+    """Supported filter operators for matching offer fields."""
 
     CONTAINS = "contains"
     NOT_CONTAINS = "not_contains"
+    EQUALS = "equals"
+    NOT_EQUALS = "not_equals"
+    GREATER_THAN = "greater_than"
+    LESS_THAN = "less_than"
+    GTE = "gte"
+    LTE = "lte"
 
 
 class LogicOperator(StrEnum):
@@ -32,12 +34,11 @@ class LogicOperator(StrEnum):
 class FilterField(StrEnum):
     """Supported fields for filtering offers.
 
-    Future fields (not yet implemented):
-    - description: Filter on offer description
-    - price: Filter on numeric price values
+    Note: Plugins can define arbitrary field names beyond this enum.
     """
 
     TITLE = "title"
+    PRICE = "price"
 
 
 class FilterRule(BaseModel):
@@ -50,7 +51,7 @@ class FilterRule(BaseModel):
         case_sensitive: Whether matching should be case-sensitive (default: False)
     """
 
-    field: FilterField
+    field: str
     operator: FilterOperator
     value: str = Field(..., min_length=1, max_length=200)
     case_sensitive: bool = False

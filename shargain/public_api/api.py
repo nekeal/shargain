@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
+from pydantic import Field
 from pydantic.alias_generators import to_camel
 from pydantic.networks import HttpUrl
 
@@ -39,7 +40,11 @@ from shargain.offers.application.commands.toggle_target_notifications import (
 from shargain.offers.application.commands.update_scraping_target_name import (
     update_scraping_target_name,
 )
-from shargain.offers.application.commands.update_scraping_url import update_scraping_url
+from shargain.offers.application.commands.update_scraping_url import (
+    CLEAR_FILTERS,
+    ClearFilters,
+    update_scraping_url,
+)
 from shargain.offers.application.dto import WaypointData
 from shargain.offers.application.exceptions import (
     ApplicationException,
@@ -52,7 +57,9 @@ from shargain.offers.application.queries.get_target import (
     get_target_by_user,
 )
 from shargain.offers.application.queries.list_targets import list_targets
-from shargain.offers.schemas.offer_filter import validate_filters
+from shargain.offers.field_extraction import ListUrl, OfferFieldResolver
+from shargain.offers.filtering import validate_filters_for_url
+from shargain.offers.models import ScrapingUrl
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
     UserDoesNotExist,
@@ -80,6 +87,23 @@ class BaseSchema(Schema):
     class Config:
         alias_generator = to_camel
         populate_by_name = True
+
+
+class FieldOperatorSchema(BaseSchema):
+    value: str
+    label: str
+
+
+class AvailableFieldSchema(BaseSchema):
+    name: str
+    label: str
+    type: str
+    unit: str | None = None
+    operators: list[FieldOperatorSchema]
+
+
+class AvailableFieldsResponse(BaseSchema):
+    fields: list[AvailableFieldSchema]
 
 
 class NotificationConfigRequest(BaseSchema):
@@ -152,6 +176,10 @@ class WaypointSchema(BaseSchema):
     lon: float
 
 
+class NotificationFieldsSchema(BaseSchema):
+    fields: list[str] = Field(default_factory=list)
+
+
 class ScrapingUrlResponse(BaseSchema):
     id: int
     url: str
@@ -161,6 +189,7 @@ class ScrapingUrlResponse(BaseSchema):
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool = False
     waypoints: list[WaypointSchema] | None = None
+    notification_fields: NotificationFieldsSchema | None = None
 
 
 class TargetResponse(BaseSchema):
@@ -211,6 +240,42 @@ def get_actor(request: HttpRequest) -> Actor:
     if not request.user or not request.user.id:
         raise HttpError(401, "Authentication required")
     return Actor(user_id=request.user.id)
+
+
+@router.get(
+    "/urls/{url_id}/available-fields",
+    operation_id="get_available_fields",
+    by_alias=True,
+    response={200: AvailableFieldsResponse, 401: ErrorSchema, 404: ErrorSchema},
+)
+def get_available_fields(request: HttpRequest, url_id: int):
+    actor = get_actor(request)
+
+    try:
+        url_dto = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
+    except ScrapingUrl.DoesNotExist as e:
+        raise HttpError(404, "Scraping URL not found") from e
+
+    fields = OfferFieldResolver.get_fields(ListUrl(url_dto.url))
+
+    return AvailableFieldsResponse(
+        fields=[
+            AvailableFieldSchema(
+                name=f.name,
+                label=str(f.label),
+                type=f.field_type.value,
+                unit=str(f.unit) if f.unit else None,
+                operators=[
+                    FieldOperatorSchema(
+                        value=op.value,
+                        label=str(op.label),
+                    )
+                    for op in (f.allowed_operators or [])
+                ],
+            )
+            for f in fields
+        ]
+    )
 
 
 @router.get(
@@ -292,6 +357,7 @@ class UpdateScrapingUrlRequest(BaseSchema):
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool | None = None
     waypoints: list[WaypointSchema] | None = None
+    notification_fields: NotificationFieldsSchema | None = None
 
 
 @router.post(
@@ -306,7 +372,7 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
 
     # Validate filter structure before saving
     try:
-        validated_filters = validate_filters(filters_dict)
+        validated_filters = validate_filters_for_url(filters_dict, str(payload.url))
     except ValueError as e:
         raise HttpError(400, str(e)) from e
 
@@ -364,18 +430,38 @@ def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
 def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, payload: UpdateScrapingUrlRequest):
     """Update an existing scraping URL."""
     actor = get_actor(request)
-    filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
+    filters_arg: dict | None | ClearFilters
+    if "filters" not in payload.model_fields_set:
+        filters_arg = None
+    elif payload.filters is None:
+        filters_arg = CLEAR_FILTERS
+    else:
+        filters_arg = payload.filters.model_dump(by_alias=True)
+
+    if isinstance(filters_arg, dict):
+        try:
+            existing_url = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
+        except ScrapingUrl.DoesNotExist as e:
+            raise HttpError(404, "Scraping URL not found") from e
+        try:
+            filters_arg = validate_filters_for_url(filters_arg, existing_url.url)
+        except ValueError as e:
+            raise HttpError(400, str(e)) from e
 
     try:
         waypoints_list = (
             [WaypointData(name=w.name, lat=w.lat, lon=w.lon) for w in payload.waypoints] if payload.waypoints else None
         )
+        notification_fields_dict = (
+            payload.notification_fields.model_dump(mode="json") if payload.notification_fields else None
+        )
         return update_scraping_url(
             actor=actor,
             url_id=url_id,
-            filters=filters_dict,
+            filters=filters_arg,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
             waypoints=waypoints_list,
+            notification_fields=notification_fields_dict,
         )
     except ScrapingUrlDoesNotExist as exc:
         raise HttpError(404, "Scraping URL not found") from exc

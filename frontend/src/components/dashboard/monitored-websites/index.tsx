@@ -203,6 +203,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                 urlId={url.id}
                 initialShowLocationMap={url.showLocationMapInNotifications ?? false}
                 initialWaypoints={url.waypoints ?? []}
+                initialNotificationFields={url.notificationFields ?? null}
               />
             </div>
           ))}

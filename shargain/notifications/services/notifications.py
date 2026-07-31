@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from shargain.notifications.models import NotificationChannelChoices
 from shargain.notifications.senders import TelegramNotificationSender
+from shargain.offers.field_extraction import ExtractedFieldEntry
 from shargain.offers.models import Offer, ScrappingTarget
 
 
@@ -12,6 +13,7 @@ class NotificationMessageContext:
     location_name: str | None = None
     is_exact_location: bool = False
     distances: list[tuple[str, float]] = field(default_factory=list)  # (waypoint_name, distance_km)
+    extracted_fields: list[ExtractedFieldEntry] = field(default_factory=list)
 
     def get_distances(self) -> str:
         result = ""
@@ -21,6 +23,20 @@ class NotificationMessageContext:
             else:
                 result += f"\n📏 {km:.1f} km from {name}"
         return result
+
+    def get_extracted_fields_block(self) -> str:
+        if not self.extracted_fields:
+            return ""
+        lines = []
+        for entry in self.extracted_fields:
+            if entry.value is None:
+                continue
+            if isinstance(entry.value, bool):
+                display = "Yes" if entry.value else "No"
+            else:
+                display = str(entry.value)
+            lines.append(f"\n🏷️ {entry.name.replace('_', ' ').title()}: {display}")
+        return "".join(lines)
 
 
 class NewOfferNotificationService:
@@ -78,6 +94,7 @@ class NewOfferNotificationService:
             base_msg += f"\n🏙️ {context.location_name}"
 
         base_msg += context.get_distances()
+        base_msg += context.get_extracted_fields_block()
 
         return base_msg + "\n\n"
 

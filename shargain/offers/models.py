@@ -11,6 +11,8 @@ from django_better_admin_arrayfield.models.fields import ArrayField
 
 from shargain.accounts.models import CustomUser
 from shargain.commons.models import TimeStampedModel
+from shargain.offers.db_fields import PydanticField
+from shargain.offers.field_extraction import NotificationFieldsSelection
 
 
 class ScrappingTarget(models.Model):  # type: ignore[django-manager-missing]
@@ -73,6 +75,15 @@ class ScrapingUrl(models.Model):
         help_text=_('List of waypoints. Format: [{"name": ..., "lat": ..., "lon": ...}]'),
         blank=True,
         null=True,
+        default=None,
+    )
+
+    notification_fields = PydanticField(
+        NotificationFieldsSelection,
+        verbose_name=_("Notification fields"),
+        help_text=_("Field names from plugins to include in notification messages"),
+        null=True,
+        blank=True,
         default=None,
     )
 

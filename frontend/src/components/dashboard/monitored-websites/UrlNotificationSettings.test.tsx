@@ -21,6 +21,18 @@ vi.mock('./useMonitors', () => ({
   }),
 }))
 
+const { mockUseAvailableFields } = vi.hoisted(() => ({
+  mockUseAvailableFields: vi.fn(() => ({
+    data: { fields: [{ name: 'title', label: 'Title', type: 'string', operators: [{ value: 'contains', label: 'contains' }, { value: 'not_contains', label: 'does not contain' }] }] },
+    isLoading: false,
+    isError: false,
+  })),
+}))
+
+vi.mock('@/hooks/useAvailableFields', () => ({
+  useAvailableFields: () => mockUseAvailableFields(),
+}))
+
 describe('UrlNotificationSettings', () => {
   let queryClient: QueryClient
 
@@ -32,6 +44,7 @@ describe('UrlNotificationSettings', () => {
       },
     })
     mockMutate.mockClear()
+    mockUseAvailableFields.mockClear()
   })
 
   afterEach(() => {
@@ -140,6 +153,89 @@ describe('UrlNotificationSettings', () => {
     })
   })
 
+  it('opens the field picker with available fields', async () => {
+    renderWithProviders(
+      <UrlNotificationSettings
+        targetId={1}
+        urlId={1}
+        initialShowLocationMap={false}
+      />,
+    )
+
+    const trigger = screen.getByRole('button', {
+      name: /filters.notificationSettingsExpand/,
+    })
+    fireEvent.click(trigger)
+
+    const pickerTrigger = await screen.findByRole('button', {
+      name: /urlSettings\.triggerPlaceholder/,
+    })
+    fireEvent.click(pickerTrigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('Title')).toBeInTheDocument()
+    })
+  })
+
+  it('toggles field on save', async () => {
+    renderWithProviders(
+      <UrlNotificationSettings
+        targetId={1}
+        urlId={1}
+        initialShowLocationMap={false}
+      />,
+    )
+
+    const trigger = screen.getByRole('button', {
+      name: /filters.notificationSettingsExpand/,
+    })
+    fireEvent.click(trigger)
+
+    const pickerTrigger = await screen.findByRole('button', {
+      name: /urlSettings\.triggerPlaceholder/,
+    })
+    fireEvent.click(pickerTrigger)
+
+    fireEvent.click(await screen.findByText('Title'))
+    fireEvent.click(pickerTrigger)
+
+    const saveButton = screen.getByRole('button', { name: /filters.save/ })
+    fireEvent.click(saveButton)
+
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledWith({
+        showLocationMapInNotifications: false,
+        waypoints: [],
+        notificationFields: { fields: ['title'] },
+      })
+    })
+  })
+
+  it('shows empty state when no fields available', async () => {
+    mockUseAvailableFields.mockReturnValue({
+      data: { fields: [] },
+      isLoading: false,
+      isError: false,
+    })
+
+    renderWithProviders(
+      <UrlNotificationSettings
+        targetId={1}
+        urlId={1}
+        initialShowLocationMap={false}
+      />,
+    )
+
+    const trigger = screen.getByRole('button', {
+      name: /filters.notificationSettingsExpand/,
+    })
+    fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('urlSettings.noFieldsAvailable')).toBeInTheDocument()
+    })
+  })
+
   it('calls mutation with waypoints when saving', async () => {
     renderWithProviders(
       <UrlNotificationSettings
@@ -168,6 +264,7 @@ describe('UrlNotificationSettings', () => {
       expect(mockMutate).toHaveBeenCalledWith({
         showLocationMapInNotifications: true,
         waypoints: [{ name: 'Test Waypoint', lat: 0, lon: 0 }],
+        notificationFields: null,
       })
     })
   })

@@ -1,16 +1,25 @@
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
 from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist
+from shargain.offers.field_extraction import NotificationFieldsSelection
 from shargain.offers.models import ScrapingUrl
+
+
+class ClearFilters:
+    """Sentinel distinguishing 'filters not provided' from 'filters explicitly cleared'."""
+
+
+CLEAR_FILTERS = ClearFilters()
 
 
 def update_scraping_url(
     actor: Actor,
     url_id: int,
     name: str | None = None,
-    filters: dict | None = None,
+    filters: dict | None | ClearFilters = None,
     show_location_map_in_notifications: bool | None = None,
     waypoints: list[WaypointData] | None = None,
+    notification_fields: dict | None = None,
 ) -> ScrapingUrlDTO:
     try:
         url = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
@@ -22,7 +31,7 @@ def update_scraping_url(
         url.name = name
         update_fields.append("name")
     if filters is not None:
-        url.filters = filters
+        url.filters = None if filters is CLEAR_FILTERS else filters
         update_fields.append("filters")
     if show_location_map_in_notifications is not None:
         url.show_location_map_in_notifications = show_location_map_in_notifications
@@ -30,6 +39,9 @@ def update_scraping_url(
     if waypoints is not None:
         url.waypoints = waypoints
         update_fields.append("waypoints")
+    if notification_fields is not None:
+        url.notification_fields = NotificationFieldsSelection(**notification_fields)
+        update_fields.append("notification_fields")
 
     if update_fields:
         url.save(update_fields=update_fields)

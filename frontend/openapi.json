@@ -6,6 +6,55 @@
     "description": ""
   },
   "paths": {
+    "/api/public/urls/{url_id}/available-fields": {
+      "get": {
+        "operationId": "get_available_fields",
+        "summary": "Get Available Fields",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "url_id",
+            "schema": {
+              "title": "Url Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableFieldsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/targets/my-target": {
       "get": {
         "operationId": "get_my_target",
@@ -910,6 +959,106 @@
   },
   "components": {
     "schemas": {
+      "AvailableFieldSchema": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "operators": {
+            "items": {
+              "$ref": "#/components/schemas/FieldOperatorSchema"
+            },
+            "title": "Operators",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "type",
+          "operators"
+        ],
+        "title": "AvailableFieldSchema",
+        "type": "object"
+      },
+      "AvailableFieldsResponse": {
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/AvailableFieldSchema"
+            },
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "fields"
+        ],
+        "title": "AvailableFieldsResponse",
+        "type": "object"
+      },
+      "FieldOperatorSchema": {
+        "properties": {
+          "value": {
+            "title": "Value",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "label"
+        ],
+        "title": "FieldOperatorSchema",
+        "type": "object"
+      },
+      "ErrorSchema": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorSchema",
+        "type": "object"
+      },
       "FilterRuleSchema": {
         "description": "API schema for a single filter rule.",
         "properties": {
@@ -954,6 +1103,20 @@
           "ruleGroups"
         ],
         "title": "FiltersConfigSchema",
+        "type": "object"
+      },
+      "NotificationFieldsSchema": {
+        "properties": {
+          "fields": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "title": "NotificationFieldsSchema",
         "type": "object"
       },
       "RuleGroupSchema": {
@@ -1046,6 +1209,16 @@
               }
             ],
             "title": "Waypoints"
+          },
+          "notificationFields": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NotificationFieldsSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1126,30 +1299,6 @@
           "lon"
         ],
         "title": "WaypointSchema",
-        "type": "object"
-      },
-      "ErrorSchema": {
-        "properties": {
-          "detail": {
-            "title": "Detail",
-            "type": "string"
-          },
-          "code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Code"
-          }
-        },
-        "required": [
-          "detail"
-        ],
-        "title": "ErrorSchema",
         "type": "object"
       },
       "TargetSummaryResponse": {
@@ -1417,6 +1566,16 @@
               }
             ],
             "title": "Waypoints"
+          },
+          "notificationFields": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NotificationFieldsSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "title": "UpdateScrapingUrlRequest",

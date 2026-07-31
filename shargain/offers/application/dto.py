@@ -8,6 +8,7 @@ and the presentation layer (e.g., API views).
 import dataclasses
 from typing import Self, TypedDict
 
+from shargain.offers.field_extraction import NotificationFieldsSelection
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
 
 
@@ -29,6 +30,7 @@ class ScrapingUrlDTO:
     filters: dict | None = None
     show_location_map_in_notifications: bool = False
     waypoints: list[WaypointData] | None = None
+    notification_fields: NotificationFieldsSelection | None = None
 
     @classmethod
     def from_orm(cls, url: ScrapingUrl, last_checked_at: str | None = None) -> Self:
@@ -42,6 +44,7 @@ class ScrapingUrlDTO:
             filters=url.filters,
             show_location_map_in_notifications=url.show_location_map_in_notifications,
             waypoints=url.waypoints,
+            notification_fields=url.notification_fields.model_dump(mode="json") if url.notification_fields else None,
         )
 
 
