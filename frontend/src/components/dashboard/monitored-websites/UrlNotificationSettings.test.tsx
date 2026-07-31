@@ -21,12 +21,16 @@ vi.mock('./useMonitors', () => ({
   }),
 }))
 
-vi.mock('@/hooks/useAvailableFields', () => ({
-  useAvailableFields: () => ({
+const { mockUseAvailableFields } = vi.hoisted(() => ({
+  mockUseAvailableFields: vi.fn(() => ({
     data: { fields: [{ name: 'title', label: 'Title', type: 'string', operators: [{ value: 'contains', label: 'contains' }, { value: 'not_contains', label: 'does not contain' }] }] },
     isLoading: false,
     isError: false,
-  }),
+  })),
+}))
+
+vi.mock('@/hooks/useAvailableFields', () => ({
+  useAvailableFields: () => mockUseAvailableFields(),
 }))
 
 describe('UrlNotificationSettings', () => {
@@ -40,6 +44,7 @@ describe('UrlNotificationSettings', () => {
       },
     })
     mockMutate.mockClear()
+    mockUseAvailableFields.mockClear()
   })
 
   afterEach(() => {
@@ -145,6 +150,79 @@ describe('UrlNotificationSettings', () => {
     await waitFor(() => {
       const latInput = screen.getByDisplayValue('52.237049')
       expect(latInput).toBeInTheDocument()
+    })
+  })
+
+  it('renders field checkboxes when fields are available', async () => {
+    renderWithProviders(
+      <UrlNotificationSettings
+        targetId={1}
+        urlId={1}
+        initialShowLocationMap={false}
+      />,
+    )
+
+    const trigger = screen.getByRole('button', {
+      name: /filters.notificationSettingsExpand/,
+    })
+    fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('Title')).toBeInTheDocument()
+    })
+  })
+
+  it('toggles field on save', async () => {
+    renderWithProviders(
+      <UrlNotificationSettings
+        targetId={1}
+        urlId={1}
+        initialShowLocationMap={false}
+      />,
+    )
+
+    const trigger = screen.getByRole('button', {
+      name: /filters.notificationSettingsExpand/,
+    })
+    fireEvent.click(trigger)
+
+    const checkbox = screen.getByLabelText('Title')
+    fireEvent.click(checkbox)
+
+    const saveButton = screen.getByRole('button', { name: /filters.save/ })
+    fireEvent.click(saveButton)
+
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledWith({
+        showLocationMapInNotifications: false,
+        waypoints: [],
+        notificationFields: { fields: ['title'] },
+      })
+    })
+  })
+
+  it('shows empty state when no fields available', async () => {
+    mockUseAvailableFields.mockReturnValue({
+      data: { fields: [] },
+      isLoading: false,
+      isError: false,
+    })
+
+    renderWithProviders(
+      <UrlNotificationSettings
+        targetId={1}
+        urlId={1}
+        initialShowLocationMap={false}
+      />,
+    )
+
+    const trigger = screen.getByRole('button', {
+      name: /filters.notificationSettingsExpand/,
+    })
+    fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('urlSettings.noFieldsAvailable')).toBeInTheDocument()
     })
   })
 

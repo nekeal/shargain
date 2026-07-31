@@ -194,7 +194,7 @@ export function UrlNotificationSettings({
   targetId,
   urlId,
   initialShowLocationMap,
-  initialWaypoints = [],
+  initialWaypoints,
   initialNotificationFields = null,
 }: UrlNotificationSettingsProps) {
   const { t } = useTranslation();
@@ -204,7 +204,7 @@ export function UrlNotificationSettings({
   const [isOpen, setIsOpen] = useState(false);
   const [pasteTargetIndex, setPasteTargetIndex] = useState<number | null>(null);
 
-  const { data: availableFieldsData, isLoading: fieldsLoading } = useAvailableFields(urlId);
+  const { data: availableFieldsData, isLoading: fieldsLoading, isError: fieldsError } = useAvailableFields(urlId);
   const availableFields = availableFieldsData?.fields ?? [];
 
   const mutation = useUpdateUrlMutation(targetId, urlId);
@@ -370,6 +370,10 @@ export function UrlNotificationSettings({
               <Loader2 className="w-3 h-3 animate-spin" />
               <span>{t("dashboard.loading")}</span>
             </div>
+          ) : fieldsError ? (
+            <p className="text-xs text-muted-foreground">
+              {t("filters.errors.loadFailedDescription")}
+            </p>
           ) : availableFields.length === 0 ? (
             <p className="text-xs text-muted-foreground">
               {t("urlSettings.noFieldsAvailable")}
