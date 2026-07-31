@@ -98,7 +98,7 @@ class OtodomLocationParser(BaseLocationParser):
         try:
             address = self.extra["location"]["address"]
             city_name = address["city"]["name"]
-            if street_name := address.get("street", {}).get("name"):
+            if street_name := (address.get("street") or {}).get("name"):
                 return f"{city_name}, {street_name}"
             return city_name
         except (KeyError, TypeError):
