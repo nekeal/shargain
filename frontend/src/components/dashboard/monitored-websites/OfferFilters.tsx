@@ -150,26 +150,6 @@ export function OfferFilters({
 
   const hasChanges = JSON.stringify(savedSnapshot.current, stableKeySort) !== JSON.stringify(filters, stableKeySort);
 
-  if (fieldsLoading) {
-    return (
-      <div className="flex items-center gap-2 mt-3 px-3 py-2 text-sm text-muted-foreground bg-muted/80 rounded-md">
-        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-        <span>{t("dashboard.loading")}</span>
-      </div>
-    );
-  }
-
-  if (fieldsError) {
-    return (
-      <Alert variant="destructive" className="mt-3 py-2">
-        <AlertTitle className="text-sm">{t("filters.errors.loadFailed")}</AlertTitle>
-        <AlertDescription className="text-xs">
-          {t("filters.errors.loadFailedDescription")}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
       {/* Accordion-style trigger */}
@@ -204,6 +184,20 @@ export function OfferFilters({
       </CollapsibleTrigger>
 
       <CollapsibleContent className="mt-2">
+        {fieldsLoading ? (
+          <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground bg-muted/80 rounded-md">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <span>{t("dashboard.loading")}</span>
+          </div>
+        ) : fieldsError ? (
+          <Alert variant="destructive" className="py-2">
+            <AlertTitle className="text-sm">{t("filters.errors.loadFailed")}</AlertTitle>
+            <AlertDescription className="text-xs">
+              {t("filters.errors.loadFailedDescription")}
+            </AlertDescription>
+          </Alert>
+        ) : (
+        <>
         <div className="space-y-0">
           {filters?.ruleGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
@@ -279,10 +273,12 @@ export function OfferFilters({
                         <Select
                           value={rule.field}
                           onValueChange={(value) => {
+                            const newFieldMeta = availableFields.find(f => f.name === value);
+                            const newOperator = newFieldMeta?.operators[0]?.value ?? "contains";
                             const newGroups = filters.ruleGroups.map((g, gIdx) => {
                               if (gIdx !== groupIndex) return g;
                               const newRules = g.rules.map((r, rIdx) =>
-                                rIdx === ruleIndex ? { ...r, field: value } : r
+                                rIdx === ruleIndex ? { ...r, field: value, operator: newOperator } : r
                               );
                               return { ...g, rules: newRules };
                             });
@@ -514,6 +510,8 @@ export function OfferFilters({
             {t("filters.save")}
           </Button>
         </div>
+        </>
+        )}
       </CollapsibleContent>
     </Collapsible>
   );
