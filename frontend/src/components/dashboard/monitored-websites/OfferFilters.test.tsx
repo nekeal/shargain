@@ -11,6 +11,7 @@ vi.mock('react-i18next', () => ({
       // Simple mock translations
       const translations: Record<string, string> = {
         'filters.title': 'Smart Filters',
+        'filters.noFilters': 'All offers will notify',
         'filters.expand': 'Expand filters',
         'filters.collapse': 'Collapse filters',
         'filters.matchLabel': 'Match',
@@ -108,7 +109,7 @@ describe('OfferFilters', () => {
     })
   })
 
-  it('auto-creates first empty group when opened with no filters', async () => {
+  it('shows empty state when opened with no filters', async () => {
     renderWithProviders(
       <OfferFilters
         targetId={1}
@@ -121,8 +122,8 @@ describe('OfferFilters', () => {
     fireEvent.click(trigger)
 
     await waitFor(() => {
-      expect(screen.getByText('ALL')).toBeInTheDocument()
-      expect(screen.getByPlaceholderText('Enter text...')).toBeInTheDocument()
+      expect(screen.getByText('All offers will notify')).toBeInTheDocument()
+      expect(screen.queryByPlaceholderText('Enter text...')).not.toBeInTheDocument()
     })
   })
 
@@ -167,6 +168,13 @@ describe('OfferFilters', () => {
     // Expand filters
     const trigger = screen.getByRole('button', { name: /expand filters/i })
     fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('Add group')).toBeInTheDocument()
+    })
+
+    // Create first group
+    fireEvent.click(screen.getByText('Add group'))
 
     await waitFor(() => {
       expect(screen.getByText('Add rule')).toBeInTheDocument()
@@ -249,9 +257,9 @@ describe('OfferFilters', () => {
       expect(screen.getByText('Add group')).toBeInTheDocument()
     })
 
-    // Click "Add group"
-    const addGroupButton = screen.getByText('Add group')
-    fireEvent.click(addGroupButton)
+    // Click "Add group" twice to create two groups
+    fireEvent.click(screen.getByText('Add group'))
+    fireEvent.click(screen.getByText('Add group'))
 
     await waitFor(() => {
       // Should now have logic divider between groups
@@ -315,6 +323,141 @@ describe('OfferFilters', () => {
     })
   })
 
+  it('allows deleting the last rule, clearing all filters', async () => {
+    const initialFilters: FiltersConfigSchema = {
+      ruleGroups: [
+        {
+          logic: 'and',
+          rules: [
+            {
+              field: 'title',
+              operator: 'contains',
+              value: 'apartment',
+              caseSensitive: false,
+            },
+          ],
+        },
+      ],
+    }
+
+    renderWithProviders(
+      <OfferFilters
+        targetId={1}
+        urlId={1}
+        initialFilters={initialFilters}
+      />
+    )
+
+    // Expand filters
+    const trigger = screen.getByRole('button', { name: /expand filters/i })
+    fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Enter text...')).toBeInTheDocument()
+    })
+
+    // Delete the only rule (both mobile and desktop delete buttons exist)
+    const deleteButtons = screen.getAllByRole('button', { name: /delete filter rule/i })
+    expect(deleteButtons.length).toBeGreaterThan(0)
+    fireEvent.click(deleteButtons[0])
+
+    // Empty state is shown and the rule row is gone
+    await waitFor(() => {
+      expect(screen.getByText('All offers will notify')).toBeInTheDocument()
+      expect(screen.queryByPlaceholderText('Enter text...')).not.toBeInTheDocument()
+    })
+  })
+
+  it('allows deleting the last group, clearing all filters', async () => {
+    const initialFilters: FiltersConfigSchema = {
+      ruleGroups: [
+        {
+          logic: 'and',
+          rules: [
+            {
+              field: 'title',
+              operator: 'contains',
+              value: 'apartment',
+              caseSensitive: false,
+            },
+          ],
+        },
+      ],
+    }
+
+    renderWithProviders(
+      <OfferFilters
+        targetId={1}
+        urlId={1}
+        initialFilters={initialFilters}
+      />
+    )
+
+    // Expand filters
+    const trigger = screen.getByRole('button', { name: /expand filters/i })
+    fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Enter text...')).toBeInTheDocument()
+    })
+
+    // Delete the only group
+    fireEvent.click(screen.getByRole('button', { name: /delete filter group 1/i }))
+
+    // Empty state is shown
+    await waitFor(() => {
+      expect(screen.getByText('All offers will notify')).toBeInTheDocument()
+    })
+  })
+
+  it('saves cleared filters as null', async () => {
+    const initialFilters: FiltersConfigSchema = {
+      ruleGroups: [
+        {
+          logic: 'and',
+          rules: [
+            {
+              field: 'title',
+              operator: 'contains',
+              value: 'apartment',
+              caseSensitive: false,
+            },
+          ],
+        },
+      ],
+    }
+
+    renderWithProviders(
+      <OfferFilters
+        targetId={1}
+        urlId={1}
+        initialFilters={initialFilters}
+      />
+    )
+
+    // Expand filters
+    const trigger = screen.getByRole('button', { name: /expand filters/i })
+    fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Enter text...')).toBeInTheDocument()
+    })
+
+    // Delete the only rule, then save
+    fireEvent.click(screen.getAllByRole('button', { name: /delete filter rule/i })[0])
+
+    await waitFor(() => {
+      expect(screen.getByText('All offers will notify')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /save/i }))
+
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalled()
+      expect(mockMutate.mock.calls[0][0]).toEqual({ filters: null })
+    })
+  })
+
   it('toggles group logic between ALL and ANY', async () => {
     renderWithProviders(
       <OfferFilters
@@ -327,6 +470,13 @@ describe('OfferFilters', () => {
     // Expand filters
     const trigger = screen.getByRole('button', { name: /expand filters/i })
     fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('Add group')).toBeInTheDocument()
+    })
+
+    // Create first group
+    fireEvent.click(screen.getByText('Add group'))
 
     await waitFor(() => {
       expect(screen.getByText('ALL')).toBeInTheDocument()
@@ -480,28 +630,25 @@ describe('OfferFilters', () => {
       />
     )
 
-    // Expand filters (auto-creates first empty group)
+    // Expand filters (no filters exist yet)
     const trigger = screen.getByRole('button', { name: /expand filters/i })
     fireEvent.click(trigger)
 
-    // Save button is enabled because normalized filters (empty rules stripped) pass validation
+    // Save button is disabled: nothing changed and nothing to save
     const saveButton = screen.getByRole('button', { name: /save/i })
-    expect(saveButton).toBeEnabled()
+    expect(saveButton).toBeDisabled()
 
-    // Add a new rule
-    const addRuleButton = screen.getByText('Add rule')
-    fireEvent.click(addRuleButton)
+    // Create a group and add a rule with a value
+    fireEvent.click(screen.getByText('Add group'))
 
-    // Save button stays enabled (empty rules are normalized away before validation)
-    expect(saveButton).toBeEnabled()
-
-    // Type a value in the new rule
     const inputs = screen.getAllByPlaceholderText('Enter text...')
-    expect(inputs).toHaveLength(2)
-    fireEvent.change(inputs[1], { target: { value: 'house' } })
+    expect(inputs).toHaveLength(1)
+    fireEvent.change(inputs[0], { target: { value: 'house' } })
 
-    // Save button is still enabled
-    expect(saveButton).toBeEnabled()
+    // Save button is enabled
+    await waitFor(() => {
+      expect(saveButton).toBeEnabled()
+    })
   })
 
   it('renders save button', () => {

@@ -119,13 +119,8 @@ export function OfferFilters({
     }
   };
 
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    // Auto-create first group when opening if no filters exist
-    if (open && (!filters || filters.ruleGroups.length === 0)) {
-      handleFiltersChange({ ruleGroups: [createEmptyGroup(firstField)] });
-    }
-  };
+  // No auto-created groups: when no filters exist, the empty state
+  // ("all offers will notify") is shown and the user opts in via "Add group".
 
   // Only count rules that have actual values (not empty placeholders)
   const activeRulesCount = filters?.ruleGroups.reduce(
@@ -151,7 +146,7 @@ export function OfferFilters({
   const hasChanges = JSON.stringify(savedSnapshot.current, stableKeySort) !== JSON.stringify(filters, stableKeySort);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       {/* Accordion-style trigger */}
       <CollapsibleTrigger asChild>
         <button
@@ -198,6 +193,12 @@ export function OfferFilters({
           </Alert>
         ) : (
         <>
+        {(!filters || filters.ruleGroups.length === 0) && (
+          <div className="px-3 py-2.5 flex items-center gap-2 text-sm text-muted-foreground bg-muted/80 rounded-md">
+            <Filter className="w-3.5 h-3.5 shrink-0" />
+            <span>{t("filters.noFilters")}</span>
+          </div>
+        )}
         <div className="space-y-0">
           {filters?.ruleGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
@@ -247,20 +248,20 @@ export function OfferFilters({
                       {t("filters.ofTheFollowing", { defaultValue: "of the following:" })}
                     </span>
                   </div>
-                  {filters.ruleGroups.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newGroups = filters.ruleGroups.filter((_, idx) => idx !== groupIndex);
-                        handleFiltersChange({ ...filters, ruleGroups: newGroups });
-                      }}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newGroups = filters.ruleGroups.filter((_, idx) => idx !== groupIndex);
+                      handleFiltersChange(
+                        newGroups.length > 0 ? { ...filters, ruleGroups: newGroups } : null
+                      );
+                    }}
                       aria-label={t("filters.deleteGroup", { index: groupIndex + 1 })}
                       className="p-0.5 text-muted-foreground hover:text-destructive transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
-                  )}
-                </div>
+                  </div>
 
                 {/* Rules - responsive layout */}
                 <div className="space-y-2">
@@ -333,23 +334,25 @@ export function OfferFilters({
                           );
                         })()}
 
-                        {group.rules.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newGroups = filters.ruleGroups
+                              .map((g, gIdx) => {
                                 if (gIdx !== groupIndex) return g;
                                 const newRules = g.rules.filter((_, rIdx) => rIdx !== ruleIndex);
                                 return { ...g, rules: newRules };
-                              });
-                              handleFiltersChange({ ...filters, ruleGroups: newGroups });
-                            }}
-                            aria-label={t("filters.deleteRule")}
-                            className="p-1.5 text-muted-foreground hover:text-destructive transition-colors sm:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
+                              })
+                              .filter(g => g.rules.length > 0);
+                            handleFiltersChange(
+                              newGroups.length > 0 ? { ...filters, ruleGroups: newGroups } : null
+                            );
+                          }}
+                          aria-label={t("filters.deleteRule")}
+                          className="p-1.5 text-muted-foreground hover:text-destructive transition-colors sm:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
 
                       <div className="flex items-center gap-1.5 flex-1">
@@ -375,23 +378,25 @@ export function OfferFilters({
                           )}
                           aria-invalid={!!getFieldError(`ruleGroups.${groupIndex}.rules.${ruleIndex}.value`)}
                         />
-                        {group.rules.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newGroups = filters.ruleGroups.map((g, gIdx) => {
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newGroups = filters.ruleGroups
+                              .map((g, gIdx) => {
                                 if (gIdx !== groupIndex) return g;
                                 const newRules = g.rules.filter((_, rIdx) => rIdx !== ruleIndex);
                                 return { ...g, rules: newRules };
-                              });
-                              handleFiltersChange({ ...filters, ruleGroups: newGroups });
-                            }}
-                            aria-label={t("filters.deleteRule")}
-                            className="p-1.5 text-muted-foreground hover:text-destructive transition-colors hidden sm:block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
+                              })
+                              .filter(g => g.rules.length > 0);
+                            handleFiltersChange(
+                              newGroups.length > 0 ? { ...filters, ruleGroups: newGroups } : null
+                            );
+                          }}
+                          aria-label={t("filters.deleteRule")}
+                          className="p-1.5 text-muted-foreground hover:text-destructive transition-colors hidden sm:block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
 
                       {getFieldError(`ruleGroups.${groupIndex}.rules.${ruleIndex}.value`) && (

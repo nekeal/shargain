@@ -40,7 +40,11 @@ from shargain.offers.application.commands.toggle_target_notifications import (
 from shargain.offers.application.commands.update_scraping_target_name import (
     update_scraping_target_name,
 )
-from shargain.offers.application.commands.update_scraping_url import update_scraping_url
+from shargain.offers.application.commands.update_scraping_url import (
+    CLEAR_FILTERS,
+    ClearFilters,
+    update_scraping_url,
+)
 from shargain.offers.application.dto import WaypointData
 from shargain.offers.application.exceptions import (
     ApplicationException,
@@ -426,15 +430,21 @@ def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
 def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, payload: UpdateScrapingUrlRequest):
     """Update an existing scraping URL."""
     actor = get_actor(request)
-    filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
+    filters_arg: dict | None | ClearFilters
+    if "filters" not in payload.model_fields_set:
+        filters_arg = None
+    elif payload.filters is None:
+        filters_arg = CLEAR_FILTERS
+    else:
+        filters_arg = payload.filters.model_dump(by_alias=True)
 
-    if filters_dict:
+    if isinstance(filters_arg, dict):
         try:
             existing_url = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
         except ScrapingUrl.DoesNotExist as e:
             raise HttpError(404, "Scraping URL not found") from e
         try:
-            filters_dict = validate_filters_for_url(filters_dict, existing_url.url)
+            filters_arg = validate_filters_for_url(filters_arg, existing_url.url)
         except ValueError as e:
             raise HttpError(400, str(e)) from e
 
@@ -448,7 +458,7 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
         return update_scraping_url(
             actor=actor,
             url_id=url_id,
-            filters=filters_dict,
+            filters=filters_arg,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
             waypoints=waypoints_list,
             notification_fields=notification_fields_dict,
