@@ -2,7 +2,7 @@
 
 import pytest
 
-from shargain.offers.field_extraction import ExtractedOffer
+from shargain.offers.field_extraction import ExtractedOffer, RichValue
 from shargain.offers.filtering import FilterOperator, OfferFilterService
 
 
@@ -270,6 +270,21 @@ class TestOfferFilterService:
         filtered = service.apply([offer_with_elevator, offer_unknown, offer_no_field])
 
         assert filtered == [offer_with_elevator]
+
+    def test_rich_value_unwrapped_for_filtering(self):
+        offer_with_parking = ExtractedOffer(_offer=None, fields={"parking": RichValue(True, "przynależne na ulicy")})
+        offer_without_parking = ExtractedOffer(_offer=None, fields={"parking": RichValue(False)})
+        offer_unknown = ExtractedOffer(_offer=None, fields={"parking": RichValue(None)})
+        service = OfferFilterService(
+            {
+                "ruleGroups": [
+                    {"rules": [{"field": "parking", "operator": FilterOperator.EQUALS.value, "value": "True"}]}
+                ]
+            }
+        )
+        filtered = service.apply([offer_with_parking, offer_without_parking, offer_unknown])
+
+        assert filtered == [offer_with_parking]
 
     def test_filter_title_equals(self, offer_apartment, offer_studio):
         service = OfferFilterService(

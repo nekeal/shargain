@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any, NotRequired, TypedDict
 
-from shargain.offers.field_extraction.plugin import ExtractedOffer, Operator
+from shargain.offers.field_extraction.plugin import ExtractedOffer, Operator, RichValue
 
 
 class FilterRuleData(TypedDict):
@@ -75,6 +75,8 @@ class OfferFilterService:
         filter_value = rule["value"]
 
         field_value = offer.fields.get(field_name)
+        if isinstance(field_value, RichValue):
+            field_value = field_value.get_value()
         if field_value is None:
             return False
 

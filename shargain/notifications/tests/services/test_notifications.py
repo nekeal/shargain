@@ -7,7 +7,7 @@ from shargain.notifications.services.notifications import (
     NotificationMessageContext,
 )
 from shargain.notifications.tests.factories import NotificationConfigFactory
-from shargain.offers.field_extraction import ExtractedFieldEntry
+from shargain.offers.field_extraction import ExtractedFieldEntry, RichValue
 from shargain.offers.tests.factories import ScrappingTargetFactory
 
 
@@ -90,6 +90,12 @@ class TestExtractedFieldsInMessage:
                 ],
                 ["42.5", "4", "No", "Great location"],
             ),
+            (
+                [ExtractedFieldEntry(name="parking", value=RichValue(True, "przynależne na ulicy, w garażu"))],
+                ["przynależne na ulicy, w garażu"],
+            ),
+            ([ExtractedFieldEntry(name="parking", value=RichValue(True))], ["Yes"]),
+            ([ExtractedFieldEntry(name="parking", value=RichValue(False))], ["No"]),
         ],
     )
     def test_extracted_fields_rendered(self, fields, assertions, notification_service, offer):

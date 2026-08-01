@@ -11,6 +11,7 @@ from shargain.offers.field_extraction.plugin import (
     FieldDefinition,
     FieldType,
     ListUrl,
+    RichValue,
 )
 
 if TYPE_CHECKING:
@@ -85,19 +86,16 @@ def _extract_winda(extra: dict) -> bool | None:
     return value == "Tak"
 
 
-def _extract_parking(extra: dict) -> bool | None:
+def _extract_parking(extra: dict) -> RichValue | None:
     entry = _param(extra, "parking")
     if entry is None:
         return None
     value = _normalized(entry)
     if value is None:
         return None
-    if isinstance(value, list):
-        choices = value
-    else:
-        choices = [value]
-    has_parking = any(choice != "brak" for choice in choices if isinstance(choice, str))
-    return has_parking
+    choices = value if isinstance(value, list) else [value]
+    labels = [choice for choice in choices if isinstance(choice, str) and choice != "brak"]
+    return RichValue(value=bool(labels), display=", ".join(labels) if labels else None)
 
 
 def _extract_text(extra: dict, key: str) -> str | None:
