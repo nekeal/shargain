@@ -43,3 +43,27 @@ class TestAvailableFieldsEndpoint:
             for op in field["operators"]:
                 assert "value" in op
                 assert "label" in op
+
+    def test_returns_olx_apartment_fields(self, client, user):
+        client.force_login(user)
+        target = ScrappingTargetFactory(owner=user)
+        url = ScrapingUrlFactory(
+            scraping_target=target,
+            url="https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/krakow/",
+        )
+        response = client.get(f"/api/public/urls/{url.id}/available-fields")
+        assert response.status_code == 200
+        field_names = [f["name"] for f in response.json()["fields"]]
+        assert set(field_names) >= {"price_per_m2", "area", "floor", "rooms", "winda", "parking", "builttype", "market"}
+
+    def test_returns_otodom_apartment_fields(self, client, user):
+        client.force_login(user)
+        target = ScrappingTargetFactory(owner=user)
+        url = ScrapingUrlFactory(
+            scraping_target=target,
+            url="https://www.otodom.pl/pl/wyniki/sprzedaz/mieszkanie/malopolskie/krakow/",
+        )
+        response = client.get(f"/api/public/urls/{url.id}/available-fields")
+        assert response.status_code == 200
+        field_names = [f["name"] for f in response.json()["fields"]]
+        assert set(field_names) >= {"price_per_m2", "area", "floor", "rooms", "parking", "balcony"}
