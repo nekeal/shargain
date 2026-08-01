@@ -407,3 +407,39 @@ msgstr "❌ Wystąpił błąd podczas przetwarzania adresu URL. Spróbuj ponowni
 
 msgid "Skip"
 msgstr "Pomiń"
+
+#: shargain/offers/field_extraction/plugins/olx_apartment.py
+#: shargain/offers/field_extraction/plugins/otodom_apartment.py
+msgid "Price per m2"
+msgstr "Cena za m²"
+
+#: shargain/offers/field_extraction/plugins/olx_apartment.py
+#: shargain/offers/field_extraction/plugins/otodom_apartment.py
+msgid "Area"
+msgstr "Powierzchnia"
+
+#: shargain/offers/field_extraction/plugins/olx_apartment.py
+#: shargain/offers/field_extraction/plugins/otodom_apartment.py
+msgid "Floor"
+msgstr "Piętro"
+
+#: shargain/offers/field_extraction/plugins/olx_apartment.py
+#: shargain/offers/field_extraction/plugins/otodom_apartment.py
+msgid "Rooms"
+msgstr "Liczba pokoi"
+
+#: shargain/offers/field_extraction/plugins/olx_apartment.py
+msgid "Elevator"
+msgstr "Winda"
+
+#: shargain/offers/field_extraction/plugins/olx_apartment.py
+msgid "Building type"
+msgstr "Rodzaj zabudowy"
+
+#: shargain/offers/field_extraction/plugins/olx_apartment.py
+msgid "Market"
+msgstr "Rynek"
+
+#: shargain/offers/field_extraction/plugins/otodom_apartment.py
+msgid "Balcony"
+msgstr "Balkon"

@@ -260,6 +260,17 @@ class TestOfferFilterService:
 
         assert len(filtered) == 0
 
+    def test_none_field_value_is_excluded(self):
+        offer_with_elevator = ExtractedOffer(_offer=None, fields={"winda": True})
+        offer_unknown = ExtractedOffer(_offer=None, fields={"winda": None})
+        offer_no_field = ExtractedOffer(_offer=None, fields={"title": "No winda field"})
+        service = OfferFilterService(
+            {"ruleGroups": [{"rules": [{"field": "winda", "operator": FilterOperator.EQUALS.value, "value": "True"}]}]}
+        )
+        filtered = service.apply([offer_with_elevator, offer_unknown, offer_no_field])
+
+        assert filtered == [offer_with_elevator]
+
     def test_filter_title_equals(self, offer_apartment, offer_studio):
         service = OfferFilterService(
             {
