@@ -1,6 +1,6 @@
 """Tests for OlxApartmentPlugin."""
 
-from shargain.offers.field_extraction import FieldType, ListUrl
+from shargain.offers.field_extraction import FieldType, ListUrl, RichValue
 from shargain.offers.field_extraction.plugins.olx_apartment import olx_apartment
 from shargain.offers.tests.factories import OfferFactory
 
@@ -67,7 +67,7 @@ class TestOlxApartmentPluginExtract:
         assert result["floor"] == 2
         assert result["rooms"] == 2
         assert result["winda"] is True
-        assert result["parking"] is True
+        assert result["parking"] == RichValue(True, "przynależne na ulicy")
         assert result["builttype"] == "blok"
         assert result["market"] == "secondary"
 
@@ -112,7 +112,7 @@ class TestOlxApartmentPluginExtract:
 
     def test_parking_brak_is_false(self):
         offer = OfferFactory.build(metadata=_params({"key": "parking", "value": "brak", "normalizedValue": ["brak"]}))
-        assert olx_apartment.extract(offer, OLX_URL)["parking"] is False
+        assert olx_apartment.extract(offer, OLX_URL)["parking"] == RichValue(False)
 
     def test_parking_brak_with_other_choices_is_true(self):
         offer = OfferFactory.build(
@@ -120,7 +120,25 @@ class TestOlxApartmentPluginExtract:
                 {"key": "parking", "value": "brak, identyfikator", "normalizedValue": ["brak", "identyfikator"]}
             )
         )
-        assert olx_apartment.extract(offer, OLX_URL)["parking"] is True
+        assert olx_apartment.extract(offer, OLX_URL)["parking"] == RichValue(True, "identyfikator")
+
+    def test_parking_multiple_choices_joined_in_display(self):
+        offer = OfferFactory.build(
+            metadata=_params(
+                {
+                    "key": "parking",
+                    "value": "przynależne na ulicy, w garażu",
+                    "normalizedValue": ["przynależne na ulicy", "w garażu"],
+                }
+            )
+        )
+        assert olx_apartment.extract(offer, OLX_URL)["parking"] == RichValue(True, "przynależne na ulicy, w garażu")
+
+    def test_parking_scalar_choice(self):
+        offer = OfferFactory.build(
+            metadata=_params({"key": "parking", "value": "parking strzeżony", "normalizedValue": "parking strzeżony"})
+        )
+        assert olx_apartment.extract(offer, OLX_URL)["parking"] == RichValue(True, "parking strzeżony")
 
     def test_parking_missing_is_none(self):
         offer = OfferFactory.build(metadata={"extra": {}})

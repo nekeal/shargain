@@ -16,7 +16,21 @@ if TYPE_CHECKING:
 
     from shargain.offers.models import Offer
 
-ExtractedFieldValue = int | float | str | bool | None
+ExtractedScalar = bool | int | float | str | None
+
+
+@dataclass(frozen=True)
+class RichValue:
+    """Wrapper carrying a filterable scalar plus an optional display string."""
+
+    value: ExtractedScalar
+    display: str | None = None
+
+    def get_value(self) -> ExtractedScalar:
+        return self.value
+
+
+ExtractedFieldValue = ExtractedScalar | RichValue
 
 ListUrl = NewType("ListUrl", str)
 

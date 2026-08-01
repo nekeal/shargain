@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from shargain.notifications.models import NotificationChannelChoices
 from shargain.notifications.senders import TelegramNotificationSender
-from shargain.offers.field_extraction import ExtractedFieldEntry
+from shargain.offers.field_extraction import ExtractedFieldEntry, RichValue
 from shargain.offers.models import Offer, ScrappingTarget
 
 
@@ -31,7 +31,12 @@ class NotificationMessageContext:
         for entry in self.extracted_fields:
             if entry.value is None:
                 continue
-            if isinstance(entry.value, bool):
+            if isinstance(entry.value, RichValue):
+                if entry.value.display is not None:
+                    display = entry.value.display
+                else:
+                    display = "Yes" if entry.value.get_value() else "No"
+            elif isinstance(entry.value, bool):
                 display = "Yes" if entry.value else "No"
             else:
                 display = str(entry.value)
