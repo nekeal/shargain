@@ -54,7 +54,16 @@ class TestAvailableFieldsEndpoint:
         response = client.get(f"/api/public/urls/{url.id}/available-fields")
         assert response.status_code == 200
         field_names = [f["name"] for f in response.json()["fields"]]
-        assert set(field_names) >= {"price_per_m2", "area", "floor", "rooms", "winda", "parking", "builttype", "market"}
+        assert set(field_names) >= {
+            "price_per_m2",
+            "area",
+            "floor",
+            "rooms",
+            "winda",
+            "parking",
+            "builttype",
+            "market",
+        }
 
     def test_returns_otodom_apartment_fields(self, client, user):
         client.force_login(user)
