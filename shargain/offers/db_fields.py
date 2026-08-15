@@ -1,3 +1,4 @@
+import json
 from importlib import import_module
 from typing import Any
 
@@ -66,6 +67,13 @@ class PydanticField(models.JSONField):
         if isinstance(value, self.pydantic_model):
             return super().get_prep_value(value.model_dump())
         return super().get_prep_value(value)
+
+    def validate(self, value: Any, model_instance: Any) -> None:
+        models.Field.validate(self, value, model_instance)
+        try:
+            json.dumps(_json_ready(value), cls=self.encoder)
+        except TypeError as e:
+            raise DjangoValidationError(self.error_messages["invalid"], code="invalid") from e
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()

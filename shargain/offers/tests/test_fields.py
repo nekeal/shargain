@@ -63,6 +63,15 @@ class TestPydanticField:
         assert isinstance(result, str)
         assert json.loads(result) == {"name": "x"}
 
+    def test_validate_accepts_model_instance(self):
+        field = PydanticField(pydantic_model=SampleModel)
+        field.validate(SampleModel(name="test", count=3), None)
+
+    def test_clean_accepts_model_instance(self):
+        field = PydanticField(pydantic_model=SampleModel)
+        result = field.clean(SampleModel(name="test", count=3), None)
+        assert result == SampleModel(name="test", count=3)
+
     def test_deconstruct_includes_pydantic_model_path(self):
         field = PydanticField(pydantic_model=SampleModel, null=True)
         name, path, args, kwargs = field.deconstruct()
