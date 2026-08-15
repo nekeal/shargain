@@ -1,9 +1,24 @@
 from importlib import import_module
 from typing import Any
 
+from django import forms
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import models
 from pydantic import BaseModel, ValidationError
+
+
+class PydanticFormField(forms.JSONField):
+    def prepare_value(self, value):
+        return super().prepare_value(_json_ready(value))
+
+    def has_changed(self, initial, data):
+        return super().has_changed(_json_ready(initial), data)
+
+
+def _json_ready(value: Any) -> Any:
+    if isinstance(value, BaseModel):
+        return value.model_dump(mode="json")
+    return value
 
 
 class PydanticField(models.JSONField):
@@ -56,3 +71,15 @@ class PydanticField(models.JSONField):
         name, path, args, kwargs = super().deconstruct()
         kwargs["pydantic_model"] = self._pydantic_model_path
         return name, path, args, kwargs
+
+    def formfield(
+        self,
+        form_class: type[forms.Field] | None = None,
+        choices_form_class: type[forms.ChoiceField] | None = None,
+        **kwargs: Any,
+    ) -> forms.Field | None:
+        return super().formfield(
+            form_class=PydanticFormField,
+            choices_form_class=choices_form_class,
+            **kwargs,
+        )
