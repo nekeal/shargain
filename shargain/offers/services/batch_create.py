@@ -63,10 +63,14 @@ class OfferBatchCreateService:
         target = validated_data["target"]
         offers_data_list = validated_data["offers"]
 
+        seen_urls: set[str] = set()
         urls: list[str] = []
         all_offer_data: list[dict] = []
         for offer_data in offers_data_list:
             url = offer_data.pop("url")
+            if url in seen_urls:
+                continue
+            seen_urls.add(url)
             urls.append(url)
             all_offer_data.append(offer_data)
 
