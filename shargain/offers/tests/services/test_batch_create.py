@@ -7,6 +7,7 @@ import pytest
 from shargain.notifications.tests.factories import NotificationConfigFactory
 from shargain.offers.models import Offer
 from shargain.offers.services.batch_create import OfferBatchCreateService
+from shargain.offers.services.location_parsers import Coordinates
 from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
 from shargain.quotas.tests.factories import OfferQuotaFactory
 
@@ -285,3 +286,4 @@ class TestOfferBatchCreateService:
             # Verify distances are sensible (offer 52.22,21.01 to metro 52.23,21.00 ~ 1.2 km)
             metro_dist = ctx.distances[0][1]
             assert metro_dist == pytest.approx(1.2, abs=0.5)
+            assert ctx.coordinates == Coordinates(lat=52.22, lon=21.01)
