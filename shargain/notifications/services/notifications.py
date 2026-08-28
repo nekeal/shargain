@@ -91,7 +91,7 @@ class NewOfferNotificationService:
             card,
             coordinates.lat,
             coordinates.lon,
-            horizontal_accuracy=50.0 if context.is_exact_location else 300.0,
+            horizontal_accuracy=1500.0,
         )
 
     def _send(self, message):

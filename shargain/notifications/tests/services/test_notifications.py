@@ -183,16 +183,16 @@ class TestRunPinSplitting:
         self.sender_instance.send.assert_not_called()
         card, lat, lon = self.sender_instance.send_with_pin.call_args.args[:3]
         assert (lat, lon) == (52.22, 21.01)
-        assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 300.0
+        assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 1500.0
         assert "maps.google.com" not in card
 
-    def test_exact_location_uses_tighter_horizontal_accuracy(self):
+    def test_exact_location_uses_wide_city_radius(self):
         context = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01), is_exact_location=True)
         service = self._make_service([context])
 
         service.run()
 
-        assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 50.0
+        assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 1500.0
 
     def test_unpinned_offers_stay_batched(self):
         pinned = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01))
