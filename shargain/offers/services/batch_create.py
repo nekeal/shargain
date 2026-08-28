@@ -185,7 +185,7 @@ class OfferBatchCreateService:
 
         contexts = []
         for extracted in extracted_offers:
-            map_url, location_name, is_exact = None, None, False
+            map_url, location_name, is_exact, coords = None, None, False, None
             distances = []
             if show_location:
                 # TODO: Move domain/metadata to ExtractedOffer.fields when plugins extract them
@@ -206,6 +206,7 @@ class OfferBatchCreateService:
                     location_name=location_name,
                     is_exact_location=is_exact,
                     distances=distances,
+                    coordinates=coords,
                     extracted_fields=[
                         ExtractedFieldEntry(name=k, value=v) for k, v in extracted.fields.items() if k in selected
                     ],

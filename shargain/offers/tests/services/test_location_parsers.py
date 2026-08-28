@@ -2,9 +2,9 @@
 
 import pytest
 
+from shargain.offers.geo import Coordinates
 from shargain.offers.services.location_parsers import (
     BaseLocationParser,
-    Coordinates,
     DummyLocationParser,
     OlxLocationParser,
     OtodomLocationParser,

@@ -1,9 +1,14 @@
 import abc
+import logging
 
 import telebot
 from django.conf import settings
+from telebot.apihelper import ApiTelegramException
+from telebot.types import ReplyParameters
 
 from shargain.notifications.models import NotificationConfig
+
+logger = logging.getLogger(__name__)
 
 
 class BaseNotificationSender(abc.ABC):
@@ -12,6 +17,16 @@ class BaseNotificationSender(abc.ABC):
 
     @abc.abstractmethod
     def send(self, message: str):
+        pass
+
+    @abc.abstractmethod
+    def send_with_pin(
+        self,
+        message: str,
+        latitude: float,
+        longitude: float,
+        horizontal_accuracy: float | None = None,
+    ):
         pass
 
 
@@ -23,8 +38,37 @@ class TelegramNotificationSender(BaseNotificationSender):
         """
         self._bot_token = bot_token or settings.TELEGRAM_BOT_TOKEN
         assert self._bot_token, "Telegram bot token is not set"  # noqa: S101
+        self._bot: telebot.TeleBot | None = None
         super().__init__(notification_config)
 
+    def _get_bot(self) -> telebot.TeleBot:
+        if self._bot is None:
+            self._bot = telebot.TeleBot(self._bot_token, parse_mode=None)
+        return self._bot
+
     def send(self, message: str):
-        bot = telebot.TeleBot(self._bot_token, parse_mode=None)
-        bot.send_message(self._notification_config.chatid, message)
+        self._get_bot().send_message(self._notification_config.chatid, message)
+
+    def send_with_pin(
+        self,
+        message: str,
+        latitude: float,
+        longitude: float,
+        horizontal_accuracy: float | None = None,
+    ):
+        bot = self._get_bot()
+        sent_message = bot.send_message(self._notification_config.chatid, message)
+        try:
+            bot.send_location(
+                self._notification_config.chatid,
+                latitude=latitude,
+                longitude=longitude,
+                horizontal_accuracy=horizontal_accuracy,
+                reply_parameters=ReplyParameters(message_id=sent_message.message_id),
+            )
+        except ApiTelegramException as exc:
+            logger.warning(
+                "Failed to send location pin for chat %s: %s",
+                self._notification_config.chatid,
+                exc,
+            )
