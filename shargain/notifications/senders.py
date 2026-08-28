@@ -19,6 +19,16 @@ class BaseNotificationSender(abc.ABC):
     def send(self, message: str):
         pass
 
+    @abc.abstractmethod
+    def send_with_pin(
+        self,
+        message: str,
+        latitude: float,
+        longitude: float,
+        horizontal_accuracy: float | None = None,
+    ):
+        pass
+
 
 class TelegramNotificationSender(BaseNotificationSender):
     def __init__(self, notification_config: NotificationConfig, bot_token: str = ""):
