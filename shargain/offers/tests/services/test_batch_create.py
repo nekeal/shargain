@@ -5,9 +5,9 @@ from unittest.mock import patch
 import pytest
 
 from shargain.notifications.tests.factories import NotificationConfigFactory
+from shargain.offers.geo import Coordinates
 from shargain.offers.models import Offer
 from shargain.offers.services.batch_create import OfferBatchCreateService
-from shargain.offers.services.location_parsers import Coordinates
 from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
 from shargain.quotas.tests.factories import OfferQuotaFactory
 

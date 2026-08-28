@@ -10,7 +10,7 @@ from shargain.notifications.services.notifications import (
 )
 from shargain.notifications.tests.factories import NotificationConfigFactory
 from shargain.offers.field_extraction import ExtractedFieldEntry, RichValue
-from shargain.offers.services.location_parsers import Coordinates
+from shargain.offers.geo import Coordinates
 from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
 
 

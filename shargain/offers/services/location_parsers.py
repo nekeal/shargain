@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import NamedTuple
 from urllib.parse import quote
 
-
-class Coordinates(NamedTuple):
-    lat: float
-    lon: float
+from shargain.offers.geo import Coordinates
 
 
 class BaseLocationParser(ABC):

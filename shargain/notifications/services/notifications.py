@@ -1,15 +1,10 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 
 from shargain.notifications.models import NotificationChannelChoices
 from shargain.notifications.senders import TelegramNotificationSender
 from shargain.offers.field_extraction import ExtractedFieldEntry, RichValue
+from shargain.offers.geo import Coordinates
 from shargain.offers.models import Offer, ScrappingTarget
-
-if TYPE_CHECKING:
-    from shargain.offers.services.location_parsers import Coordinates
 
 
 @dataclass
