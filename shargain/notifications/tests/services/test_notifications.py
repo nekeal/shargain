@@ -8,7 +8,8 @@ from shargain.notifications.services.notifications import (
 )
 from shargain.notifications.tests.factories import NotificationConfigFactory
 from shargain.offers.field_extraction import ExtractedFieldEntry, RichValue
-from shargain.offers.tests.factories import ScrappingTargetFactory
+from shargain.offers.services.location_parsers import Coordinates
+from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
 
 
 @pytest.mark.django_db
@@ -108,3 +109,41 @@ class TestExtractedFieldsInMessage:
         context = self._make_context(offer=offer)
         msg = notification_service.get_message_for_offer(context)
         assert "\U0001f3f7\ufe0f" not in msg
+
+
+@pytest.mark.django_db
+class TestGetMessageForOfferMapUrl:
+    @staticmethod
+    def _make_service():
+        config = NotificationConfigFactory()
+        target = ScrappingTargetFactory(notification_config=config)
+        return NewOfferNotificationService([], target, "NOTIFICATION TITLE")
+
+    def test_context_stores_coordinates(self):
+        coords = Coordinates(lat=52.22, lon=21.01)
+        context = NotificationMessageContext(offer=OfferFactory.build(), coordinates=coords)
+
+        assert context.coordinates == coords
+
+    def test_message_includes_map_url_by_default(self):
+        offer = OfferFactory.build()
+        context = NotificationMessageContext(offer=offer, map_url="https://maps.google.com/?q=52.22,21.01")
+        service = self._make_service()
+        msg = service.get_message_for_offer(context)
+
+        assert "maps.google.com" in msg
+
+    def test_message_can_omit_map_url_for_pinned_cards(self):
+        offer = OfferFactory.build()
+        context = NotificationMessageContext(
+            offer=offer,
+            map_url="https://maps.google.com/?q=52.22,21.01",
+            location_name="Warsaw, Centrum",
+            distances=[("Office", 1.2)],
+        )
+        service = self._make_service()
+        msg = service.get_message_for_offer(context, include_map_url=False)
+
+        assert "maps.google.com" not in msg
+        assert "Warsaw, Centrum" in msg
+        assert "1.2 km from Office" in msg
