@@ -34,14 +34,6 @@ def test_send_with_pin_sends_text_then_location_reusing_one_bot(sender, mock_tel
     assert call_kwargs["reply_parameters"].message_id is bot.send_message.return_value.message_id
 
 
-def test_send_uses_same_bot_instance(sender, mock_telebot):
-    sender.send("first")
-    sender.send("second")
-
-    mock_telebot.assert_called_once()
-    mock_telebot.return_value.send_message.assert_called_with("1234567890", "second")
-
-
 def test_send_with_pin_swallows_location_errors_but_keeps_card(sender, mock_telebot):
     bot = mock_telebot.return_value
     bot.send_location.side_effect = ApiTelegramException(

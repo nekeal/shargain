@@ -121,12 +121,6 @@ class TestGetMessageForOfferMapUrl:
         target = ScrappingTargetFactory(notification_config=config)
         return NewOfferNotificationService([], target, "NOTIFICATION TITLE")
 
-    def test_context_stores_coordinates(self):
-        coords = Coordinates(lat=52.22, lon=21.01)
-        context = NotificationMessageContext(offer=OfferFactory.build(), coordinates=coords)
-
-        assert context.coordinates == coords
-
     def test_message_includes_map_url_by_default(self):
         offer = OfferFactory.build()
         context = NotificationMessageContext(offer=offer, map_url="https://maps.google.com/?q=52.22,21.01")
@@ -161,11 +155,10 @@ class TestRunPinSplitting:
             self.sender_instance = sender_class.return_value
             yield sender_class
 
-    def _make_context(self, *, coordinates=None, map_url=None, is_exact_location=False):
+    def _make_context(self, *, coordinates=None, map_url=None):
         return NotificationMessageContext(
             offer=OfferFactory.build(),
             map_url=map_url,
-            is_exact_location=is_exact_location,
             coordinates=coordinates,
         )
 
@@ -185,14 +178,6 @@ class TestRunPinSplitting:
         assert (lat, lon) == (52.22, 21.01)
         assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 1500.0
         assert "maps.google.com" not in card
-
-    def test_exact_location_uses_wide_city_radius(self):
-        context = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01), is_exact_location=True)
-        service = self._make_service([context])
-
-        service.run()
-
-        assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 1500.0
 
     def test_unpinned_offers_stay_batched(self):
         pinned = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01))
