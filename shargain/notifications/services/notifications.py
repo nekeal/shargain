@@ -64,17 +64,35 @@ class NewOfferNotificationService:
         self.notification_title = notification_title
 
     def run(self):
-        message = self.get_message_header()
+        header = self.get_message_header()
+        message = header
         for context in self.message_contexts:
+            if context.coordinates:
+                self._send_single_with_pin(context)
+                continue
             offer_message = self.get_message_for_offer(context)
             if len(message + offer_message) > self.get_maximum_message_length(
                 self._scrapping_target.notification_config.channel  # type: ignore
             ):
-                self._send(message)
-                message = self.get_message_header() + offer_message
+                if len(message) > len(header):
+                    self._send(message)
+                message = header + offer_message
             else:
                 message += offer_message
-        self._send(message)
+        if len(message) > len(header):
+            self._send(message)
+
+    def _send_single_with_pin(self, context: NotificationMessageContext):
+        notification_sender = self._get_notification_sender_class()(self._scrapping_target.notification_config)
+        coordinates = context.coordinates
+        assert coordinates is not None  # noqa: S101
+        card = self.get_message_for_offer(context, include_map_url=False)
+        notification_sender.send_with_pin(
+            card,
+            coordinates.lat,
+            coordinates.lon,
+            horizontal_accuracy=50.0 if context.is_exact_location else 300.0,
+        )
 
     def _send(self, message):
         notification_sender = self._get_notification_sender_class()(self._scrapping_target.notification_config)

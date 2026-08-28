@@ -1,5 +1,7 @@
 """Tests for the notification service."""
 
+from unittest.mock import patch
+
 import pytest
 
 from shargain.notifications.services.notifications import (
@@ -147,3 +149,83 @@ class TestGetMessageForOfferMapUrl:
         assert "maps.google.com" not in msg
         assert "Warsaw, Centrum" in msg
         assert "1.2 km from Office" in msg
+
+
+@pytest.mark.django_db
+class TestRunPinSplitting:
+    """run() must send pinned offers as their own card+pin and batch the rest."""
+
+    @pytest.fixture(autouse=True)
+    def _patched_sender(self):
+        with patch("shargain.notifications.services.notifications.TelegramNotificationSender") as sender_class:
+            self.sender_instance = sender_class.return_value
+            yield sender_class
+
+    def _make_context(self, *, coordinates=None, map_url=None, is_exact_location=False):
+        return NotificationMessageContext(
+            offer=OfferFactory.build(),
+            map_url=map_url,
+            is_exact_location=is_exact_location,
+            coordinates=coordinates,
+        )
+
+    def _make_service(self, contexts):
+        config = NotificationConfigFactory()
+        target = ScrappingTargetFactory(notification_config=config)
+        return NewOfferNotificationService(contexts, target, "NOTIFICATION TITLE")
+
+    def test_pinned_offer_gets_own_card_and_pin(self):
+        service = self._make_service([self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01))])
+
+        service.run()
+
+        self.sender_instance.send_with_pin.assert_called_once()
+        self.sender_instance.send.assert_not_called()
+        card, lat, lon = self.sender_instance.send_with_pin.call_args.args[:3]
+        assert (lat, lon) == (52.22, 21.01)
+        assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 300.0
+        assert "maps.google.com" not in card
+
+    def test_exact_location_uses_tighter_horizontal_accuracy(self):
+        context = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01), is_exact_location=True)
+        service = self._make_service([context])
+
+        service.run()
+
+        assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 50.0
+
+    def test_unpinned_offers_stay_batched(self):
+        pinned = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01))
+        unpinned = self._make_context(map_url="https://maps.google.com/?q=Krak%C3%B3w")
+        service = self._make_service([unpinned, pinned])
+
+        service.run()
+
+        self.sender_instance.send_with_pin.assert_called_once()
+        self.sender_instance.send.assert_called_once()
+        card = self.sender_instance.send_with_pin.call_args.args[0]
+        batch_text = self.sender_instance.send.call_args.args[0]
+        assert unpinned.offer.title in batch_text
+        assert pinned.offer.title not in batch_text
+        assert "maps.google.com" not in card
+        assert "maps.google.com" in batch_text
+
+    def test_pin_order_matches_offer_order(self):
+        first = self._make_context(coordinates=Coordinates(lat=52.1, lon=21.1))
+        second = self._make_context(coordinates=Coordinates(lat=52.2, lon=21.2))
+        service = self._make_service([first, second])
+
+        service.run()
+
+        assert self.sender_instance.send_with_pin.call_count == 2
+        calls = self.sender_instance.send_with_pin.call_args_list
+        assert (calls[0].args[1], calls[0].args[2]) == (52.1, 21.1)
+        assert (calls[1].args[1], calls[1].args[2]) == (52.2, 21.2)
+
+    def test_batch_with_no_offers_left_is_not_sent(self):
+        context = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01))
+        service = self._make_service([context])
+
+        service.run()
+
+        self.sender_instance.send.assert_not_called()
