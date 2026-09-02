@@ -10,7 +10,7 @@ from shargain.offers.filtering import OfferFilterService
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
 from shargain.offers.services.geo_utils import haversine
-from shargain.offers.services.location_parsers import LocationParserFactory
+from shargain.offers.services.location_parsers import Coordinates, LocationParserFactory
 from shargain.offers.signals import offers_batch_created
 from shargain.quotas.services.quota import QuotaService
 
@@ -190,7 +190,8 @@ class OfferBatchCreateService:
             if show_location:
                 # TODO: Move domain/metadata to ExtractedOffer.fields when plugins extract them
                 parser = LocationParserFactory.get_parser(extracted.domain, extracted.metadata)
-                map_url = parser.get_map_url()
+                map_center = Coordinates(lat=waypoints[0]["lat"], lon=waypoints[0]["lon"]) if waypoints else None
+                map_url = parser.get_map_url(map_center=map_center)
                 location_name = parser.get_location_name()
                 is_exact = parser.is_location_exact()
                 coords = parser.get_coordinates()

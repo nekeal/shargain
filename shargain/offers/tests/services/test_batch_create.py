@@ -287,3 +287,5 @@ class TestOfferBatchCreateService:
             metro_dist = ctx.distances[0][1]
             assert metro_dist == pytest.approx(1.2, abs=0.5)
             assert ctx.coordinates == Coordinates(lat=52.22, lon=21.01)
+            # OLX uses its own exact coordinates as the map center with zoom
+            assert ctx.map_url == "https://maps.google.com/?q=52.22,21.01&ll=52.22,21.01&z=13"

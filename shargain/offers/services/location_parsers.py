@@ -14,7 +14,7 @@ class BaseLocationParser(ABC):
         pass
 
     @abstractmethod
-    def get_map_url(self) -> str | None:
+    def get_map_url(self, map_center: Coordinates | None = None) -> str | None:
         pass
 
     @abstractmethod
@@ -39,10 +39,10 @@ class OlxLocationParser(BaseLocationParser):
             return Coordinates(lat=lat, lon=lon)
         return None
 
-    def get_map_url(self) -> str | None:
+    def get_map_url(self, map_center: Coordinates | None = None) -> str | None:
         coords = self.get_coordinates()
         if coords:
-            return f"https://maps.google.com/?q={coords.lat},{coords.lon}"
+            return f"https://maps.google.com/?q={coords.lat},{coords.lon}&ll={coords.lat},{coords.lon}&z=13"
         return None
 
     def get_location_name(self) -> str | None:
@@ -70,7 +70,7 @@ class DummyLocationParser(BaseLocationParser):
     def get_coordinates(self) -> Coordinates | None:
         return None
 
-    def get_map_url(self) -> str | None:
+    def get_map_url(self, map_center: Coordinates | None = None) -> str | None:
         return None
 
     def get_location_name(self) -> str | None:
@@ -84,11 +84,14 @@ class OtodomLocationParser(BaseLocationParser):
     def get_coordinates(self) -> Coordinates | None:
         return None
 
-    def get_map_url(self) -> str | None:
+    def get_map_url(self, map_center: Coordinates | None = None) -> str | None:
         location_name = self.get_location_name()
-        if location_name:
-            return f"https://maps.google.com/?q={quote(location_name)}"
-        return None
+        if not location_name:
+            return None
+        base = f"https://maps.google.com/?q={quote(location_name)}"
+        if map_center:
+            base += f"&ll={map_center.lat},{map_center.lon}&z=13"
+        return base
 
     def get_location_name(self) -> str | None:
         try:
