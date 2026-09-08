@@ -7,6 +7,7 @@ from shargain.notifications.services.notifications import NewOfferNotificationSe
 from shargain.offers.application.commands.record_checkin import record_checkin
 from shargain.offers.field_extraction import ExtractedFieldEntry, ExtractedOffer, ListUrl, OfferFieldResolver
 from shargain.offers.filtering import OfferFilterService
+from shargain.offers.geo import Coordinates
 from shargain.offers.location_parsers import LocationParserFactory
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
@@ -185,12 +186,13 @@ class OfferBatchCreateService:
 
         contexts = []
         for extracted in extracted_offers:
-            map_url, location_name, is_exact = None, None, False
+            map_url, location_name, is_exact, coords = None, None, False, None
             distances = []
             if show_location:
                 # TODO: Move domain/metadata to ExtractedOffer.fields when plugins extract them
                 parser = LocationParserFactory.get_parser(extracted.domain, extracted.metadata)
-                map_url = parser.get_map_url()
+                map_center = Coordinates(lat=waypoints[0]["lat"], lon=waypoints[0]["lon"]) if waypoints else None
+                map_url = parser.get_map_url(map_center=map_center)
                 location_name = parser.get_location_name()
                 is_exact = parser.is_location_exact()
                 coords = parser.get_coordinates()
@@ -206,6 +208,7 @@ class OfferBatchCreateService:
                     location_name=location_name,
                     is_exact_location=is_exact,
                     distances=distances,
+                    coordinates=coords,
                     extracted_fields=[
                         ExtractedFieldEntry(name=k, value=v) for k, v in extracted.fields.items() if k in selected
                     ],

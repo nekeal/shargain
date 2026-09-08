@@ -2,9 +2,9 @@
 
 import pytest
 
+from shargain.offers.geo import Coordinates
 from shargain.offers.location_parsers import (
     BaseLocationParser,
-    Coordinates,
     DummyLocationParser,
     OlxLocationParser,
     OtodomLocationParser,
@@ -34,21 +34,30 @@ class TestOlxLocationParser:
         coords = parser.get_coordinates()
         assert coords is None
 
-    def test_get_map_url_delegates_to_get_coordinates(self):
+    def test_get_map_url_returns_coordinates_with_zoom(self):
         parser = OlxLocationParser({"extra": {"map": {"lat": 52.23, "lon": 21.01}}})
         url = parser.get_map_url()
-        assert url == "https://maps.google.com/?q=52.23,21.01"
+        assert url == "https://maps.google.com/?q=52.23,21.01&ll=52.23,21.01&z=13"
 
     def test_get_map_url_returns_none_when_no_coordinates(self):
         parser = OlxLocationParser({})
         url = parser.get_map_url()
         assert url is None
 
+    def test_get_map_url_ignores_map_center_uses_own_coordinates(self):
+        parser = OlxLocationParser({"extra": {"map": {"lat": 52.23, "lon": 21.01}}})
+        url = parser.get_map_url(map_center=Coordinates(lat=50.06, lon=19.94))
+        assert url == "https://maps.google.com/?q=52.23,21.01&ll=52.23,21.01&z=13"
+
 
 class TestDummyLocationParser:
     def test_get_coordinates_returns_none(self):
         parser = DummyLocationParser({})
         assert parser.get_coordinates() is None
+
+    def test_get_map_url_returns_none_with_map_center(self):
+        parser = DummyLocationParser({})
+        assert parser.get_map_url(map_center=Coordinates(lat=50.06, lon=19.94)) is None
 
 
 class TestOtodomLocationParser:
@@ -74,6 +83,22 @@ class TestOtodomLocationParser:
             }
         )
         assert parser.get_map_url() == "https://maps.google.com/?q=Krak%C3%B3w%2C%20ul.%20Jana%20Dekerta"
+
+    def test_get_map_url_with_map_center_appends_zoom(self):
+        parser = OtodomLocationParser(
+            {
+                "extra": {
+                    "location": {
+                        "address": {
+                            "city": {"name": "Kraków"},
+                            "street": {"name": "ul. Jana Dekerta"},
+                        }
+                    }
+                }
+            }
+        )
+        url = parser.get_map_url(map_center=Coordinates(lat=50.018166, lon=19.89713))
+        assert url == "https://maps.google.com/?q=Krak%C3%B3w%2C%20ul.%20Jana%20Dekerta&ll=50.018166,19.89713&z=13"
 
     def test_is_location_exact_returns_false(self):
         parser = OtodomLocationParser({"extra": {"location": {"address": {"city": {"name": "Kraków"}}}}})
