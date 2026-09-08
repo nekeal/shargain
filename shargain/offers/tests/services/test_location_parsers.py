@@ -2,7 +2,7 @@
 
 import pytest
 
-from shargain.offers.services.location_parsers import (
+from shargain.offers.location_parsers import (
     BaseLocationParser,
     Coordinates,
     DummyLocationParser,

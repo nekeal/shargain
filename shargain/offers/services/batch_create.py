@@ -7,10 +7,10 @@ from shargain.notifications.services.notifications import NewOfferNotificationSe
 from shargain.offers.application.commands.record_checkin import record_checkin
 from shargain.offers.field_extraction import ExtractedFieldEntry, ExtractedOffer, ListUrl, OfferFieldResolver
 from shargain.offers.filtering import OfferFilterService
+from shargain.offers.location_parsers import LocationParserFactory
 from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget
 from shargain.offers.serializers import OfferBatchCreateSerializer
 from shargain.offers.services.geo_utils import haversine
-from shargain.offers.services.location_parsers import LocationParserFactory
 from shargain.offers.signals import offers_batch_created
 from shargain.quotas.services.quota import QuotaService
 
