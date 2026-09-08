@@ -3,7 +3,7 @@
 import pytest
 
 from shargain.offers.geo import Coordinates
-from shargain.offers.services.location_parsers import (
+from shargain.offers.location_parsers import (
     BaseLocationParser,
     DummyLocationParser,
     OlxLocationParser,
