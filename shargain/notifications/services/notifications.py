@@ -81,7 +81,7 @@ class NewOfferNotificationService:
         notification_sender = self._get_notification_sender_class()(self._scrapping_target.notification_config)
         coordinates = context.coordinates
         assert coordinates is not None  # noqa: S101
-        card = self.get_message_for_offer(context, include_map_url=False)
+        card = self.get_message_for_offer(context)
         notification_sender.send_with_pin(
             card,
             coordinates.lat,
@@ -106,13 +106,13 @@ class NewOfferNotificationService:
     def get_notification_sender_class(notification_channel):
         return {NotificationChannelChoices.TELEGRAM: TelegramNotificationSender}[notification_channel]
 
-    def get_message_for_offer(self, context: NotificationMessageContext, *, include_map_url: bool = True) -> str:
+    def get_message_for_offer(self, context: NotificationMessageContext) -> str:
         base_msg = (
             f"{context.offer.title} ({context.offer.published_at and context.offer.published_at.time()})\n"
             f"za {context.offer.price}zł\n{context.offer.url}"
         )
 
-        if context.map_url and include_map_url:
+        if context.map_url:
             icon = "📍" if context.is_exact_location else "🗺️"
             base_msg += f"\n{icon} {context.map_url}"
         if context.location_name:

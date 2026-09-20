@@ -129,21 +129,6 @@ class TestGetMessageForOfferMapUrl:
 
         assert "maps.google.com" in msg
 
-    def test_message_can_omit_map_url_for_pinned_cards(self):
-        offer = OfferFactory.build()
-        context = NotificationMessageContext(
-            offer=offer,
-            map_url="https://maps.google.com/?q=52.22,21.01",
-            location_name="Warsaw, Centrum",
-            distances=[("Office", 1.2)],
-        )
-        service = self._make_service()
-        msg = service.get_message_for_offer(context, include_map_url=False)
-
-        assert "maps.google.com" not in msg
-        assert "Warsaw, Centrum" in msg
-        assert "1.2 km from Office" in msg
-
 
 @pytest.mark.django_db
 class TestRunPinSplitting:
@@ -168,7 +153,13 @@ class TestRunPinSplitting:
         return NewOfferNotificationService(contexts, target, "NOTIFICATION TITLE")
 
     def test_pinned_offer_gets_own_card_and_pin(self):
-        service = self._make_service([self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01))])
+        service = self._make_service(
+            [
+                self._make_context(
+                    coordinates=Coordinates(lat=52.22, lon=21.01), map_url="https://maps.google.com/?q=52.22,21.01"
+                )
+            ]
+        )
 
         service.run()
 
@@ -177,10 +168,13 @@ class TestRunPinSplitting:
         card, lat, lon = self.sender_instance.send_with_pin.call_args.args[:3]
         assert (lat, lon) == (52.22, 21.01)
         assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 1500.0
-        assert "maps.google.com" not in card
+        assert "maps.google.com" in card
 
     def test_unpinned_offers_stay_batched(self):
-        pinned = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01))
+        pinned = self._make_context(
+            coordinates=Coordinates(lat=52.22, lon=21.01),
+            map_url="https://maps.google.com/?q=52.22,21.01",
+        )
         unpinned = self._make_context(map_url="https://maps.google.com/?q=Krak%C3%B3w")
         service = self._make_service([unpinned, pinned])
 
@@ -192,7 +186,7 @@ class TestRunPinSplitting:
         batch_text = self.sender_instance.send.call_args.args[0]
         assert unpinned.offer.title in batch_text
         assert pinned.offer.title not in batch_text
-        assert "maps.google.com" not in card
+        assert "maps.google.com" in card
         assert "maps.google.com" in batch_text
 
     def test_pin_order_matches_offer_order(self):
