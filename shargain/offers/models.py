@@ -1,9 +1,10 @@
 from typing import Any, TypedDict
 from urllib.parse import urlparse
 
+from django.conf import settings
 from django.contrib.postgres.indexes import HashIndex
 from django.db import models
-from django.db.models import Manager, QuerySet
+from django.db.models import Manager, Q, QuerySet
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -192,3 +193,55 @@ class Offer(TimeStampedModel):
     @property
     def domain(self):
         return urlparse(self.url).netloc
+
+
+class OfferLike(TimeStampedModel):
+    """A user marked an offer as liked, from any channel."""
+
+    offer = models.ForeignKey(
+        Offer,
+        on_delete=models.CASCADE,
+        related_name="likes",
+        verbose_name=_("Offer"),
+    )
+
+    # Authenticated surface (e.g. web dashboard). Either this or liker_label is set.
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="offer_likes",
+        null=True,
+        blank=True,
+        verbose_name=_("Owner"),
+    )
+
+    # Anonymous surface (e.g. Telegram). Free-form identity string.
+    liker_label = models.CharField(_("Liker label"), max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = _("Offer like")
+        verbose_name_plural = _("Offer likes")
+        ordering = ["offer_id", "pk"]
+        constraints = [
+            # Exactly one identity source: a known account or an identity label.
+            models.CheckConstraint(
+                check=Q(owner__isnull=False) | ~Q(liker_label=""),
+                name="offer_like_has_identity",
+            ),
+            # Idempotent likes: a known user can like an offer only once.
+            models.UniqueConstraint(
+                fields=["offer", "owner"],
+                name="uniq_offer_like_owner",
+                condition=Q(owner__isnull=False),
+            ),
+            # Idempotent likes: an anonymous liker can like an offer only once.
+            models.UniqueConstraint(
+                fields=["offer", "liker_label"],
+                name="uniq_offer_like_label",
+                condition=~Q(liker_label=""),
+            ),
+        ]
+
+    def __str__(self) -> str:
+        identity = self.liker_label or f"user#{self.owner_id}"
+        return f"{identity} liked {self.offer}"

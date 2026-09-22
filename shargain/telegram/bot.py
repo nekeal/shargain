@@ -14,6 +14,7 @@ from telebot.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
+    MessageReactionUpdated,
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
 )
@@ -22,6 +23,8 @@ from telebot.types import (
 )
 
 from shargain.notifications.models import NotificationConfig
+from shargain.offers.likes import AnonymousLiker, like_offers, unlike_offers
+from shargain.offers.models import Offer
 from shargain.telegram.application import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
@@ -71,7 +74,9 @@ class TelegramBot:
                     language_code=lang,
                 )
         if settings.TELEGRAM_WEBHOOK_URL:
-            cls._bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL)
+            cls._bot.set_webhook(
+                url=settings.TELEGRAM_WEBHOOK_URL, allowed_updates=["message", "callback_query", "message_reaction"]
+            )
 
     @classmethod
     def _set_logging_level(cls, logging_level: int):
@@ -337,3 +342,53 @@ def get_token_for_webhook_url():
         return "token"
     else:
         return settings.TELEGRAM_WEBHOOK_URL.rstrip("/").split("/")[-1]
+
+
+def is_heart_reaction_added(reaction_update: MessageReactionUpdated) -> bool:
+    old_has_heart = any(r.emoji == "❤️" for r in reaction_update.old_reaction if getattr(r, "emoji", None))
+    new_has_heart = any(r.emoji == "❤️" for r in reaction_update.new_reaction if getattr(r, "emoji", None))
+    return new_has_heart and not old_has_heart
+
+
+def resolve_offers_from_reaction(reaction_update: MessageReactionUpdated) -> list[Offer]:
+    # As per spec, we should fetch message via bot.get_message.
+    # Note: telebot might lack this natively depending on version/plugins,
+    # but we follow the spec's assumption that bot has get_message or we catch error.
+    bot = TelegramBot.get_bot()
+    try:
+        # Some versions/extensions of telebot might support get_message
+        message = getattr(bot, "get_message", lambda c, m: None)(reaction_update.chat.id, reaction_update.message_id)
+    except Exception as e:
+        logger.warning("Failed to fetch message for reaction: %s", e)
+        return []
+
+    if not message or not message.text:
+        return []
+
+    urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', message.text)
+    if not urls:
+        return []
+
+    return list(Offer.objects.filter(url__in=urls))
+
+
+@TelegramBot.get_bot().message_reaction_handler(func=lambda u: True)
+def handle_like_reaction(reaction_update: MessageReactionUpdated) -> None:
+    old_has_heart = any(r.emoji == "❤️" for r in reaction_update.old_reaction if getattr(r, "emoji", None))
+    new_has_heart = any(r.emoji == "❤️" for r in reaction_update.new_reaction if getattr(r, "emoji", None))
+
+    if old_has_heart == new_has_heart:
+        return
+
+    heart_added = new_has_heart
+    offers = resolve_offers_from_reaction(reaction_update)
+    if not offers:
+        return
+
+    liker_label = str(reaction_update.user.id) if reaction_update.user else str(reaction_update.chat.id)
+    liker = AnonymousLiker(label=liker_label)
+
+    if heart_added:
+        like_offers(offers, liker)
+    else:
+        unlike_offers(offers, liker)
