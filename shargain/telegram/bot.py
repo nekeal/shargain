@@ -23,7 +23,7 @@ from telebot.types import (
 
 from shargain.notifications.models import NotificationConfig
 from shargain.offers.likes import AnonymousLiker, like_offers, unlike_offers
-from shargain.offers.models import Offer
+from shargain.offers.models import Offer, OfferLike
 from shargain.telegram.application import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
@@ -276,19 +276,17 @@ class TelegramBot:
                     language_code=lang,
                 )
         if settings.TELEGRAM_WEBHOOK_URL:
-            cls._bot.set_webhook(
-                url=settings.TELEGRAM_WEBHOOK_URL, allowed_updates=["message", "callback_query", "message_reaction"]
-            )
+            cls._bot.set_webhook(url=settings.TELEGRAM_WEBHOOK_URL, allowed_updates=["message", "callback_query"])
 
     @classmethod
     def _set_logging_level(cls, logging_level: int):
-        TeleBot.logger.setLevel(logging_level)
+        telebot.logger.setLevel(logging_level)
 
     @classmethod
     def run(cls, verbose: bool = False):
         if verbose:
             cls._set_logging_level(logging.DEBUG)
-        cls.get_bot().polling(allowed_updates=["message", "callback_query", "message_reaction"])
+        cls.get_bot().polling(allowed_updates=["message", "callback_query"])
 
     @classmethod
     def get_username(cls) -> str:
@@ -330,18 +328,7 @@ def is_heart_reaction_added(reaction_update: MessageReactionUpdated) -> bool:
     return new_has_heart and not old_has_heart
 
 
-def resolve_offers_from_reaction(reaction_update: MessageReactionUpdated) -> list[Offer]:
-    # As per spec, we should fetch message via bot.get_message.
-    # Note: telebot might lack this natively depending on version/plugins,
-    # but we follow the spec's assumption that bot has get_message or we catch error.
-    bot = TelegramBot.get_bot()
-    try:
-        # Some versions/extensions of telebot might support get_message
-        message = getattr(bot, "get_message", lambda c, m: None)(reaction_update.chat.id, reaction_update.message_id)
-    except Exception as e:
-        logger.warning("Failed to fetch message for reaction: %s", e)
-        return []
-
+def resolve_offers_from_message(message: telebot.types.Message) -> list[Offer]:
     if not message or not message.text:
         return []
 
@@ -352,23 +339,38 @@ def resolve_offers_from_reaction(reaction_update: MessageReactionUpdated) -> lis
     return list(Offer.objects.filter(url__in=urls))
 
 
-@TelegramBot.get_bot().message_reaction_handler(func=lambda u: True)
-def handle_like_reaction(reaction_update: MessageReactionUpdated) -> None:
-    old_has_heart = any(r.emoji == "❤️" for r in reaction_update.old_reaction if getattr(r, "emoji", None))
-    new_has_heart = any(r.emoji == "❤️" for r in reaction_update.new_reaction if getattr(r, "emoji", None))
+def is_like_reply(message: telebot.types.Message) -> bool:
+    if not message.reply_to_message or not message.text:
+        return False
+    text = message.text.strip().lower()
+    return text in ["like", "/like", "❤️", "❤", "👍", "unlike", "/unlike", "💔", "👎"]
 
-    if old_has_heart == new_has_heart:
-        return
 
-    heart_added = new_has_heart
-    offers = resolve_offers_from_reaction(reaction_update)
+@TelegramBot.get_bot().message_handler(func=is_like_reply)
+def handle_like_reply(message: telebot.types.Message) -> None:
+    logger.info("Received like reply: %s", message.text)
+    offers = resolve_offers_from_message(message.reply_to_message)
     if not offers:
+        logger.warning("No offers found in the replied message.")
+        TelegramBot.get_bot().reply_to(message, _("No offers found in the message you replied to."))
         return
 
-    liker_label = str(reaction_update.user.id) if reaction_update.user else str(reaction_update.chat.id)
+    liker_label = str(message.from_user.id)
     liker = AnonymousLiker(label=liker_label)
 
-    if heart_added:
-        like_offers(offers, liker)
-    else:
+    # Determine if this is an explicit unlike action
+    text = message.text.strip().lower()
+    is_unlike_action = text in ["unlike", "/unlike", "💔", "👎"]
+
+    has_liked = OfferLike.objects.filter(offer__in=offers, liker_label=liker_label).exists()
+
+    if is_unlike_action or (
+        has_liked and not is_unlike_action and text in ["like", "/like", "❤️", "❤", "👍"]
+    ):  # toggle on same command
         unlike_offers(offers, liker)
+        logger.info("Unliking offers for %s", liker_label)
+        TelegramBot.get_bot().reply_to(message, _("💔 Unliked {count} offer(s).").format(count=len(offers)))
+    else:
+        like_offers(offers, liker)
+        logger.info("Liking offers for %s", liker_label)
+        TelegramBot.get_bot().reply_to(message, _("❤️ Liked {count} offer(s)!").format(count=len(offers)))
