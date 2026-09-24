@@ -1,13 +1,13 @@
 from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
-from environs import Env, load_dotenv
+from environs import Env
 
 from .conf.celery_settings import *  # noqa: F401
 from .conf.theme import *  # noqa: F401
 
 env = Env()
-load_dotenv(".env")
+env.read_env(".env")
 
 PROJECT_NAME = "shargain"
 
@@ -27,6 +27,7 @@ DJANGO_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "django.contrib.staticfiles",
 ]
 
@@ -122,7 +123,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ------------- MODELS -------------
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ------------- INTERNALIZATION -------------
 LANGUAGE_CODE = "en-us"
@@ -162,6 +162,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
 }
+SWAGGER_USE_COMPAT_RENDERERS = False
 
 # ------------- SECURITY -------------
 SESSION_COOKIE_SAMESITE = "Lax"

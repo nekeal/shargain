@@ -50,18 +50,17 @@ class TestPydanticField:
         field = PydanticField(pydantic_model=SampleModel, null=True)
         assert field.get_prep_value(None) is None
 
-    def test_get_prep_value_dumps_model_to_json_string(self):
+    def test_get_prep_value_dumps_model_to_json_dict(self):
         field = PydanticField(pydantic_model=SampleModel)
         model = SampleModel(name="test", count=3)
         result = field.get_prep_value(model)
-        assert isinstance(result, str)
-        assert json.loads(result) == {"name": "test", "count": 3}
+        assert isinstance(result, dict)
+        assert result == {"name": "test", "count": 3}
 
-    def test_get_prep_value_serializes_raw_dict_to_json_string(self):
+    def test_get_prep_value_serializes_raw_dict(self):
         field = PydanticField(pydantic_model=SampleModel)
         result = field.get_prep_value({"name": "x"})
-        assert isinstance(result, str)
-        assert json.loads(result) == {"name": "x"}
+        assert result == {"name": "x"}
 
     def test_validate_accepts_model_instance(self):
         field = PydanticField(pydantic_model=SampleModel)

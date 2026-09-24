@@ -4,8 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpRequest
 from django.middleware.csrf import get_token
 from ninja import Router, Schema
-from ninja.security import django_auth
-from pydantic import AfterValidator
+from ninja.security import APIKeyCookie, django_auth
+from pydantic import AfterValidator, ConfigDict
 from pydantic.alias_generators import to_camel
 
 from shargain.accounts.models import CustomUser
@@ -15,10 +15,15 @@ from shargain.offers.models import ScrappingTarget
 auth_router = Router()
 
 
+class CSRFOnlyAuth(APIKeyCookie):
+    param_name = "__csrf_only__"
+
+    def authenticate(self, request: HttpRequest, key: str | None) -> bool:
+        return True
+
+
 class BaseSchema(Schema):
-    class Config:
-        alias_generator = to_camel
-        populate_by_name = True
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
 class LoginRequest(BaseSchema):
@@ -58,7 +63,7 @@ def get_csrf_token(request: HttpRequest):
     return CsrfTokenResponse(csrf_token=get_token(request))
 
 
-@auth_router.post("/login", response=LoginResponse, auth=None, by_alias=True)
+@auth_router.post("/login", response=LoginResponse, auth=CSRFOnlyAuth(), by_alias=True)
 def login_view(request: HttpRequest, payload: LoginRequest):
     """Login endpoint that sets session cookie"""
     user = authenticate(username=payload.username, password=payload.password)
@@ -69,7 +74,7 @@ def login_view(request: HttpRequest, payload: LoginRequest):
         return LoginResponse(success=False, message="Invalid credentials", user=None)
 
 
-@auth_router.post("/signup", response=LoginResponse, auth=None, by_alias=True)
+@auth_router.post("/signup", response=LoginResponse, auth=CSRFOnlyAuth(), by_alias=True)
 def signup_view(request: HttpRequest, payload: SignupRequest):
     """Signup endpoint that creates a user and logs them in"""
     if CustomUser.objects.filter(email=payload.email).exists():
@@ -84,7 +89,7 @@ def signup_view(request: HttpRequest, payload: SignupRequest):
     return LoginResponse(success=True, message="Signup successful", user=UserSchema.from_orm(user))
 
 
-@auth_router.post("/logout", response=LoginResponse, by_alias=True)
+@auth_router.post("/logout", response=LoginResponse, auth=CSRFOnlyAuth(), by_alias=True)
 def logout_view(request: HttpRequest):
     """Logout endpoint that clears session"""
     logout(request)
