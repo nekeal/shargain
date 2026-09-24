@@ -288,7 +288,7 @@ class TelegramBot:
     def run(cls, verbose: bool = False):
         if verbose:
             cls._set_logging_level(logging.DEBUG)
-        cls.get_bot().polling()
+        cls.get_bot().polling(allowed_updates=["message", "callback_query", "message_reaction"])
 
     @classmethod
     def get_username(cls) -> str:
