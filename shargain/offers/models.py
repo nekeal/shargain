@@ -10,14 +10,14 @@ from django.utils.translation import gettext_lazy as _
 from django_better_admin_arrayfield.models.fields import ArrayField
 
 from shargain.accounts.models import CustomUser
-from shargain.commons.models import TimeStampedModel
+from shargain.commons.models import HttpURLField, TimeStampedModel
 from shargain.offers.db_fields import PydanticField
 from shargain.offers.field_extraction import NotificationFieldsSelection
 
 
 class ScrappingTarget(models.Model):  # type: ignore[django-manager-missing]
     name = models.CharField(verbose_name=_("Name"), max_length=100)
-    url = ArrayField(models.URLField(max_length=1024), default=list, blank=True)
+    url = ArrayField(HttpURLField(max_length=1024), default=list, blank=True)
     enable_notifications = models.BooleanField(_("Enable notifications"), default=True)
     is_active = models.BooleanField(
         _("Is active"),
@@ -47,7 +47,7 @@ class ScrappingTarget(models.Model):  # type: ignore[django-manager-missing]
 
 class ScrapingUrl(models.Model):
     name = models.CharField(_("Name"), max_length=255, help_text=_("Human readable name for the URL"))
-    url = models.URLField(
+    url = HttpURLField(
         _("Target URL"),
         max_length=1024,
         help_text=_("Target URL to one of the supported sites"),
@@ -147,12 +147,12 @@ class OfferMetadata(TypedDict, total=False):
 
 
 class Offer(TimeStampedModel):
-    url = models.URLField(max_length=1024)
+    url = HttpURLField(max_length=1024)
     title = models.CharField(verbose_name=_("Title"), max_length=200)
     price = models.IntegerField(verbose_name=_("Price"), blank=True, null=True)
-    main_image_url = models.URLField(_("Main image's URL"), blank=True, max_length=1024)
+    main_image_url = HttpURLField(_("Main image's URL"), blank=True, max_length=1024)
     source_html = models.FileField(verbose_name=_("Source HTML"), upload_to=get_offer_source_html_path, blank=True)
-    list_url = models.URLField(
+    list_url = HttpURLField(
         _("List URL"),
         max_length=1024,
         blank=True,

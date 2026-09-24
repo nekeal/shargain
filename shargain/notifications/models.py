@@ -5,6 +5,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from shargain.commons.models import HttpURLField
+
 
 class NotificationChannelChoices(models.TextChoices):
     DISCORD = "discord", "Discord"
@@ -20,9 +22,9 @@ class NotificationConfig(models.Model):
     channel = models.CharField(
         verbose_name=_("Channel"),
         max_length=200,
-        choices=NotificationChannelChoices.choices,
+        choices=NotificationChannelChoices,
     )
-    webhook_url = models.URLField(verbose_name=_("Webhook url"), blank=True)
+    webhook_url = HttpURLField(verbose_name=_("Webhook url"), blank=True)
     _token = models.CharField(verbose_name=_("Token"), max_length=100, blank=True)
     register_token = models.CharField(
         verbose_name=_("Register token"),
