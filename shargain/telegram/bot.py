@@ -388,7 +388,7 @@ def handle_liked_command(message: telebot.types.Message) -> None:
     likes = (
         OfferLike.objects.filter(offer__target__notification_config__chatid=chat_id)
         .select_related("offer")
-        .order_by("-created_at")[:10]
+        .order_by("-created_at")
     )
 
     if not likes:
@@ -401,4 +401,16 @@ def handle_liked_command(message: telebot.types.Message) -> None:
         liker = like.liker_label or _("Someone")
         response_lines.append(f"• <a href='{like.offer.url}'>{title}</a> (liked by {liker})")
 
-    TelegramBot.get_bot().reply_to(message, "\n".join(response_lines), parse_mode="HTML")
+    # Send in chunks to avoid Telegram's 4096 character limit
+    current_chunk: list[str] = []
+    current_len = 0
+    for line in response_lines:
+        if current_len + len(line) + 1 > 4000:
+            TelegramBot.get_bot().reply_to(message, "\n".join(current_chunk), parse_mode="HTML")
+            current_chunk = []
+            current_len = 0
+        current_chunk.append(line)
+        current_len += len(line) + 1
+
+    if current_chunk:
+        TelegramBot.get_bot().reply_to(message, "\n".join(current_chunk), parse_mode="HTML")
