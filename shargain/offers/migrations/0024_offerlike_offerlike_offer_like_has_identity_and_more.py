@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="offerlike",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     ("owner__isnull", False),
                     models.Q(("liker_label", ""), _negated=True),
                     _connector="OR",
