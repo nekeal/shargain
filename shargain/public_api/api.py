@@ -1,7 +1,7 @@
 from django.http import HttpRequest
 from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
-from pydantic import Field
+from pydantic import ConfigDict, Field
 from pydantic.alias_generators import to_camel
 from pydantic.networks import HttpUrl
 
@@ -71,7 +71,7 @@ from shargain.telegram.bot import TelegramBot
 from .auth import auth_router
 from .auth import router as protected_router
 
-router = NinjaAPI(csrf=True)
+router = NinjaAPI()
 
 # Include both routers
 router.add_router("/auth", auth_router)
@@ -84,9 +84,7 @@ class ErrorSchema(Schema):
 
 
 class BaseSchema(Schema):
-    class Config:
-        alias_generator = to_camel
-        populate_by_name = True
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
 class FieldOperatorSchema(BaseSchema):

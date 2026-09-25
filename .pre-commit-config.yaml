@@ -42,9 +42,9 @@ repos:
         pass_filenames: false
         require_serial: true
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: 1.25.0
+    rev: 1.32.0
     hooks:
     -   id: django-upgrade
-        language_version: python3.12
-        args: ["--target-version", "4.1"]
-        priority: 5
+        language_version: python3.13
+        args: ["--target-version", "6.0"]
+       priority: 5

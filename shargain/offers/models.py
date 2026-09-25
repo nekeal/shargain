@@ -228,7 +228,7 @@ class OfferLike(TimeStampedModel):
         constraints = [
             # Exactly one identity source: a known account or an identity label.
             models.CheckConstraint(
-                check=Q(owner__isnull=False) | ~Q(liker_label=""),
+                condition=Q(owner__isnull=False) | ~Q(liker_label=""),
                 name="offer_like_has_identity",
             ),
             # Idempotent likes: a known user can like an offer only once.
