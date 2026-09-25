@@ -47,4 +47,4 @@ repos:
     -   id: django-upgrade
         language_version: python3.13
         args: ["--target-version", "6.0"]
-        priority: 5
+       priority: 5
