@@ -383,20 +383,22 @@ def handle_like_reply(message: telebot.types.Message) -> None:
 def handle_liked_command(message: telebot.types.Message) -> None:
     from shargain.offers.models import OfferLike
 
-    user = message.from_user
-    liker_label = (
-        f"{user.username} ({user.first_name})" if (user.username or getattr(user, "first_name", None)) else str(user.id)
+    chat_id = str(message.chat.id)
+
+    likes = (
+        OfferLike.objects.filter(offer__target__notification_config__chatid=chat_id)
+        .select_related("offer")
+        .order_by("-created_at")[:10]
     )
 
-    likes = OfferLike.objects.filter(liker_label=liker_label).select_related("offer").order_by("-created_at")[:10]
-
     if not likes:
-        TelegramBot.get_bot().reply_to(message, _("You haven't liked any offers yet!"))
+        TelegramBot.get_bot().reply_to(message, _("No offers have been liked in this chat yet!"))
         return
 
-    response_lines = [_("❤️ Your latest liked offers:"), ""]
+    response_lines = [_("❤️ Latest liked offers in this chat:"), ""]
     for like in likes:
         title = like.offer.title if like.offer.title else _("Offer")
-        response_lines.append(f"• <a href='{like.offer.url}'>{title}</a>")
+        liker = like.liker_label or _("Someone")
+        response_lines.append(f"• <a href='{like.offer.url}'>{title}</a> (liked by {liker})")
 
     TelegramBot.get_bot().reply_to(message, "\n".join(response_lines), parse_mode="HTML")
