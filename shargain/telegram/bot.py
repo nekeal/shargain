@@ -399,7 +399,10 @@ def handle_liked_command(message: telebot.types.Message) -> None:
     for like in likes:
         title = like.offer.title if like.offer.title else _("Offer")
         liker = like.liker_label or _("Someone")
-        response_lines.append(f"• <a href='{like.offer.url}'>{title}</a> (liked by {liker}) — /unlike_{like.offer.id}")
+        price_text = f" ({like.offer.price} zł)" if like.offer.price else ""
+        response_lines.append(
+            f"• <a href='{like.offer.url}'>{title}</a>{price_text} (liked by {liker}) — /unlike_{like.offer.id}"
+        )
 
     # Send in chunks to avoid Telegram's 4096 character limit
     current_chunk: list[str] = []

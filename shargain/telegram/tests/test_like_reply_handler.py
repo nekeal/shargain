@@ -108,7 +108,7 @@ def test_handle_liked_command_with_likes(mock_reply_to, mock_reply_message):
     config = NotificationConfigFactory(chatid="456")
     target = ScrappingTargetFactory(notification_config=config)
 
-    offer1 = OfferFactory(url="https://olx.pl/offer1", title="Offer 1", target=target)
+    offer1 = OfferFactory(url="https://olx.pl/offer1", title="Offer 1", target=target, price=100)
     offer2 = OfferFactory(url="https://olx.pl/offer2", title="Offer 2", target=target)
     OfferLike.objects.create(offer=offer1, liker_label="testuser (Test)")
     OfferLike.objects.create(offer=offer2, liker_label="testuser (Test)")
@@ -120,8 +120,8 @@ def test_handle_liked_command_with_likes(mock_reply_to, mock_reply_message):
     mock_reply_to.assert_called_once()
     response_text = mock_reply_to.call_args[0][1]
     assert "Latest liked offers in this chat:" in response_text
-    assert "Offer 1" in response_text
-    assert "Offer 2" in response_text
+    assert "Offer 1</a> (100 zł)" in response_text
+    assert "Offer 2</a> " in response_text
     assert "liked by testuser (Test)" in response_text
 
 
