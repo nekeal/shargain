@@ -190,6 +190,9 @@ class Offer(TimeStampedModel):
             HashIndex(fields=["url"], name="offer_url_hash_idx"),
         ]
 
+    def __str__(self) -> str:
+        return self.title
+
     @property
     def domain(self):
         return urlparse(self.url).netloc
@@ -244,4 +247,5 @@ class OfferLike(TimeStampedModel):
 
     def __str__(self) -> str:
         identity = self.liker_label or f"user#{self.owner_id}"
-        return f"{identity} liked {self.offer}"
+        offer_name = self.offer.title if self.offer_id else "Unknown offer"
+        return f"{identity} liked {offer_name}"

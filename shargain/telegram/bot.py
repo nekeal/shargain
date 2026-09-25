@@ -355,7 +355,8 @@ def handle_like_reply(message: telebot.types.Message) -> None:
         TelegramBot.get_bot().reply_to(message, _("No offers found in the message you replied to."))
         return
 
-    liker_label = str(message.from_user.id)
+    user = message.from_user
+    liker_label = user.username or user.first_name or str(user.id)
     liker = AnonymousLiker(label=liker_label)
 
     # Determine if this is an explicit unlike action

@@ -49,7 +49,7 @@ def test_handle_like_reply_adds_like(mock_reply_to, mock_reply_message):
     assert OfferLike.objects.count() == 1
     like = OfferLike.objects.first()
     assert like.offer == offer
-    assert like.liker_label == "789"
+    assert like.liker_label == "Test"
     mock_reply_to.assert_called_once()
     assert "Liked 1 offer" in mock_reply_to.call_args[0][1]
 
@@ -57,7 +57,7 @@ def test_handle_like_reply_adds_like(mock_reply_to, mock_reply_message):
 @patch.object(TelegramBot.get_bot(), "reply_to")
 def test_handle_like_reply_removes_like_on_unlike(mock_reply_to, mock_reply_message):
     offer = OfferFactory(url="https://olx.pl/offer123")
-    OfferLike.objects.create(offer=offer, liker_label="789")
+    OfferLike.objects.create(offer=offer, liker_label="Test")
 
     msg = mock_reply_message(text="unlike", reply_text=f"Check this out: {offer.url}")
     handle_like_reply(msg)
@@ -70,7 +70,7 @@ def test_handle_like_reply_removes_like_on_unlike(mock_reply_to, mock_reply_mess
 @patch.object(TelegramBot.get_bot(), "reply_to")
 def test_handle_like_reply_toggles_like(mock_reply_to, mock_reply_message):
     offer = OfferFactory(url="https://olx.pl/offer123")
-    OfferLike.objects.create(offer=offer, liker_label="789")
+    OfferLike.objects.create(offer=offer, liker_label="Test")
 
     msg = mock_reply_message(text="like", reply_text=f"Check this out: {offer.url}")
     handle_like_reply(msg)
