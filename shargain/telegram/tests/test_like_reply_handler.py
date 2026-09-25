@@ -123,3 +123,17 @@ def test_handle_liked_command_with_likes(mock_reply_to, mock_reply_message):
     assert "Offer 1" in response_text
     assert "Offer 2" in response_text
     assert "liked by testuser (Test)" in response_text
+
+
+@patch.object(TelegramBot.get_bot(), "reply_to")
+def test_handle_unlike_by_id_command(mock_reply_to, mock_reply_message):
+    offer1 = OfferFactory(url="https://olx.pl/offer1", title="Offer 1")
+    OfferLike.objects.create(offer=offer1, liker_label="testuser (Test)")
+
+    msg = mock_reply_message(text=f"/unlike_{offer1.id}")
+    from shargain.telegram.bot import handle_unlike_by_id_command
+
+    handle_unlike_by_id_command(msg)
+    mock_reply_to.assert_called_once()
+    assert "Unliked offer!" in mock_reply_to.call_args[0][1]
+    assert OfferLike.objects.count() == 0

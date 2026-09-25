@@ -399,7 +399,7 @@ def handle_liked_command(message: telebot.types.Message) -> None:
     for like in likes:
         title = like.offer.title if like.offer.title else _("Offer")
         liker = like.liker_label or _("Someone")
-        response_lines.append(f"• <a href='{like.offer.url}'>{title}</a> (liked by {liker})")
+        response_lines.append(f"• <a href='{like.offer.url}'>{title}</a> (liked by {liker}) — /unlike_{like.offer.id}")
 
     # Send in chunks to avoid Telegram's 4096 character limit
     current_chunk: list[str] = []
@@ -414,3 +414,34 @@ def handle_liked_command(message: telebot.types.Message) -> None:
 
     if current_chunk:
         TelegramBot.get_bot().reply_to(message, "\n".join(current_chunk), parse_mode="HTML")
+
+
+@TelegramBot.get_bot().message_handler(regexp=r"^/unlike_(\d+)$")
+def handle_unlike_by_id_command(message: telebot.types.Message) -> None:
+    import re
+
+    from shargain.offers.likes import unlike_offers
+    from shargain.offers.models import Offer
+
+    match = re.match(r"^/unlike_(\d+)$", message.text)
+    if not match:
+        return
+
+    offer_id = match.group(1)
+    offers = Offer.objects.filter(id=offer_id)
+
+    if not offers:
+        TelegramBot.get_bot().reply_to(message, _("Offer not found!"))
+        return
+
+    user = message.from_user
+    liker_label = (
+        f"{user.username} ({user.first_name})" if (user.username or getattr(user, "first_name", None)) else str(user.id)
+    )
+
+    from shargain.offers.likes import AnonymousLiker
+
+    liker = AnonymousLiker(label=liker_label)
+
+    unlike_offers(list(offers), liker)
+    TelegramBot.get_bot().reply_to(message, _("💔 Unliked offer!"))
