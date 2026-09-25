@@ -356,7 +356,9 @@ def handle_like_reply(message: telebot.types.Message) -> None:
         return
 
     user = message.from_user
-    liker_label = user.username or user.first_name or str(user.id)
+    liker_label = (
+        f"{user.username} ({user.first_name})" if (user.username or getattr(user, "first_name", None)) else str(user.id)
+    )
     liker = AnonymousLiker(label=liker_label)
 
     # Determine if this is an explicit unlike action
@@ -375,3 +377,26 @@ def handle_like_reply(message: telebot.types.Message) -> None:
         like_offers(offers, liker)
         logger.info("Liking offers for %s", liker_label)
         TelegramBot.get_bot().reply_to(message, _("❤️ Liked {count} offer(s)!").format(count=len(offers)))
+
+
+@TelegramBot.get_bot().message_handler(commands=["liked", "likes"])
+def handle_liked_command(message: telebot.types.Message) -> None:
+    from shargain.offers.models import OfferLike
+
+    user = message.from_user
+    liker_label = (
+        f"{user.username} ({user.first_name})" if (user.username or getattr(user, "first_name", None)) else str(user.id)
+    )
+
+    likes = OfferLike.objects.filter(liker_label=liker_label).select_related("offer").order_by("-created_at")[:10]
+
+    if not likes:
+        TelegramBot.get_bot().reply_to(message, _("You haven't liked any offers yet!"))
+        return
+
+    response_lines = [_("❤️ Your latest liked offers:"), ""]
+    for like in likes:
+        title = like.offer.title if like.offer.title else _("Offer")
+        response_lines.append(f"• <a href='{like.offer.url}'>{title}</a>")
+
+    TelegramBot.get_bot().reply_to(message, "\n".join(response_lines), parse_mode="HTML")
