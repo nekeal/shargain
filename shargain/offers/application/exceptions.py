@@ -40,3 +40,10 @@ class QuotaExceeded(ApplicationException):
 
     code: str = "quota_exceeded"
     message: str = "Quota limit reached."
+
+
+class OfferLikeIdentityError(ApplicationException):
+    """Raised when a like cannot be attributed to exactly one identity."""
+
+    code: str = "offer_like_identity_error"
+    message: str = "A like must be attributed to an account or a non-empty label."
