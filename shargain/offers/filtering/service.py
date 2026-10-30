@@ -78,7 +78,8 @@ class OfferFilterService:
         if isinstance(field_value, RichValue):
             field_value = field_value.get_value()
         if field_value is None:
-            return False
+            # A missing value does not contain/equal anything, so negative operators should pass.
+            return operator in (Operator.NOT_CONTAINS, Operator.NOT_EQUALS)
 
         if not rule.get("case_sensitive", False):
             if isinstance(field_value, str) and isinstance(filter_value, str):

@@ -60,6 +60,70 @@ class TestRefactoredNotify:
             assert "title" in field_names
             assert "price" in field_names
 
+    def test_notify_fires_for_otodom_offer_without_city(self):
+        """Otodom payloads often have no city, so negative address filters must not drop them."""
+        notification_config = NotificationConfigFactory()
+        scraping_target = ScrappingTargetFactory(
+            notification_config=notification_config,
+            enable_notifications=True,
+        )
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            url="https://www.otodom.pl/pl/wyniki/sprzedaz/mieszkanie,rynek-pierwotny/wiele-lokalizacji?limit=36",
+            filters={
+                "ruleGroups": [
+                    {
+                        "logic": "and",
+                        "rules": [
+                            {
+                                "field": "address",
+                                "operator": "not_contains",
+                                "value": "bociana",
+                                "case_sensitive": False,
+                            },
+                            {
+                                "field": "address",
+                                "operator": "not_contains",
+                                "value": "Bujaka",
+                                "case_sensitive": False,
+                            },
+                        ],
+                    }
+                ]
+            },
+        )
+        offer_data = {
+            "target": scraping_target.id,
+            "offers": [
+                {
+                    "url": "https://www.otodom.pl/pl/oferta/test-offer-ID123",
+                    "title": "Apartment with street only",
+                    "list_url": scraping_url.url,
+                    "metadata": {
+                        "extra": {
+                            "location": {
+                                "address": {"city": None, "street": {"name": "ul. Księcia Józefa"}},
+                                "reverseGeocoding": {
+                                    "locations": [{"locationLevel": "city_or_village", "name": "Kraków"}]
+                                },
+                            }
+                        }
+                    },
+                }
+            ],
+        }
+
+        with patch("shargain.offers.services.batch_create.NewOfferNotificationService") as mock_notification:
+            mock_notification.return_value.run.return_value = None
+            service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+            service.notification_service_class = mock_notification
+            service.run()
+
+            mock_notification.assert_called_once()
+            contexts = mock_notification.call_args[0][0]
+            assert len(contexts) == 1
+            assert contexts[0].offer.url == "https://www.otodom.pl/pl/oferta/test-offer-ID123"
+
 
 @pytest.mark.django_db
 class TestOfferBatchCreateService:
