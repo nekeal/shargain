@@ -271,6 +271,63 @@ class TestOfferFilterService:
 
         assert filtered == [offer_with_elevator]
 
+    def test_not_contains_passes_offer_with_missing_field_value(self):
+        offer = ExtractedOffer(_offer=None, fields={"address": None})
+        service = OfferFilterService(
+            {
+                "ruleGroups": [
+                    {
+                        "rules": [
+                            {
+                                "field": "address",
+                                "operator": FilterOperator.NOT_CONTAINS.value,
+                                "value": "bociana",
+                            }
+                        ]
+                    }
+                ]
+            }
+        )
+        assert service.apply([offer]) == [offer]
+
+    def test_not_equals_passes_offer_with_missing_field_value(self):
+        offer = ExtractedOffer(_offer=None, fields={"address": None})
+        service = OfferFilterService(
+            {
+                "ruleGroups": [
+                    {
+                        "rules": [
+                            {
+                                "field": "address",
+                                "operator": FilterOperator.NOT_EQUALS.value,
+                                "value": "bociana",
+                            }
+                        ]
+                    }
+                ]
+            }
+        )
+        assert service.apply([offer]) == [offer]
+
+    def test_not_contains_still_excludes_matching_value(self):
+        offer = ExtractedOffer(_offer=None, fields={"address": "Kraków, ul. Bociana"})
+        service = OfferFilterService(
+            {
+                "ruleGroups": [
+                    {
+                        "rules": [
+                            {
+                                "field": "address",
+                                "operator": FilterOperator.NOT_CONTAINS.value,
+                                "value": "bociana",
+                            }
+                        ]
+                    }
+                ]
+            }
+        )
+        assert service.apply([offer]) == []
+
     def test_rich_value_unwrapped_for_filtering(self):
         offer_with_parking = ExtractedOffer(_offer=None, fields={"parking": RichValue(True, "przynależne na ulicy")})
         offer_without_parking = ExtractedOffer(_offer=None, fields={"parking": RichValue(False)})

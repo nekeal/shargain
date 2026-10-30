@@ -123,7 +123,16 @@ class OfferBatchCreateService:
             )
 
     def _notify(self, new_offers, scrapping_target):
-        if not (new_offers and scrapping_target.notification_config and scrapping_target.enable_notifications):
+        if not new_offers:
+            return
+
+        if not (scrapping_target.notification_config and scrapping_target.enable_notifications):
+            logger.debug(
+                "Skipping notifications for target %s (config=%s, enabled=%s)",
+                scrapping_target.id,
+                scrapping_target.notification_config_id,
+                scrapping_target.enable_notifications,
+            )
             return
 
         offers_by_url = self._group_by_url(new_offers)
@@ -131,16 +140,29 @@ class OfferBatchCreateService:
         url_to_config_map = {sc.url: sc for sc in scraping_urls}
 
         message_contexts: list[NotificationMessageContext] = []
+        offers_after_filters = 0
         for list_url, url_offers in offers_by_url.items():
             scraping_url = url_to_config_map.get(list_url)
 
             extracted = self._extract_offers(url_offers, list_url)
             filtered = self._filter_offers(extracted, scraping_url)
+            offers_after_filters += len(filtered)
             if not filtered:
+                logger.info(
+                    "All %d new offers for list_url %s (target %s) were filtered out by notification filters",
+                    len(extracted),
+                    list_url,
+                    scrapping_target.id,
+                )
                 continue
 
             contexts = self._build_contexts(filtered, scraping_url)
             message_contexts.extend(contexts)
+
+        span = trace.get_current_span()
+        span.set_attribute("notifications.offers_in", len(new_offers))
+        span.set_attribute("notifications.offers_after_filters", offers_after_filters)
+        span.set_attribute("notifications.messages", len(message_contexts))
 
         if not message_contexts:
             return
