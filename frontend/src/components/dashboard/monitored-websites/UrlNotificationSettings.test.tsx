@@ -289,6 +289,39 @@ describe('UrlNotificationSettings', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('gives each url card unique switch ids', () => {
+    renderWithProviders(
+      <>
+        <UrlNotificationSettings
+          targetId={1}
+          urlId={1}
+          initialShowLocationMap={true}
+        />
+        <UrlNotificationSettings
+          targetId={1}
+          urlId={2}
+          initialShowLocationMap={true}
+        />
+      </>,
+    )
+
+    screen
+      .getAllByRole('button', { name: /filters.notificationSettingsExpand/ })
+      .forEach((trigger) => fireEvent.click(trigger))
+
+    const sendMapSwitches = screen.getAllByRole('switch', {
+      name: /filters.sendMapInNotifications/,
+    })
+    const locationSwitches = screen.getAllByRole('switch', {
+      name: /filters.includeLocationMap/,
+    })
+    const ids = [...sendMapSwitches, ...locationSwitches].map((el) => el.id)
+
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(sendMapSwitches[0].id).toBe('send-map-settings-1')
+    expect(sendMapSwitches[1].id).toBe('send-map-settings-2')
+  })
+
   it('saves sendMapInNotifications false when switch is turned off', async () => {
     renderWithProviders(
       <UrlNotificationSettings

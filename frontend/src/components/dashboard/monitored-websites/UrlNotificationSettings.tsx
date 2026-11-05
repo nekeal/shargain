@@ -277,6 +277,9 @@ export function UrlNotificationSettings({
     JSON.stringify(waypoints) !== JSON.stringify(initialWaypoints ?? []) ||
     JSON.stringify(selectedFields) !== JSON.stringify(initialNotificationFields?.fields ?? []);
 
+  const showLocationMapId = `show-location-map-settings-${urlId}`;
+  const sendMapId = `send-map-settings-${urlId}`;
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-2">
       <CollapsibleTrigger asChild>
@@ -314,7 +317,7 @@ export function UrlNotificationSettings({
         <div className="flex items-center justify-between p-3 bg-background/50 border border-border rounded-lg">
           <div className="flex flex-col gap-0.5">
             <Label
-              htmlFor="show-location-map-settings"
+              htmlFor={showLocationMapId}
               className="text-sm font-medium cursor-pointer"
             >
               {t("filters.includeLocationMap")}
@@ -324,7 +327,7 @@ export function UrlNotificationSettings({
             </span>
           </div>
           <Switch
-            id="show-location-map-settings"
+            id={showLocationMapId}
             checked={showLocationMap}
             onCheckedChange={setShowLocationMap}
           />
@@ -335,7 +338,7 @@ export function UrlNotificationSettings({
             <div className="flex items-center justify-between p-3 bg-background/50 border border-border rounded-lg">
               <div className="flex flex-col gap-0.5">
                 <Label
-                  htmlFor="send-map-settings"
+                  htmlFor={sendMapId}
                   className="text-sm font-medium cursor-pointer"
                 >
                   {t("filters.sendMapInNotifications")}
@@ -345,7 +348,7 @@ export function UrlNotificationSettings({
                 </span>
               </div>
               <Switch
-                id="send-map-settings"
+                id={sendMapId}
                 checked={sendMap}
                 onCheckedChange={setSendMap}
               />
