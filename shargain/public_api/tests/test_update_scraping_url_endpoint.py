@@ -74,3 +74,21 @@ class TestUpdateScrapingUrlEndpoint:
         assert response.status_code == 200
         url.refresh_from_db()
         assert url.filters == stored_filters
+
+    def test_updates_send_map_flag(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        url = ScrapingUrlFactory(scraping_target=target, send_map_in_notifications=True)
+
+        client = Client()
+        client.force_login(user)
+        response = client.patch(
+            f"/api/public/targets/{target.id}/urls/{url.id}",
+            data={"sendMapInNotifications": False},
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        url.refresh_from_db()
+        assert url.send_map_in_notifications is False
+        assert response.json()["sendMapInNotifications"] is False
