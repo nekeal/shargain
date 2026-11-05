@@ -231,7 +231,8 @@ class OfferBatchCreateService:
                     location_name=location_name,
                     is_exact_location=is_exact,
                     distances=distances,
-                    coordinates=coords if send_map else None,
+                    coordinates=coords,
+                    send_map=send_map,
                     extracted_fields=[
                         ExtractedFieldEntry(name=k, value=v) for k, v in extracted.fields.items() if k in selected
                     ],

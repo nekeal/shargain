@@ -16,6 +16,11 @@ class NotificationMessageContext:
     distances: list[tuple[str, float]] = field(default_factory=list)  # (waypoint_name, distance_km)
     extracted_fields: list[ExtractedFieldEntry] = field(default_factory=list)
     coordinates: Coordinates | None = None
+    send_map: bool = True
+
+    @property
+    def should_send_pin(self) -> bool:
+        return bool(self.coordinates and self.send_map)
 
     def get_distances(self) -> str:
         result = ""
@@ -62,7 +67,7 @@ class NewOfferNotificationService:
         header = self.get_message_header()
         message = header
         for context in self.message_contexts:
-            if context.coordinates:
+            if context.should_send_pin:
                 self._send_single_with_pin(context)
                 continue
             offer_message = self.get_message_for_offer(context)
