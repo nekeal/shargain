@@ -14,6 +14,7 @@ def add_scraping_url(
     name: str | None = None,
     filters: dict | None = None,
     show_location_map_in_notifications: bool = False,
+    send_map_in_notifications: bool = True,
     waypoints: list[WaypointData] | None = None,
 ) -> ScrapingUrlDTO:
     """
@@ -40,6 +41,7 @@ def add_scraping_url(
         name=name or "",
         filters=filters,
         show_location_map_in_notifications=show_location_map_in_notifications,
+        send_map_in_notifications=send_map_in_notifications,
         waypoints=waypoints,
     )
     return ScrapingUrlDTO.from_orm(scraping_url)

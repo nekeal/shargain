@@ -205,6 +205,7 @@ describe('UrlNotificationSettings', () => {
     await waitFor(() => {
       expect(mockMutate).toHaveBeenCalledWith({
         showLocationMapInNotifications: false,
+        sendMapInNotifications: true,
         waypoints: [],
         notificationFields: { fields: ['title'] },
       })
@@ -263,9 +264,86 @@ describe('UrlNotificationSettings', () => {
     await waitFor(() => {
       expect(mockMutate).toHaveBeenCalledWith({
         showLocationMapInNotifications: true,
+        sendMapInNotifications: true,
         waypoints: [{ name: 'Test Waypoint', lat: 0, lon: 0 }],
         notificationFields: null,
       })
+    })
+  })
+
+  it('hides send map switch when location is disabled', () => {
+    renderWithProviders(
+      <UrlNotificationSettings
+        targetId={1}
+        urlId={1}
+        initialShowLocationMap={false}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', {
+      name: /filters.notificationSettingsExpand/,
+    }))
+
+    expect(
+      screen.queryByRole('switch', { name: 'filters.sendMapInNotifications' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('gives each url card unique switch ids', () => {
+    renderWithProviders(
+      <>
+        <UrlNotificationSettings
+          targetId={1}
+          urlId={1}
+          initialShowLocationMap={true}
+        />
+        <UrlNotificationSettings
+          targetId={1}
+          urlId={2}
+          initialShowLocationMap={true}
+        />
+      </>,
+    )
+
+    screen
+      .getAllByRole('button', { name: /filters.notificationSettingsExpand/ })
+      .forEach((trigger) => fireEvent.click(trigger))
+
+    const sendMapSwitches = screen.getAllByRole('switch', {
+      name: /filters.sendMapInNotifications/,
+    })
+    const locationSwitches = screen.getAllByRole('switch', {
+      name: /filters.includeLocationMap/,
+    })
+    const ids = [...sendMapSwitches, ...locationSwitches].map((el) => el.id)
+
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(sendMapSwitches[0].id).toBe('send-map-settings-1')
+    expect(sendMapSwitches[1].id).toBe('send-map-settings-2')
+  })
+
+  it('saves sendMapInNotifications false when switch is turned off', async () => {
+    renderWithProviders(
+      <UrlNotificationSettings
+        targetId={1}
+        urlId={1}
+        initialShowLocationMap={true}
+        initialSendMap={true}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', {
+      name: /filters.notificationSettingsExpand/,
+    }))
+    fireEvent.click(
+      screen.getByRole('switch', { name: 'filters.sendMapInNotifications' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /filters.save/ }))
+
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledWith(
+        expect.objectContaining({ sendMapInNotifications: false }),
+      )
     })
   })
 })

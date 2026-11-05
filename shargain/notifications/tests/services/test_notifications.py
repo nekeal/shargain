@@ -208,3 +208,29 @@ class TestRunPinSplitting:
         service.run()
 
         self.sender_instance.send.assert_not_called()
+
+    def test_send_map_disabled_batches_offers_with_coordinates(self):
+        first = NotificationMessageContext(
+            offer=OfferFactory.build(),
+            coordinates=Coordinates(lat=52.1, lon=21.1),
+            map_url="https://maps.google.com/?q=52.1,21.1",
+            distances=[("Metro Centrum", 1.2)],
+            send_map=False,
+        )
+        second = NotificationMessageContext(
+            offer=OfferFactory.build(),
+            coordinates=Coordinates(lat=52.2, lon=21.2),
+            map_url="https://maps.google.com/?q=52.2,21.2",
+            send_map=False,
+        )
+        service = self._make_service([first, second])
+
+        service.run()
+
+        self.sender_instance.send_with_pin.assert_not_called()
+        self.sender_instance.send.assert_called_once()
+        message = self.sender_instance.send.call_args.args[0]
+        assert first.offer.title in message
+        assert second.offer.title in message
+        assert "maps.google.com" in message
+        assert "1.2 km from Metro Centrum" in message

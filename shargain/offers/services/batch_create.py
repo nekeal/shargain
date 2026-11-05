@@ -204,6 +204,7 @@ class OfferBatchCreateService:
             selected = set(scraping_url.notification_fields.fields)
 
         show_location = scraping_url.show_location_map_in_notifications if scraping_url else False
+        send_map = scraping_url.send_map_in_notifications if scraping_url else True
         waypoints = scraping_url.waypoints if scraping_url else None
 
         contexts = []
@@ -231,6 +232,7 @@ class OfferBatchCreateService:
                     is_exact_location=is_exact,
                     distances=distances,
                     coordinates=coords,
+                    send_map=send_map,
                     extracted_fields=[
                         ExtractedFieldEntry(name=k, value=v) for k, v in extracted.fields.items() if k in selected
                     ],

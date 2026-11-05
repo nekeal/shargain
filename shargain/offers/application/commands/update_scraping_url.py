@@ -18,6 +18,7 @@ def update_scraping_url(
     name: str | None = None,
     filters: dict | None | ClearFilters = None,
     show_location_map_in_notifications: bool | None = None,
+    send_map_in_notifications: bool | None = None,
     waypoints: list[WaypointData] | None = None,
     notification_fields: dict | None = None,
 ) -> ScrapingUrlDTO:
@@ -36,6 +37,9 @@ def update_scraping_url(
     if show_location_map_in_notifications is not None:
         url.show_location_map_in_notifications = show_location_map_in_notifications
         update_fields.append("show_location_map_in_notifications")
+    if send_map_in_notifications is not None:
+        url.send_map_in_notifications = send_map_in_notifications
+        update_fields.append("send_map_in_notifications")
     if waypoints is not None:
         url.waypoints = waypoints
         update_fields.append("waypoints")

@@ -29,6 +29,7 @@ class ScrapingUrlDTO:
     last_checked_at: str | None = None
     filters: dict | None = None
     show_location_map_in_notifications: bool = False
+    send_map_in_notifications: bool = True
     waypoints: list[WaypointData] | None = None
     notification_fields: NotificationFieldsSelection | None = None
 
@@ -43,6 +44,7 @@ class ScrapingUrlDTO:
             last_checked_at=last_checked_at,
             filters=url.filters,
             show_location_map_in_notifications=url.show_location_map_in_notifications,
+            send_map_in_notifications=url.send_map_in_notifications,
             waypoints=url.waypoints,
             notification_fields=url.notification_fields.model_dump(mode="json") if url.notification_fields else None,
         )

@@ -71,6 +71,11 @@ class ScrapingUrl(models.Model):
         help_text=_("If True, a Google Maps link will be appended to Telegram notifications for offers from this URL."),
         default=False,
     )
+    send_map_in_notifications = models.BooleanField(
+        _("Send map in notifications"),
+        help_text=_("If True, a separate Telegram message with the offer location on a map is sent."),
+        default=True,
+    )
     waypoints = models.JSONField(
         verbose_name=_("Waypoints"),
         help_text=_('List of waypoints. Format: [{"name": ..., "lat": ..., "lon": ...}]'),

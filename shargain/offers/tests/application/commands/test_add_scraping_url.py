@@ -75,3 +75,13 @@ class TestAddScrapingUrl:
         assert result_dto.show_location_map_in_notifications is True
         target_dto = get_target(actor=actor, target_id=scraping_target.id)
         assert target_dto.urls[0].show_location_map_in_notifications is True
+
+    def test_add_scraping_url_with_send_map_disabled(self, scraping_target):
+        actor = Actor(user_id=scraping_target.owner_id)
+        url = "https://example.com"
+
+        result_dto = add_scraping_url(
+            actor=actor, target_id=scraping_target.id, url=url, send_map_in_notifications=False
+        )
+
+        assert result_dto.send_map_in_notifications is False

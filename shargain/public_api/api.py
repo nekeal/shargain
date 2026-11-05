@@ -186,6 +186,7 @@ class ScrapingUrlResponse(BaseSchema):
     last_checked_at: str | None = None
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool = False
+    send_map_in_notifications: bool = True
     waypoints: list[WaypointSchema] | None = None
     notification_fields: NotificationFieldsSchema | None = None
 
@@ -348,12 +349,14 @@ class AddUrlRequest(BaseSchema):
     name: str | None = None
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool = False
+    send_map_in_notifications: bool = True
     waypoints: list[WaypointSchema] | None = None
 
 
 class UpdateScrapingUrlRequest(BaseSchema):
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool | None = None
+    send_map_in_notifications: bool | None = None
     waypoints: list[WaypointSchema] | None = None
     notification_fields: NotificationFieldsSchema | None = None
 
@@ -385,6 +388,7 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
             name=payload.name,
             filters=validated_filters,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
+            send_map_in_notifications=payload.send_map_in_notifications,
             waypoints=waypoints_list,
         )
     except TargetDoesNotExist as e:
@@ -458,6 +462,7 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
             url_id=url_id,
             filters=filters_arg,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
+            send_map_in_notifications=payload.send_map_in_notifications,
             waypoints=waypoints_list,
             notification_fields=notification_fields_dict,
         )

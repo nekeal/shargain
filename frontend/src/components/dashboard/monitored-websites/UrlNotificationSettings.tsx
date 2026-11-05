@@ -29,6 +29,7 @@ interface UrlNotificationSettingsProps {
   targetId: number;
   urlId: number;
   initialShowLocationMap: boolean;
+  initialSendMap?: boolean;
   initialWaypoints?: Array<WaypointSchema> | null;
   initialNotificationFields?: NotificationFieldsSchema | null;
 }
@@ -142,8 +143,8 @@ function PasteDialog({ open, onClose, onParsed }: PasteDialogProps) {
   return (
     <Dialog
       open={open}
-      onOpenChange={(open) => {
-        if (!open) close();
+      onOpenChange={(isOpen) => {
+        if (!isOpen) close();
       }}
     >
       <DialogContent>
@@ -195,11 +196,13 @@ export function UrlNotificationSettings({
   targetId,
   urlId,
   initialShowLocationMap,
+  initialSendMap,
   initialWaypoints,
   initialNotificationFields = null,
 }: UrlNotificationSettingsProps) {
   const { t } = useTranslation();
   const [showLocationMap, setShowLocationMap] = useState(initialShowLocationMap);
+  const [sendMap, setSendMap] = useState(initialSendMap ?? true);
   const [waypoints, setWaypoints] = useState<Array<WaypointSchema>>(initialWaypoints ?? []);
   const [selectedFields, setSelectedFields] = useState<Array<string>>(initialNotificationFields?.fields ?? []);
   const [isOpen, setIsOpen] = useState(false);
@@ -212,9 +215,10 @@ export function UrlNotificationSettings({
 
   useEffect(() => {
     setShowLocationMap(initialShowLocationMap);
+    setSendMap(initialSendMap ?? true);
     setWaypoints(initialWaypoints ?? []);
     setSelectedFields(initialNotificationFields?.fields ?? []);
-  }, [initialShowLocationMap, initialWaypoints, initialNotificationFields]);
+  }, [initialShowLocationMap, initialSendMap, initialWaypoints, initialNotificationFields]);
 
   const addWaypoint = () => {
     setWaypoints((prev) => [...prev, { name: "", lat: 0, lon: 0 }]);
@@ -261,6 +265,7 @@ export function UrlNotificationSettings({
   const handleSave = () => {
     mutation.mutate({
       showLocationMapInNotifications: showLocationMap,
+      sendMapInNotifications: sendMap,
       waypoints: waypoints,
       notificationFields: selectedFields.length > 0 ? { fields: selectedFields } : null,
     });
@@ -268,8 +273,12 @@ export function UrlNotificationSettings({
 
   const hasChanges =
     showLocationMap !== initialShowLocationMap ||
+    sendMap !== (initialSendMap ?? true) ||
     JSON.stringify(waypoints) !== JSON.stringify(initialWaypoints ?? []) ||
     JSON.stringify(selectedFields) !== JSON.stringify(initialNotificationFields?.fields ?? []);
+
+  const showLocationMapId = `show-location-map-settings-${urlId}`;
+  const sendMapId = `send-map-settings-${urlId}`;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-2">
@@ -308,7 +317,7 @@ export function UrlNotificationSettings({
         <div className="flex items-center justify-between p-3 bg-background/50 border border-border rounded-lg">
           <div className="flex flex-col gap-0.5">
             <Label
-              htmlFor="show-location-map-settings"
+              htmlFor={showLocationMapId}
               className="text-sm font-medium cursor-pointer"
             >
               {t("filters.includeLocationMap")}
@@ -318,7 +327,7 @@ export function UrlNotificationSettings({
             </span>
           </div>
           <Switch
-            id="show-location-map-settings"
+            id={showLocationMapId}
             checked={showLocationMap}
             onCheckedChange={setShowLocationMap}
           />
@@ -326,6 +335,25 @@ export function UrlNotificationSettings({
 
         {showLocationMap && (
           <div className="space-y-2">
+            <div className="flex items-center justify-between p-3 bg-background/50 border border-border rounded-lg">
+              <div className="flex flex-col gap-0.5">
+                <Label
+                  htmlFor={sendMapId}
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  {t("filters.sendMapInNotifications")}
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  {t("filters.sendMapInNotificationsDescription")}
+                </span>
+              </div>
+              <Switch
+                id={sendMapId}
+                checked={sendMap}
+                onCheckedChange={setSendMap}
+              />
+            </div>
+
             {waypoints.map((wp, index) => (
               <WaypointRow
                 key={index}

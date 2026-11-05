@@ -1108,7 +1108,6 @@
       "NotificationFieldsSchema": {
         "properties": {
           "fields": {
-            "default": [],
             "items": {
               "type": "string"
             },
@@ -1194,6 +1193,11 @@
           "showLocationMapInNotifications": {
             "default": false,
             "title": "Showlocationmapinnotifications",
+            "type": "boolean"
+          },
+          "sendMapInNotifications": {
+            "default": true,
+            "title": "Sendmapinnotifications",
             "type": "boolean"
           },
           "waypoints": {
@@ -1426,6 +1430,11 @@
             "title": "Showlocationmapinnotifications",
             "type": "boolean"
           },
+          "sendMapInNotifications": {
+            "default": true,
+            "title": "Sendmapinnotifications",
+            "type": "boolean"
+          },
           "waypoints": {
             "anyOf": [
               {
@@ -1552,6 +1561,17 @@
               }
             ],
             "title": "Showlocationmapinnotifications"
+          },
+          "sendMapInNotifications": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sendmapinnotifications"
           },
           "waypoints": {
             "anyOf": [
