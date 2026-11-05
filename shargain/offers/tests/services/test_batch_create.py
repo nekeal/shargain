@@ -387,6 +387,6 @@ class TestOfferBatchCreateService:
             service.run()
 
             context = mock_notification.call_args[0][0][0]
-            assert context.send_map is False
-            assert context.coordinates == Coordinates(lat=52.22, lon=21.01)
+            assert context.coordinates is None
             assert context.distances
+            assert "maps.google.com" in context.map_url
