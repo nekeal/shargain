@@ -157,6 +157,10 @@ export type ScrapingUrlResponse = {
      */
     showLocationMapInNotifications?: boolean;
     /**
+     * Sendmapinnotifications
+     */
+    sendMapInNotifications?: boolean;
+    /**
      * Waypoints
      */
     waypoints?: Array<WaypointSchema> | null;
@@ -291,6 +295,10 @@ export type AddUrlRequest = {
      */
     showLocationMapInNotifications?: boolean;
     /**
+     * Sendmapinnotifications
+     */
+    sendMapInNotifications?: boolean;
+    /**
      * Waypoints
      */
     waypoints?: Array<WaypointSchema> | null;
@@ -349,6 +357,10 @@ export type UpdateScrapingUrlRequest = {
      * Showlocationmapinnotifications
      */
     showLocationMapInNotifications?: boolean | null;
+    /**
+     * Sendmapinnotifications
+     */
+    sendMapInNotifications?: boolean | null;
     /**
      * Waypoints
      */
