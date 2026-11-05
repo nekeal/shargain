@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CheckCircle, ChevronDown, Filter, Loader2, Plus, Save, X } from "lucide-react";
 import { createFilterSchemas } from "./filterValidation";
-import { useAvailableFields } from "@/hooks/useAvailableFields";
 import { useUpdateUrlMutation } from "./useMonitors";
 import type { AvailableFieldSchema, FiltersConfigSchema, RuleGroupSchema } from "@/lib/api/types.gen";
 import type { ZodIssue, z } from "zod";
+import { useAvailableFields } from "@/hooks/useAvailableFields";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,7 +42,7 @@ const stableKeySort = (_key: string, value: unknown) => {
       .sort()
       .reduce(
         (acc, k) => {
-          (acc as Record<string, unknown>)[k] = (value as Record<string, unknown>)[k];
+          (acc)[k] = (value as Record<string, unknown>)[k];
           return acc;
         },
         {} as Record<string, unknown>,
