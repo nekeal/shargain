@@ -289,3 +289,40 @@ class TestOfferBatchCreateService:
             assert ctx.coordinates == Coordinates(lat=52.22, lon=21.01)
             # OLX uses its own exact coordinates as the map center with zoom
             assert ctx.map_url == "https://maps.google.com/?q=52.22,21.01&ll=52.22,21.01&z=13"
+
+    def test_offer_batch_create_with_send_map_disabled(self):
+        notification_config = NotificationConfigFactory()
+        scraping_target = ScrappingTargetFactory(notification_config=notification_config, enable_notifications=True)
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            show_location_map_in_notifications=True,
+            send_map_in_notifications=False,
+            waypoints=[{"name": "Metro Centrum", "lat": 52.23, "lon": 21.00}],
+        )
+        offer_data = {
+            "target": scraping_target.id,
+            "offers": [
+                {
+                    "url": "https://olx.pl/offer-with-coords",
+                    "title": "Apartment near metro",
+                    "list_url": scraping_url.url,
+                    "metadata": {
+                        "extra": {
+                            "map": {"lat": 52.22, "lon": 21.01},
+                            "location": {"cityName": "Warsaw", "districtName": "Centrum"},
+                        }
+                    },
+                }
+            ],
+        }
+
+        with patch("shargain.offers.services.batch_create.NewOfferNotificationService") as mock_notification:
+            mock_notification.return_value.run.return_value = None
+            service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+            service.notification_service_class = mock_notification
+            service.run()
+
+            context = mock_notification.call_args[0][0][0]
+            assert context.send_map is False
+            assert context.coordinates == Coordinates(lat=52.22, lon=21.01)
+            assert context.distances
