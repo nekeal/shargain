@@ -265,6 +265,8 @@
     "notificationSettingsExpand": "Rozwiń treść powiadomienia",
     "includeLocationMap": "Uwzględnij lokalizację",
     "includeLocationMapDescription": "Dodaje szczegóły lokalizacji do wiadomości Telegram",
+    "sendMapInNotifications": "Wysyłaj mapę w powiadomieniach",
+    "sendMapInNotificationsDescription": "Dodaje osobną wiadomość z lokalizacją oferty na mapie",
     "addFromGoogleMaps": "Dodaj z Google Maps",
     "pasteGoogleMapsDescription": "Wklej adres URL Google Maps, aby automatycznie wypełnić współrzędne i nazwę miejsca.",
     "googleMapsUrlPlaceholder": "https://maps.google.com/...",
