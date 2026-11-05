@@ -72,6 +72,22 @@ class TestUpdateScrapingUrl:
 
         assert result_dto.notification_fields == new_notification_fields
 
+    def test_update_scraping_url_send_map_succeeds(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, send_map_in_notifications=True)
+        actor = Actor(user_id=scraping_target.owner_id)
+
+        result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, send_map_in_notifications=False)
+
+        assert result_dto.send_map_in_notifications is False
+
+    def test_update_scraping_url_preserves_send_map_when_omitted(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, send_map_in_notifications=False)
+        actor = Actor(user_id=scraping_target.owner_id)
+
+        result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, name="New name")
+
+        assert result_dto.send_map_in_notifications is False
+
     def test_update_scraping_url_for_non_existent_url_raises_error(self):
         actor = Actor(user_id=1)
 
