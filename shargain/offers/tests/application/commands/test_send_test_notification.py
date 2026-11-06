@@ -1,8 +1,7 @@
-from unittest.mock import patch
-
 import pytest
 
 from shargain.commons.application.actor import Actor
+from shargain.jobs.models import Job
 from shargain.notifications.tests.factories import NotificationConfigFactory
 from shargain.offers.application.commands.send_test_notification import send_test_notification
 from shargain.offers.application.exceptions import (
@@ -19,12 +18,13 @@ class TestSendTestNotification:
         scraping_target.save()
         actor = Actor(user_id=scraping_target.owner_id)
 
-        with patch(
-            "shargain.offers.application.commands.send_test_notification.TelegramNotificationSender"
-        ) as mock_sender:
-            send_test_notification(actor=actor, target_id=scraping_target.id)
-            mock_sender.assert_called_once_with(notification_config)
-            mock_sender.return_value.send.assert_called_once_with("This is a test notification from Shargain.")
+        send_test_notification(actor=actor, target_id=scraping_target.id)
+
+        job = Job.objects.get()
+        assert job.type == "notification.telegram"
+        assert job.payload["message"] == "This is a test notification from Shargain."
+        assert job.payload["config_id"] == notification_config.id
+        assert job.stream_key == f"telegram:{notification_config.chatid}"
 
     def test_send_test_notification_target_does_not_exist(self):
         actor = Actor(user_id=1)

@@ -91,7 +91,11 @@ export const useToggleUrlActiveMutation = (targetId: number) => {
 export const useUpdateUrlMutation = (targetId: number, urlId: number) => {
     const queryClient = useQueryClient();
     return useMutation({
+<<<<<<< HEAD
+        mutationFn: (payload: { filters?: FiltersConfigSchema | null, showLocationMapInNotifications?: boolean, sendMapInNotifications?: boolean, waypoints?: Array<WaypointSchema> | null, notificationFields?: NotificationFieldsSchema | null }) => {
+=======
         mutationFn: (payload: UpdateScrapingUrlRequest) => {
+>>>>>>> origin/master
             return updateScrapingUrl({
                 path: { target_id: targetId, url_id: urlId },
                 body: payload,

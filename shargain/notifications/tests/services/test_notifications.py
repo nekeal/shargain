@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
+from shargain.jobs.models import Job
 from shargain.notifications.services.notifications import (
     NewOfferNotificationService,
     NotificationMessageContext,
@@ -132,28 +133,23 @@ class TestGetMessageForOfferMapUrl:
 
 @pytest.mark.django_db
 class TestRunPinSplitting:
-    """run() must send pinned offers as their own card+pin and batch the rest."""
+    """run() must enqueue pinned offers as their own card+pin job and batch the rest."""
 
-    @pytest.fixture(autouse=True)
-    def _patched_sender(self):
-        with patch("shargain.notifications.services.notifications.TelegramNotificationSender") as sender_class:
-            self.sender_instance = sender_class.return_value
-            yield sender_class
-
-    def _make_context(self, *, coordinates=None, map_url=None):
+    def _make_context(self, *, coordinates=None, map_url=None, send_map=True):
         return NotificationMessageContext(
             offer=OfferFactory.build(),
             map_url=map_url,
             coordinates=coordinates,
+            send_map=send_map,
         )
 
     def _make_service(self, contexts):
         config = NotificationConfigFactory()
         target = ScrappingTargetFactory(notification_config=config)
-        return NewOfferNotificationService(contexts, target, "NOTIFICATION TITLE")
+        return NewOfferNotificationService(contexts, target, "NOTIFICATION TITLE"), config
 
     def test_pinned_offer_gets_own_card_and_pin(self):
-        service = self._make_service(
+        service, config = self._make_service(
             [
                 self._make_context(
                     coordinates=Coordinates(lat=52.22, lon=21.01), map_url="https://maps.google.com/?q=52.22,21.01"
@@ -163,12 +159,13 @@ class TestRunPinSplitting:
 
         service.run()
 
-        self.sender_instance.send_with_pin.assert_called_once()
-        self.sender_instance.send.assert_not_called()
-        card, lat, lon = self.sender_instance.send_with_pin.call_args.args[:3]
-        assert (lat, lon) == (52.22, 21.01)
-        assert self.sender_instance.send_with_pin.call_args.kwargs["horizontal_accuracy"] == 1500.0
-        assert "maps.google.com" in card
+        jobs = list(Job.objects.filter(payload__config_id=config.id))
+        assert len(jobs) == 1
+        job = jobs[0]
+        assert job.payload["kind"] == "location"
+        assert (job.payload["lat"], job.payload["lon"]) == (52.22, 21.01)
+        assert job.payload["horizontal_accuracy"] == 1500.0
+        assert "maps.google.com" in job.payload["message"]
 
     def test_unpinned_offers_stay_batched(self):
         pinned = self._make_context(
@@ -176,38 +173,41 @@ class TestRunPinSplitting:
             map_url="https://maps.google.com/?q=52.22,21.01",
         )
         unpinned = self._make_context(map_url="https://maps.google.com/?q=Krak%C3%B3w")
-        service = self._make_service([unpinned, pinned])
+        service, config = self._make_service([unpinned, pinned])
 
         service.run()
 
-        self.sender_instance.send_with_pin.assert_called_once()
-        self.sender_instance.send.assert_called_once()
-        card = self.sender_instance.send_with_pin.call_args.args[0]
-        batch_text = self.sender_instance.send.call_args.args[0]
-        assert unpinned.offer.title in batch_text
-        assert pinned.offer.title not in batch_text
-        assert "maps.google.com" in card
-        assert "maps.google.com" in batch_text
+        jobs = list(Job.objects.filter(payload__config_id=config.id))
+        assert len(jobs) == 2
+        kinds = {j.payload["kind"] for j in jobs}
+        assert "location" in kinds
+        assert "text" in kinds
+        text_job = next(j for j in jobs if j.payload["kind"] == "text")
+        assert unpinned.offer.title in text_job.payload["message"]
+        assert pinned.offer.title not in text_job.payload["message"]
 
     def test_pin_order_matches_offer_order(self):
         first = self._make_context(coordinates=Coordinates(lat=52.1, lon=21.1))
         second = self._make_context(coordinates=Coordinates(lat=52.2, lon=21.2))
-        service = self._make_service([first, second])
+        service, config = self._make_service([first, second])
 
         service.run()
 
-        assert self.sender_instance.send_with_pin.call_count == 2
-        calls = self.sender_instance.send_with_pin.call_args_list
-        assert (calls[0].args[1], calls[0].args[2]) == (52.1, 21.1)
-        assert (calls[1].args[1], calls[1].args[2]) == (52.2, 21.2)
+        jobs = list(Job.objects.filter(payload__config_id=config.id).order_by("created_at"))
+        assert len(jobs) == 2
+        assert all(j.payload["kind"] == "location" for j in jobs)
+        assert (jobs[0].payload["lat"], jobs[0].payload["lon"]) == (52.1, 21.1)
+        assert (jobs[1].payload["lat"], jobs[1].payload["lon"]) == (52.2, 21.2)
 
     def test_batch_with_no_offers_left_is_not_sent(self):
         context = self._make_context(coordinates=Coordinates(lat=52.22, lon=21.01))
-        service = self._make_service([context])
+        service, config = self._make_service([context])
 
         service.run()
 
-        self.sender_instance.send.assert_not_called()
+        jobs = list(Job.objects.filter(payload__config_id=config.id))
+        assert len(jobs) == 1
+        assert jobs[0].payload["kind"] == "location"
 
     def test_send_map_disabled_batches_offers_with_coordinates(self):
         first = NotificationMessageContext(
@@ -223,13 +223,15 @@ class TestRunPinSplitting:
             map_url="https://maps.google.com/?q=52.2,21.2",
             send_map=False,
         )
-        service = self._make_service([first, second])
+        service, config = self._make_service([first, second])
 
         service.run()
 
-        self.sender_instance.send_with_pin.assert_not_called()
-        self.sender_instance.send.assert_called_once()
-        message = self.sender_instance.send.call_args.args[0]
+        jobs = list(Job.objects.filter(payload__config_id=config.id))
+        assert len(jobs) == 1
+        job = jobs[0]
+        assert job.payload["kind"] == "text"
+        message = job.payload["message"]
         assert first.offer.title in message
         assert second.offer.title in message
         assert "maps.google.com" in message
