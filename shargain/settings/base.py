@@ -46,6 +46,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "shargain.commons.apps.CommonsConfig",
     "shargain.accounts.apps.AccountsConfig",
+    "shargain.jobs.apps.JobsConfig",
     "shargain.offers.apps.OffersConfig",
     "shargain.telegram",
     "shargain.notifications.apps.NotificationsConfig",
