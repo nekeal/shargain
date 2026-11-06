@@ -318,8 +318,11 @@ describe('UrlNotificationSettings', () => {
     const ids = [...sendMapSwitches, ...locationSwitches].map((el) => el.id)
 
     expect(new Set(ids).size).toBe(ids.length)
+<<<<<<< HEAD
     expect(sendMapSwitches[0].id).toBe('send-map-settings-1')
     expect(sendMapSwitches[1].id).toBe('send-map-settings-2')
+=======
+>>>>>>> origin/master
   })
 
   it('saves sendMapInNotifications false when switch is turned off', async () => {

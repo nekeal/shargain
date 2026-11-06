@@ -196,13 +196,21 @@ export function UrlNotificationSettings({
   targetId,
   urlId,
   initialShowLocationMap,
+<<<<<<< HEAD
   initialSendMap,
+=======
+  initialSendMap = true,
+>>>>>>> origin/master
   initialWaypoints,
   initialNotificationFields = null,
 }: UrlNotificationSettingsProps) {
   const { t } = useTranslation();
   const [showLocationMap, setShowLocationMap] = useState(initialShowLocationMap);
+<<<<<<< HEAD
   const [sendMap, setSendMap] = useState(initialSendMap ?? true);
+=======
+  const [sendMap, setSendMap] = useState(initialSendMap);
+>>>>>>> origin/master
   const [waypoints, setWaypoints] = useState<Array<WaypointSchema>>(initialWaypoints ?? []);
   const [selectedFields, setSelectedFields] = useState<Array<string>>(initialNotificationFields?.fields ?? []);
   const [isOpen, setIsOpen] = useState(false);
@@ -215,7 +223,11 @@ export function UrlNotificationSettings({
 
   useEffect(() => {
     setShowLocationMap(initialShowLocationMap);
+<<<<<<< HEAD
     setSendMap(initialSendMap ?? true);
+=======
+    setSendMap(initialSendMap);
+>>>>>>> origin/master
     setWaypoints(initialWaypoints ?? []);
     setSelectedFields(initialNotificationFields?.fields ?? []);
   }, [initialShowLocationMap, initialSendMap, initialWaypoints, initialNotificationFields]);
@@ -273,7 +285,11 @@ export function UrlNotificationSettings({
 
   const hasChanges =
     showLocationMap !== initialShowLocationMap ||
+<<<<<<< HEAD
     sendMap !== (initialSendMap ?? true) ||
+=======
+    sendMap !== initialSendMap ||
+>>>>>>> origin/master
     JSON.stringify(waypoints) !== JSON.stringify(initialWaypoints ?? []) ||
     JSON.stringify(selectedFields) !== JSON.stringify(initialNotificationFields?.fields ?? []);
 

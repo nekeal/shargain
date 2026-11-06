@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class FilterOperator(StrEnum):
@@ -107,8 +107,7 @@ class FiltersConfig(BaseModel):
 
     rule_groups: list[RuleGroup] = Field(..., min_length=1, max_length=5, alias="ruleGroups")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 def validate_filters(filters_data: dict | None) -> dict | None:

@@ -15,7 +15,7 @@ from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 from django_better_admin_arrayfield.models.fields import ArrayField
 
 from shargain.offers.admin.forms import ScrappingTargetAdminForm
-from shargain.offers.models import Offer, ScrapingCheckin, ScrapingUrl, ScrappingTarget
+from shargain.offers.models import Offer, OfferLike, ScrapingCheckin, ScrapingUrl, ScrappingTarget
 from shargain.offers.widgets import AdminDynamicArrayWidget
 
 
@@ -171,3 +171,13 @@ class ScrapingCheckinAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[ScrapingCheckin]:
         return super().get_queryset(request).select_related("scraping_url")
+
+
+@admin.register(OfferLike)
+class OfferLikeAdmin(admin.ModelAdmin):
+    list_display = ("offer", "liker_label", "owner", "created_at")
+    list_filter = ("offer__target",)
+    search_fields = ("offer__url", "offer__title", "liker_label")
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[OfferLike]:
+        return super().get_queryset(request).select_related("offer", "owner")

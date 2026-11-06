@@ -48,6 +48,25 @@ def test_fields_declare_address_string():
             "Kraków, ul. Jana Dekerta",
         ),
         ({"address": {"city": {"name": "Kraków"}}}, "Kraków"),
+        (
+            {
+                "address": {"city": None, "street": {"name": "ul. Księcia Józefa"}},
+                "reverseGeocoding": {"locations": [{"locationLevel": "city_or_village", "name": "Kraków"}]},
+            },
+            "Kraków, ul. Księcia Józefa",
+        ),
+        (
+            {
+                "address": {"city": None, "street": None},
+                "reverseGeocoding": {
+                    "locations": [
+                        {"locationLevel": "city_or_village", "name": "Kraków"},
+                        {"locationLevel": "district", "name": "Swoszowice"},
+                    ]
+                },
+            },
+            "Kraków, Swoszowice",
+        ),
     ],
 )
 def test_extract_address(location, expected):

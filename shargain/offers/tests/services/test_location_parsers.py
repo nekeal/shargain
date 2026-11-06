@@ -132,3 +132,81 @@ class TestOtodomLocationParser:
             }
         )
         assert parser.get_location_name() == "Kraków"
+
+    def test_get_location_name_falls_back_to_reverse_geocoding_for_city(self):
+        parser = OtodomLocationParser(
+            {
+                "extra": {
+                    "location": {
+                        "address": {"city": None, "street": {"name": "ul. Księcia Józefa"}},
+                        "reverseGeocoding": {
+                            "locations": [
+                                {"locationLevel": "voivodeship", "name": "małopolskie"},
+                                {"locationLevel": "city_or_village", "name": "Kraków"},
+                                {"locationLevel": "district", "name": "Zwierzyniec"},
+                            ]
+                        },
+                    }
+                }
+            }
+        )
+        assert parser.get_location_name() == "Kraków, ul. Księcia Józefa"
+
+    def test_get_location_name_falls_back_to_city_and_district(self):
+        parser = OtodomLocationParser(
+            {
+                "extra": {
+                    "location": {
+                        "address": {"city": None, "street": None},
+                        "reverseGeocoding": {
+                            "locations": [
+                                {"locationLevel": "city_or_village", "name": "Kraków"},
+                                {"locationLevel": "district", "name": "Swoszowice"},
+                                {"locationLevel": "residential", "name": "Kliny Zachód"},
+                            ]
+                        },
+                    }
+                }
+            }
+        )
+        assert parser.get_location_name() == "Kraków, Swoszowice"
+
+    def test_get_location_name_falls_back_to_residential_when_district_missing(self):
+        parser = OtodomLocationParser(
+            {
+                "extra": {
+                    "location": {
+                        "address": {"city": None, "street": None},
+                        "reverseGeocoding": {
+                            "locations": [
+                                {"locationLevel": "city_or_village", "name": "Kraków"},
+                                {"locationLevel": "residential", "name": "Kliny Zachód"},
+                            ]
+                        },
+                    }
+                }
+            }
+        )
+        assert parser.get_location_name() == "Kraków, Kliny Zachód"
+
+    def test_get_location_name_returns_none_without_any_location_data(self):
+        parser = OtodomLocationParser({"extra": {"location": {"address": {"city": None, "street": None}}}})
+        assert parser.get_location_name() is None
+
+    def test_get_map_url_uses_reverse_geocoding_fallback(self):
+        parser = OtodomLocationParser(
+            {
+                "extra": {
+                    "location": {
+                        "address": {"city": None, "street": None},
+                        "reverseGeocoding": {
+                            "locations": [
+                                {"locationLevel": "city_or_village", "name": "Kraków"},
+                                {"locationLevel": "district", "name": "Swoszowice"},
+                            ]
+                        },
+                    }
+                }
+            }
+        )
+        assert parser.get_map_url() == "https://maps.google.com/?q=Krak%C3%B3w%2C%20Swoszowice"

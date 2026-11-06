@@ -1,66 +1,55 @@
 # Liked Offers — Design
 
 - **Date:** 2026-09-22
-- **Status:** Approved (pending user review after writing)
-- **Scope:** Backend-only. No web/frontend surface in this iteration.
+- **Status:** Approved (pending user review)
+- **Scope:** Backend-only. No web/frontend UI in this iteration.
 
-## Goal
+## Why
 
-Allow offers discovered by Shargain to be marked as **liked** from a Telegram
-channel (and, in the future, from a web interface). Likes group under the
-same scraping target automatically via the offer's existing target
-relationship knowledge chain, are attributable to `who` liked them, and are
-visible in the backend admin.
+Offer cards in a Telegram channel currently only inform — you can't act on a
+good deal. This adds the ability to **like** offers from a Telegram channel,
+persist those likes in the backend, and surface them in admin, so liked offers
+remain attributable and discoverable even though the bot can't reliably link a
+Telegram account to a Shargain account.
 
-## Non-Goal
+## Channel-Agnostic Likes
 
-- No dashboard/frontend UI for likes.
-- No Telegram `username` / account resolution guarantee — a liker may or may
-  not map to a Shargain account.
-- No per-user reaction-to-offer button mappings (no new `message_id → offers`
-  table rails. Identity is channel-agnostic.
+A like can originate from either surface, and the two may not be linkable:
 
-## Context
+1. **Telegram** — identity is a free-form string (no guaranteed account link).
+2. **Web/dashboard (future)** — identity is a real authenticated account.
 
-Offers are scraped and grouped under a `ScrappingTarget` (via `Offer.target`).
-New offers are sent to a Telegram chat as notification cards
-(`NewOfferNotificationService`). A card is a plain text message containing one
-or more offer URLs (batched into a single message when length allows, and
-sent as single messages **with a location pin** when coordinates are present).
-
-Shargain accounts and Telegram accounts are **not** guaranteed to be linked:
-the `/configure` flow exists but is optional, so the bot cannot always resolve
-a reacting Telegram user to a Shargain account.
-
-## Decisions
-
-| Question | Decision |
-| --- | --- |
-| Like trigger | Telegram **reaction with the ❤️ (heart) emoji** on the offer notification message |
-| Identity of liker | Channel-agnostic. Store either an authenticated account (**account FK**, for future web use) or a free-form identity **label string** (for Telegram, this is the liker's Telegram user id as a string) |
-| Reaction on a non-offer message | Silent no-op |
-| Heart on non-card offer sent as single with-pin | Still likable (reaction parsed via message text URLs) |
-| Unreact (remove ❤️) | Deletes the like(s) — like is a toggle |
-| Repeated heart on already-liked offer | No-op (idempotent via unique constraints) |
-| Batched multi-offer card, single ❤️ | Likes **all** offers in that card (one row per offer) |
-| Notification config with pinned/waypoint pattern (exact map) | Like at message level (no `waypoints[]`) |
-| Admin surface | `OfferLike` full CRUD admin page; **no inline on `Offer`** |
-| Web "allow adding liked offer" in admin | Supported: standard Django add view (pick offer + label), plus full change/delete |
+The like model must therefore store *either* an account FK *or* a free-form
+label string, never both. This keeps the schema channel-agnostic: no
+`telegram_id` column, no Telegram-specific naming, no forced account FK.
 
 ## Data Model
 
-New app `shargain/offers/models.py` addition (no new app, no channel-specific
-field names).
+New model in `shargain/offers/models.py`:
 
 ```python
+import uuid
+
+from django.conf import settings
+from django.db import models
+from django.db.models import Q
+from django.utils.translation import gettext as _
+
+from shargain.commons.models import TimeStampedModel
+from shargain.offers.models import Offer
+
+
 class OfferLike(TimeStampedModel):
+    """A user marked an offer as liked, from any channel."""
+
     offer = models.ForeignKey(
         Offer,
         on_delete=models.CASCADE,
         related_name="likes",
         verbose_name=_("Offer"),
     )
-    # Authenticated surface (future web). Either this or liker_label is set.
+
+    # Authenticated surface (e.g. web dashboard). Either this or label is set.
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -69,26 +58,27 @@ class OfferLike(TimeStampedModel):
         blank=True,
         verbose_name=_("Owner"),
     )
-    # Anonymous surface (e.g. Telegram). Free-form identity label string.
+
+    # Anonymous surface (e.g. Telegram). Free-form identity string.
     liker_label = models.CharField(_("Liker label"), max_length=255, blank=True)
 
     class Meta:
-        ordering = ["offer_id", "pk"]
         verbose_name = _("Offer like")
         verbose_name_plural = _("Offer likes")
+        ordering = ["offer_id", "pk"]
         constraints = [
-            # Exactly one identity source: an account or a label string.
+            # Exactly one identity source: an account or a descriptive label.
             models.CheckConstraint(
                 check=Q(owner__isnull=False) | ~Q(liker_label=""),
                 name="offer_like_has_identity",
             ),
-            # Idempotent per (offer, account).
+            # A liker can like an offer at most once (web account).
             models.UniqueConstraint(
                 fields=["offer", "owner"],
                 name="uniq_offer_like_owner",
                 condition=Q(owner__isnull=False),
             ),
-            # Idempotent per (offer, label).
+            # A liker can like an offer at most once (anonymous label).
             models.UniqueConstraint(
                 fields=["offer", "liker_label"],
                 name="uniq_offer_like_label",
@@ -97,119 +87,112 @@ class OfferLike(TimeStampedModel):
         ]
 ```
 
-### Rationale
+**Semantics:**
 
-- **Channel-agnostic identity.** `liker_label` is a free-form string, not a
-  `telegram_id` FK and not a `username str` — so the same model supports
-  Telegram reactions (label = the liker's Telegram user id as a string) and
-  future web likes (label = a display label) with zero schema change.
-  `owner` covers the case where a real, authenticated account exists (future
-  web dashboard with a real user).
-- **Grouping under a scraping target is free.** `Offer.target` already points
-  at the `ScrappingTarget`, so likes are grouped under the correct target
-  without an extra column. A "liked offers for target T" query is
-  `OfferLike.objects.filter(offer__target=T)`.
-- **Batched cards, split into rows.** A single ❤️ on a multi-offer card
-  creates one `OfferLike` row **per offer** in that card flagged the same
-  liker label, so each like groups under its correct target and is
-  deduplicated individually.
-- **Toggle-safe (constraints enforce clean history).** Unreact deletes all
-  like rows for that liker + those offers; the partial unique constraints make
-  repeated hearts / re-hearts idempotent.
-
-### Telegram identity format
-
-For Telegram-originated likes, the stored `liker_label` is the liker's
-**Telegram user id** as a string (e.g. `"123456789"`). User ids are stable and
-never collide, unlike usernames that can be renamed or absentheicker's identity
-is channel-agnostic.
+- **Grouping under the same `ScrappingTarget` is free.** `Offer.target`
+  already points at the scraping target, so `OfferLike.offer.target` gives you
+  the target without any extra column or join.
+- **Telegram liker label** is the liker's **Telegram user id** as a string
+  (e.g. `"123456789"`). Telegram user ids are stable and never collide —
+  unlike usernames, which can be renamed or absent. Identity label is generic /
+  channel-agnostic: the same column supports any anonymous surface.
+- **Dedup via partial unique constraints** — a like is idempotent per
+  `(offer, owner)` and per `(offer, liker_label)`.
+- **Toggle-friendly** — the same constraints make unreact → delete and re-react
+  → recreate safe.
 
 ## Telegram Wiring
 
 In `shargain/telegram/bot.py`:
 
-1. Require `message_reaction` updates:
-   `TelegramBot.get_bot().set_webhook(url, allowed_updates=[..., "message_reaction"])`.
-2. Register a message-reaction handler:
+1. **Require `message_reaction` updates**: `TelegramBot.get_bot().set_webhook(
+   url, allowed_updates=[..., "message_reaction"])` (and similarly include
+   `message_reaction` in `allowed_updates` for polling).
+2. **Register a reaction handler**, responding to `MessageReactionUpdated`
+   events. Telebot exposes `message_reaction_handler` and the bot instance
+   supports `register_message_reaction_handler`. The handler:
+
+   - Filters to the **❤️ (heart) emoji** — all other reactions (👍, 👎, ✅,
+     ❗, ?) are ignored.
+   - For a **heart added**: fetches the reacted message by
+     `chat_id + message_id` via `get_message`, parses the offer URLs from the
+     message text, resolves them to `Offer` rows, and creates one `OfferLike`
+     per offer with `liker_label = str(reaction user id)`.
+   - For a **heart removed**: deletes the matching `OfferLike` rows
+     (toggle → unlikes).
+   - If the message contains **no offer URLs** (e.g. a menu/list/delete-prompt
+     card), it is a **silent no-op**.
 
 ```python
-@TelegramBot.get_bot().message_reaction_handler(func=lambda _: True)
-def handle_like_reaction(reaction_update: MessageReactionUpdated):
-    # If ❤️ is newly present -> like all offers in that message.
-    # If ❤️ was just removed -> unlike those offers.
-    # Non-offer messages (menu/list/delete prompt) -> silent no-op.
+@TelegramBot.get_bot().message_reaction_handler(func=lambda u: True)
+def handle_like_reaction(reaction_update: MessageReactionUpdated) -> None:
+    heart_added = is_heart_reaction_added(reaction_update)   # old vs new
+    offers = resolve_offers_from_reaction(reaction_update)   # fetch + parse URLs
+    liker_label = str(reaction_update.user.id) if reaction_update.user else str(reaction_update.chat.id)
+    if heart_added:
+        OfferLike.objects.bulk_create_from_offers(offers, liker_label=liker_label, ignore_conflicts=True)
+    else:
+        OfferLike.objects.filter(offer__in=offers, liker_label=liker_label).delete()
 ```
 
-### Reaction → offers mapping
+`resolve_offers_from_reaction`:
+- Fetches the message by `chat_id + message_id` via the bot API (`get_message`).
+- Reads the offer URLs from the message text (same URL-extraction regex used by
+  notification senders to build cards — reuse it rather than duplicating).
+- Returns the matching `Offer` rows, deduplicated. Returns empty for messages
+  without offer URLs (menu/list/delete cards, single-offer-with-location cards
+  are fine since URLs are still in text).
 
-On a reaction, the handler:
-
-1. Fetches the reacted message by `chat_id + message_id`
-   (`bot.get_message`), reading the offer URLs directly from the message text.
-2. Resolves those URLs to `Offer` rows (match on `offer.url`).
-3. Toggles: on heart → `get_or_create` an `OfferLike` per offer with
-   `liker_label = str(reaction_user id)`; on unheart → delete the matching
-   `OfferLike` rows.
-4. If the message contains **no** offer URLs (e.g. a menu/list/delete-prompt
-   card), it is a **silent no-op**.
-
-All other reactions (👎, 👍, 😄, …) are ignored — only ❤️ counts as a like.
+Deferred (not in scope, no mapping table): resolving a `message_id` to offers
+via a stored mapping. We rely on parsing the message body because cards embed
+real offer URLs and the bot already has `get_message`. This keeps the MVP free
+of a `message_id → offers` bookkeeping table.
 
 ## Admin Surface
 
-`shargain/offers/admin.py`:
+In `shargain/offers/admin.py`:
 
-- Register `OfferLike` with full Django CRUD (add / change / delete), so web
-  "add liked offer" works via the standard add form.
-  `list_display = (offer, liker_label, owner, created_at)`,
-  `list_filter = ("offer__target",)`, `search_fields = ("offer__url",
-  "offer__title", "liker_label")`.
-- No inline on `Offer`, and no Offer admin modifications.
+- Register **`OfferLikeAdmin`** with standard Django **full CRUD** (add /
+  change / delete via the admin's normal add form — pick a target+offer via the
+  `offer` FK dropdown). This enables "allow adding a liked offer" from the
+  admin, plus edit/delete for corrections.
+  - `list_display = ("offer", "liker_label", "owner", "created_at")`
+  - `list_filter = ("offer__target",)`
+  - `search_fields = ("offer__url", "offer__title", "liker_label")`
+- No inline on `Offer`, and no modification to `OfferAdmin`.
+
+Given likes attach to offers (not to a "who liked" account in the Telegram
+case), a per-offer inline would be misleading; the standalone `OfferLikeAdmin`
+with full CRUD is the requested surface.
 
 ## Edge Cases
 
 | Case | Behavior |
 | --- | --- |
-| Heart on batch card with many offers | One `OfferLike` per offer, grouped under each offer's target |
-| Heart on single with-pin offer (coordinates) | Liked (parsed from message text URLs) |
-| Heart on menu/list/delete message | Silent no-op |
-| Unheart (remove ❤️) | Deletes the likes for that liker + offers |
-| Repeat heart on already-liked offer | No-op (unique constraints) |
-| Heart on a message that's since been re-sent/edited | Heart re-parses current message text; URLs de-duplicated via constraints |
-| Reaction from a second user | Separate `OfferLike` row (distinct `liker_label`), no overwrite |
-
-## Error Handling
-
-- Any Telegram API failure (message fetch, chat id unknown) is caught by the
-  existing bot exception middleware logging; likes simply don't record and a
-  warning is emitted. No crash, no user-visible error reply (matches the
-  "silent no-op" contract for non-sensical reactions).
-- Reaction identity that cannot be resolved still records a `liker_label`
-  fallback (chat id string), never blocking the like.
+| ❤️ on multi-offer batched card | One `OfferLike` per offer in the card, all with same liker label (grouped via each offer's target) |
+| ❤️ on menu/list/delete-prompt card | Silent no-op (no offer URLs in text) |
+| ❤️ on single-offer-with-location card | Liked normally (URL present in text) |
+| Un-react (remove ❤️) | Deletes matching `OfferLike` rows (toggle/unlike) |
+| React again after remove | Recreates the like (idempotent via unique constraint) |
+| Two users heart the same offer | Two separate `OfferLike` rows, one per liker label |
+| Non-heart reactions (👍, ❗, …) | Ignored (no side effects) |
+| Heart on a chat whose message can't be fetched | Silent no-op, logged |
 
 ## Testing
 
-Django tests (`shargain/offers/tests/...`), using factories:
+Django tests under `shargain/offers/tests/` and `shargain/telegram/tests/`:
 
-- `OfferLike` model: identity check constraint (allows owner, allows
-  `liker_label`, rejects neither), unique constraints (dedup per offer+label,
-  per offer+owner), target grouping free via `offer.target`.
-- Handler-level: reaction on an offer card creates one row per offer with
-  correct `liker_label`; unreact deletes them idempotently; reaction on a
-  menu/list message is a silent no-op (no rows, no side-effects); only ❤️
-  counts, other emojis ignored.
-- Admin: `OfferLikeAdmin` supports add/change/delete; no dependency on an
-  `Offer` inline.
+- **Model** — `CheckConstraint` allows owner OR label, rejects neither/both;
+  unique constraints dedup per `(offer, owner)` and per `(offer, liker_label)`.
+- **Telegram handler** — heart on offer card creates correct `OfferLike` rows;
+  heart removal deletes them; non-offer message is a silent no-op; non-heart
+  reactions are ignored; idempotent re-like.
+- **Admin** — `OfferLikeAdmin` registered, add/change/delete via normal
+  Django admin views.
 
 ## Out of Scope / Future Work
 
-- Web/dashboard UI for liking or viewing liked offers.
-- Telegram username parsing fallback beyond user-id identity.
-- Reactions on message formats that don't embed URLs (parse-only cards).
-- Notification tidying / "unlike" across renamed usernames.
-
-## Open Items (deferred intentionally)
-
-None for MVP. Liked-offer counts, per-user "liked by me while logged in", and
-any dashboard views are follow-ups, not part of this spec.
-</content>
+- Web/dashboard UI (frontend) for liking offers or viewing likes.
+- Web-originated likes via an `owner` FK (schema prepared, surface not built).
+- `message_id → offers` mapping table (avoided by parsing message text).
+- Notifications/aggregations ("top liked offers") dashboards.
