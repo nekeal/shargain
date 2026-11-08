@@ -30,36 +30,41 @@ def _build_attributes(offer: Offer) -> list[OfferAttribute]:
         attributes: list[OfferAttribute] = []
         specs = field_specs.values() if isinstance(field_specs, dict) else field_specs
         for spec in specs:
-            name = spec.name
-            if name in ("title", "price"):
-                continue
-            val = extracted.get(name)
-            if val is None:
-                continue
+            try:
+                name = spec.name
+                if name in ("title", "price"):
+                    continue
+                val = extracted.get(name)
+                if val is None:
+                    continue
 
-            if isinstance(val, RichValue):
-                raw_val = val.value
-                display = val.display
-            else:
-                raw_val = val
-                display = None
+                if isinstance(val, RichValue):
+                    raw_val = val.value
+                    display = val.display
+                else:
+                    raw_val = val
+                    display = None
 
-            if raw_val is None:
-                continue
+                if raw_val is None:
+                    continue
 
-            field_type_str = spec.field_type.value if hasattr(spec.field_type, "value") else str(spec.field_type)
-            unit_str = str(spec.unit) if spec.unit is not None else None
+                field_type_str = spec.field_type.value if hasattr(spec.field_type, "value") else str(spec.field_type)
+                unit_str = str(spec.unit) if spec.unit is not None else None
 
-            attributes.append(
-                OfferAttribute(
-                    name=name,
-                    label=str(spec.label),
-                    type=field_type_str,
-                    unit=unit_str,
-                    value=raw_val,
-                    display=display,
+                attributes.append(
+                    OfferAttribute(
+                        name=name,
+                        label=str(spec.label),
+                        type=field_type_str,
+                        unit=unit_str,
+                        value=raw_val,
+                        display=display,
+                    )
                 )
-            )
+            except Exception:
+                logger.exception(
+                    "Failed to build attribute '%s' for offer %s", getattr(spec, "name", "unknown"), offer.id
+                )
         return attributes
     except Exception:
         logger.exception("Failed to build attributes for offer %s", offer.id)
@@ -119,6 +124,9 @@ def list_public_offers(
         qs = qs.order_by("created_at", "id")
     else:
         qs = qs.order_by("-created_at", "-id")
+
+    limit = max(1, limit)
+    offset = max(0, offset)
 
     total_count = qs.count()
     page_offers = list(qs[offset : offset + limit])
