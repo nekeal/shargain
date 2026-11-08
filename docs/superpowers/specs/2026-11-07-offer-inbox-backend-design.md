@@ -439,6 +439,8 @@ Caveats:
   `TelegramUser` instead.
 - Messages in a chat that no longer matches the target's current `NotificationConfig`
   cannot be attributed and are rejected.
+- Configs without an owner (legacy or admin-created) cannot attribute likes and are
+  rejected. There is no repair command; an admin must set `owner` manually.
 - **Known limitation:** chat-id ownership is trusted as today. `NotificationConfig.chatid`
   is user-supplied and not unique, so a malicious account could register another user's
   chat id and make `/liked` ambiguous. This is a pre-existing notification-trust issue;
@@ -467,20 +469,9 @@ Then the feature migrations:
    - Do **not** copy rows with `liker_label` (anonymous likes are intentionally dropped).
 5. Delete the `OfferLike` model/table.
 
-Owner repair is a management command, not a migration, to avoid a dependency cycle
-(`notifications` already depends on `offers`, while `ScrappingTarget.owner` lives in
-`offers`):
-
-```bash
-python manage.py repair_notification_config_owners [--dry-run]
-```
-
-It sets `NotificationConfig.owner` from the attached `ScrappingTarget.owner` when all
-targets sharing that config have the same non-null owner; ambiguous or ownerless configs
-stay `NULL` and are logged. This is not an offer-history backfill: it only fixes existing
-Telegram configs so likes can be attributed. Without it, those chats cannot attribute
-likes even though the code is correct. The rollout must report how many configs remain
-without an owner.
+There is no owner repair/backfill. Existing `NotificationConfig` rows without an owner
+(legacy or admin-created) cannot attribute Telegram likes; an admin must set `owner`
+manually if such a chat should work.
 
 The forward migration is destructive for anonymous likes and cannot restore them. The
 reverse migration can recreate account-based `OfferLike` rows from `liked_at`, but the
@@ -541,8 +532,7 @@ Backend tests with `pytest`:
   entirely; mixed-batch toggle semantics; mismatched chat/no owner is rejected; `/liked`
   filters by the resolved `user_id` and `liked_at__isnull=False` (seen-only rows are
   excluded), rejects an ambiguous chat, and scopes to the chat's targets; no anonymous
-  rows are created.
-- Notifications: owner repair sets unambiguous configs and leaves ambiguous ones null.
+  rows are created. Configs without an owner reject likes (no repair command).
 - Migration: account likes copied; anonymous likes dropped. `pytest` runs with
   `--nomigrations`, so extract the copy logic into a function taking the historical
   models (or add `django-test-migrations`) instead of relying on the normal test DB.
@@ -553,13 +543,14 @@ Backend tests with `pytest`:
 1. Stop all application processes that import the bot/offer-like code — background
    workers and the web/webhook process (maintenance window; no rolling deploy).
 2. Deploy code and run migrations (merge → feature → `OfferLike` drop).
-3. Run `repair_notification_config_owners` and report remaining null owners.
-4. Start the application processes.
-5. Regenerate `frontend/openapi.json` and `frontend/src/lib/api`.
-6. Frontend inbox UI and embedded map ship separately.
+3. Start the application processes.
+4. Regenerate `frontend/openapi.json` and `frontend/src/lib/api`.
+5. Frontend inbox UI and embedded map ship separately.
 
-There is no offer-filter backfill. Existing offers stay `NULL` and are excluded, so every
-existing target starts with an empty inbox. Say this in the release notes.
+There is no data backfill at all. Existing offers stay `NULL` and are excluded, so every
+existing target starts with an empty inbox. Existing `NotificationConfig` rows without an
+owner keep failing Telegram attribution until an admin sets the owner manually. Say both
+in the release notes.
 
 Operational note: quota gating is unchanged. When a target's offer quota is exhausted,
 new offers are not stored, so the inbox pauses along with notifications.
