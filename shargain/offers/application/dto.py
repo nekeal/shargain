@@ -95,3 +95,47 @@ class OfferState:
     @property
     def is_liked(self) -> bool:
         return self.liked_at is not None
+
+
+@dataclasses.dataclass(frozen=True)
+class OfferAttribute:
+    name: str
+    label: str
+    type: str
+    unit: str | None
+    value: bool | int | float | str
+    display: str | None = None
+
+
+@dataclasses.dataclass(frozen=True)
+class OfferLocation:
+    name: str | None
+    map_url: str | None
+    latitude: float | None
+    longitude: float | None
+    is_exact: bool
+
+
+@dataclasses.dataclass(frozen=True)
+class PublicOffer:
+    id: int
+    url: str
+    title: str
+    price: int | None
+    main_image_url: str | None
+    published_at: datetime | None
+    created_at: datetime
+    closed_at: datetime | None
+    list_url: str
+    is_seen: bool
+    seen_at: datetime | None
+    is_liked: bool
+    liked_at: datetime | None
+    attributes: list[OfferAttribute]
+    location: OfferLocation | None
+
+
+@dataclasses.dataclass(frozen=True)
+class PublicOfferPage:
+    count: int
+    items: list[PublicOffer]
