@@ -188,6 +188,38 @@ def test_handle_unlike_by_id_command_not_found(mock_reply_to, mock_message, chat
 
 
 @patch.object(TelegramBot.get_bot(), "reply_to")
+def test_handle_unlike_by_id_command_with_bot_handle(mock_reply_to, mock_message, user, target, chat_id):
+    offer = OfferFactory(url="https://olx.pl/offer1", title="Offer 1", target=target)
+    UserOfferState.objects.create(user=user, offer=offer, liked_at=timezone.now())
+
+    msg = mock_message(text=f"/unlike_{offer.id}@shargain_bot", chat_id_override=chat_id)
+    handle_unlike_by_id_command(msg)
+
+    assert not UserOfferState.objects.filter(user=user, offer=offer, liked_at__isnull=False).exists()
+    mock_reply_to.assert_called_once()
+    assert "Unliked offer: Offer 1" in mock_reply_to.call_args[0][1]
+
+
+@patch.object(TelegramBot.get_bot(), "reply_to")
+def test_handle_liked_command_escapes_html(mock_reply_to, mock_message, user, target, chat_id):
+    offer = OfferFactory(
+        url="https://olx.pl/offer?a=1&b=2",
+        title="2 pokoje & balkon <super>",
+        target=target,
+    )
+    UserOfferState.objects.create(user=user, offer=offer, liked_at=timezone.now())
+
+    msg = mock_message(text="/liked", chat_id_override=chat_id)
+    handle_liked_command(msg)
+
+    mock_reply_to.assert_called_once()
+    text = mock_reply_to.call_args[0][1]
+    assert "&amp;" in text
+    assert "&lt;super&gt;" in text
+    assert "<super>" not in text
+
+
+@patch.object(TelegramBot.get_bot(), "reply_to")
 def test_handle_unlike_by_id_command_different_chat(mock_reply_to, mock_message, user, target, chat_id):
     offer = OfferFactory(url="https://olx.pl/offer1", title="Offer 1", target=target)
     UserOfferState.objects.create(user=user, offer=offer, liked_at=timezone.now())
