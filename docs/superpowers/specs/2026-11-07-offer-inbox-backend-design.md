@@ -1,9 +1,14 @@
 # Offer Inbox — Backend Design
 
 - **Date:** 2026-11-07
-- **Status:** Draft — pending user approval
+- **Last revised:** 2026-11-08
+- **Status:** Draft — revised for the `PublicOffer` read model; pending user approval
 - **Scope:** Backend only. The web inbox UI, embedded map, and i18n are a separate frontend iteration.
 - **Supersedes:** the anonymous-like part of `2026-09-22-liked-offers-design.md`. `OfferLike` is removed.
+- **Revision:** the public response is a `PublicOffer` DTO assembled in the existing
+  `shargain/offers/application/` layer (flat, no `public/` package), not an
+  `OfferInboxItem`. The internal `Offer` model stays in `offers`; the public surface is
+  API + queries + commands + attribute projection.
 
 ## Why
 
@@ -32,6 +37,9 @@ The inbox is the primary place to triage offers. Telegram remains the delivery c
 6. Return enough location data for the frontend to render a map inline.
 7. Show only offers that passed the scraping URL's notification filters at ingest time.
 8. Keep the backend contract ready for the generated TypeScript client.
+9. Expose a `PublicOffer` read model that is clearly separate from the internal `Offer`.
+10. Return all non-null extracted fields as a structured `attributes` list, without leaking
+    raw `Offer.metadata`.
 
 ## Non-goals
 
@@ -48,6 +56,9 @@ The inbox is the primary place to triage offers. Telegram remains the delivery c
 - Re-evaluating old offers when notification filters change.
 - Backfilling historical offers into the inbox; pre-existing offers are excluded.
 - Changing the existing quota behaviour.
+- Configuring which attributes appear on the list card vs the detail view; the first
+  iteration returns all of them.
+- A separate Django app for the public offer read model.
 
 ## Anti-goals
 
@@ -56,6 +67,8 @@ The inbox is the primary place to triage offers. Telegram remains the delivery c
   while notifications are disabled or the quota is exhausted.
 - Hiding filter-passing offers because Telegram delivery failed.
 - Recomputing notification filters on every inbox request.
+- Returning the internal `Offer` shape or raw `Offer.metadata` from the public API.
+- Reusing `ScrapingUrl.notification_fields` as the inbox attribute configuration.
 
 ## Decisions From Discovery
 
@@ -74,6 +87,9 @@ The inbox is the primary place to triage offers. Telegram remains the delivery c
 | Endpoint style | Separate `seen` and `like` action endpoints, not a generic `PATCH /state`. |
 | Default ordering | Oldest first; `newest` via query parameter. |
 | State model | Single `UserOfferState` table for liked + seen (+ future notes). |
+| Public read model | `PublicOffer` DTO, distinct from the `Offer` ORM; the only offer shape the web API returns. |
+| Code placement | Flat in `shargain/offers/application/` (DTOs, queries, commands) + `shargain/offers/api.py`; models stay in `offers`. No `public/` subpackage. |
+| Extracted attributes | All plugin-extracted non-null fields; list/detail configuration is a later projection. |
 
 ## Current State
 
@@ -87,6 +103,10 @@ The inbox is the primary place to triage offers. Telegram remains the delivery c
   `frontend/openapi.json` via `@hey-api/openapi-ts`.
 - Location data already exists in `Offer.metadata` and is parsed by
   `LocationParserFactory`; it is currently computed only while building notifications.
+- Field plugins already define labels, types, and units (`OfferFieldResolver.get_fields`)
+  and return typed values, sometimes wrapped in `RichValue` with a display string.
+  Notifications format a selected subset as text; `ScrapingUrl.notification_fields` is a
+  Telegram setting and defaults to empty.
 
 ## Approaches Considered
 
@@ -104,6 +124,27 @@ one application service, and a simpler read path (one state lookup for the page)
 
 The frontend is generated from the Ninja API. Response shapes, camelCase aliases, and
 auth would diverge from the existing client.
+
+### 4. Public read model flat in `offers/application/` — chosen
+
+The public contract is a `PublicOffer` DTO assembled by a query. The DTOs live in the
+existing `offers/application/dto.py`, the list query (including attribute projection) in
+`offers/application/queries/list_public_offers.py`, the state commands in
+`offers/application/offer_state.py`, and the router in `offers/api.py`. The `Offer` and
+`UserOfferState` models stay in `offers`. No new `public/` package: it would duplicate the
+`public_api` name and obscure the existing application layer.
+
+### 5. A separate `shargain/public_offers/` Django app — rejected
+
+A hard app boundary is tempting, but `UserOfferState` has a cross-app FK to `Offer`, the
+state migration would depend on `offers`, and the feature would need a new app, admin, and
+migration namespace for no MVP benefit. Promote these modules to an app later if the
+boundary proves useful; the models already live in `offers`, so no data move is needed.
+
+### 6. Public DTOs only in `public_api` — rejected
+
+The API app would query models and assemble domain data, Telegram could not reuse the
+state commands, and the public offer shape would be coupled to one transport.
 
 ## Data Model
 
@@ -262,10 +303,117 @@ offer quota is reached, before creating offers. That stays unchanged. The inbox 
 pauses when the quota is exhausted. Decoupling offer storage from the notification quota
 is a separate product decision.
 
+## Public Offer Read Model
+
+`PublicOffer` is the web contract. It is a DTO assembled by `list_public_offers()` from
+`Offer`, `UserOfferState`, field extraction, and location parsing. It is **not** a Django
+model and has no table. The router must never return an `Offer` instance or import
+`shargain.offers.models.Offer` directly.
+
+Flat module layout (no `public/` package):
+
+```text
+shargain/offers/
+  api.py                              # Ninja Router + request/response schemas
+  application/
+    dto.py                            # + PublicOffer, PublicOfferPage, OfferAttribute,
+                                      #   OfferLocation, OfferState
+    offer_state.py                    # mark_offers_seen/unseen, like_offers/unlike_offers
+    queries/list_public_offers.py     # list_public_offers(...) + private _build_attributes/
+                                      #   _build_location helpers -> PublicOfferPage
+    queries/get_offer_states.py       # get_offer_states(...) for page hydration
+```
+
+These sit next to the existing `ScrapingUrlDTO` / `TargetDTO` and command/query modules.
+`shargain/public_api/` remains the global HTTP entry point and only mounts `offers.api.router`.
+
+Dependency direction (no cycles):
+
+```text
+offers.api              -> offers.application.queries.list_public_offers,
+                           offers.application.queries.get_offer_states,
+                           offers.application.offer_state, offers.application.dto
+offers.application.queries.list_public_offers -> offers.models,
+                           offers.application.dto, offers.field_extraction,
+                           offers.location_parsers
+offers.application.queries.get_offer_states -> offers.models, offers.application.dto
+offers.application.offer_state -> offers.models, offers.application.dto
+public_api.api          -> offers.api
+telegram.bot            -> offers.application.offer_state
+offers.services.batch_create -> offers.models, offers.field_extraction, offers.filtering
+```
+
+`public_api/api.py` only mounts the router:
+
+```python
+from shargain.offers.api import router as offers_router
+
+router.add_router("/", offers_router)
+```
+
+The router resolves the actor from `request.user` locally; it does not import
+`public_api.api` (which would create a cycle). A local `BaseSchema` with
+`alias_generator=to_camel` mirrors the existing pattern.
+
+### Attributes
+
+`PublicOffer.attributes` is a list of all non-null fields the field plugins extract for the
+offer's `list_url`:
+
+```text
+OfferAttribute: { name, label, type, unit, value, display }
+```
+
+`_build_attributes()` (and `_build_location()`) are private helpers in
+`queries/list_public_offers.py`. They are only used by that query, so they do not get their
+own module.
+
+- Source: `OfferFieldResolver.get_fields(ListUrl(offer.list_url))` for order, labels,
+  types, and units; `OfferFieldResolver.extract(offer, list_url)` for values.
+- Skip `None` values. Preserve plugin declaration order.
+- Exclude fields already exposed at the top level of `PublicOffer` (`title`, `price`).
+  `CoreFieldsPlugin.matches()` returns `True` for every URL, including `""`, and always
+  extracts those two; without this exclusion every card would duplicate them. `attributes`
+  is the domain-specific remainder.
+- With the exclusion above, an empty or unsupported `list_url` yields `attributes: []`
+  even though `CoreFieldsPlugin` still matches. Do not fall back to `offer.url` for plugin
+  matching; the plugins are keyed by the listing URL.
+- `value` is the typed scalar (`bool | int | float | str`).
+- `display` is `RichValue.display` when present (domain text such as parking details);
+  otherwise `null`. The frontend formats plain booleans and numbers using `type` and its
+  own i18n, so the backend does not hardcode "Yes"/"No".
+- Raw `Offer.metadata` is never returned.
+- Computed on read from the current plugin code; not persisted. Changing a plugin changes
+  how historical offers render, which is acceptable for display (unlike
+  `passed_filters`, which is a filter snapshot).
+- No extra DB query; extraction is in-memory per page item.
+- Read-path failures are per item: if plugin extraction raises for one offer, log it and
+  return that item with `attributes: []`; never fail the page. This mirrors the ingest
+  fail-soft rule and keeps one malformed historical offer from breaking the inbox.
+- Later configuration (which attributes appear on the list card vs the detail view) is a
+  projection over this full list. Do not reuse `notification_fields`, which is a Telegram
+  setting with empty-by-default semantics. Add `list_fields`/`detail_fields` or a
+  `?fields=` parameter later; both are additive.
+
+### Location
+
+`PublicOffer.location` stays a typed field rather than a generic attribute because the
+frontend renders a map: `{ name, mapUrl, latitude, longitude, isExact } | null`.
+
+- `location` is `null` only when the parser yields no name, no map URL, and no coordinates.
+- When present, `name` and `mapUrl` may each be `null`; `latitude`/`longitude` are `null`
+  when the source exposes no coordinates. `isExact` is always a bool.
+- This covers OLX offers with coordinates but no city (map only) and offers with a city but
+  no map (name only), and Otodom offers that never expose coordinates.
+- Read-path failures are per item: if the parser raises for one offer, log it and return
+  that item with `location: null`; never fail the page.
+
 ## Application Layer
 
-New module `shargain/offers/application/offer_state.py`. The API and the Telegram bot are
-thin adapters; all state transitions live here.
+State transitions live in `shargain/offers/application/offer_state.py`; the list query
+lives in `shargain/offers/application/queries/list_public_offers.py`, and state hydration
+in `shargain/offers/application/queries/get_offer_states.py`. The API router and the
+Telegram bot are thin adapters; all state transitions live in `offer_state.py`.
 
 ```python
 @dataclass(frozen=True)
@@ -274,11 +422,24 @@ class OfferState:
     seen_at: datetime | None
     liked_at: datetime | None
 
+# application/offer_state.py
 def mark_offers_seen(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]: ...
 def mark_offers_unseen(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]: ...
 def like_offers(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]: ...
 def unlike_offers(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]: ...
+
+# application/queries/get_offer_states.py
 def get_offer_states(actor: Actor, offer_ids: Sequence[int]) -> dict[int, OfferState]: ...
+
+# application/queries/list_public_offers.py
+def list_public_offers(
+    actor: Actor,
+    target_id: int,
+    filter: str = "all",
+    ordering: str = "oldest",
+    limit: int = 20,
+    offset: int = 0,
+) -> PublicOfferPage: ...
 ```
 
 Rules:
@@ -312,6 +473,14 @@ Rules:
 `offer_id__in=page_ids`. It does not raise for offers deleted between the list and
 hydration queries; a missing row means "no state". One query per page, no N+1.
 
+`list_public_offers` is the only read path for the web list. It resolves the target with
+`ScrappingTarget.objects.get(pk=target_id, owner_id=actor.user_id)` (raising
+`TargetDoesNotExist` -> 404), filters `Offer` by `target_id` and `passed_filters=True`,
+applies the `liked`/`unseen` filter, orders by `(created_at, id)`, paginates, then hydrates
+state in one query and builds each `PublicOffer` (attributes + location). The router does
+not query models itself and never imports `offers.models`; it depends only on the public
+queries, commands, and DTOs.
+
 Add `OfferDoesNotExist(ApplicationException)` to
 `shargain/offers/application/exceptions.py` (`code = "offer_does_not_exist"`).
 
@@ -320,8 +489,8 @@ Remove `shargain/offers/likes.py`, `AnonymousLiker`, `AccountLiker`, `Liker`,
 
 ## API
 
-All routes are on the authenticated Ninja router (`shargain/public_api/api.py`) and use
-camelCase aliases.
+Routes live in `shargain/offers/api.py` and are mounted by
+`shargain/public_api/api.py`; they use camelCase aliases.
 
 ### List
 
@@ -348,19 +517,24 @@ filtering an already-fetched page in the frontend would break `count` and page b
 - 404 when the target is not found or not owned by the actor.
 - Listing **never** changes seen state.
 
-`OfferInboxItem`:
+`PublicOffer`:
 
 ```text
 id, url, title, price, mainImageUrl, publishedAt, createdAt, closedAt, listUrl
 isSeen, seenAt, isLiked, likedAt
+attributes: [ { name, label, type, unit, value, display } ]
 location: { name, mapUrl, latitude, longitude, isExact } | null
 ```
 
+- `attributes` is the full non-null list from the field plugins, excluding `title` and
+  `price` (already top-level); see “Public Offer Read Model”.
 - `mainImageUrl` is `str | None`; normalize the model's empty string to `null` in the
   response (a schema field typed `HttpUrl` would reject `""`).
-- `location` is `null` when the parser finds no location. When present, all members are
-  set; `latitude`/`longitude` are `null` when the source exposes no coordinates.
+- `location` is `null` only when the parser yields no name, map URL, or coordinates. When
+  present, `name` and `mapUrl` may be `null`; `latitude`/`longitude` are `null` when the
+  source exposes no coordinates. `isExact` is always a bool.
 - `price`, `publishedAt`, `closedAt` are nullable.
+- No `metadata`, `sourceHtml`, `target`, or other internal fields are exposed.
 
 Closed offers are included and expose `closedAt`; the frontend can style them. Hiding
 closed offers is out of scope for MVP.
@@ -385,7 +559,7 @@ DELETE /api/public/targets/{target_id}/offers/{offer_id}/like
 
 ### Location in the inbox
 
-`OfferInboxItem.location` is computed on read from `offer.metadata` using
+`PublicOffer.location` is computed on read from `offer.metadata` using
 `LocationParserFactory`:
 
 - `name` — city/district/street label from the parser.
@@ -420,6 +594,8 @@ Remove anonymous identity from the like flow. In `shargain/telegram/bot.py`:
   and change nothing; otherwise call `like_offers` / `unlike_offers` once for the batch.
   Toggle semantics are deterministic for a batch: an explicit `unlike` unlikes all; a
   `like` unlikes all only when **all** offers are already liked, otherwise it likes all.
+  Import `like_offers` / `unlike_offers` from
+  `shargain.offers.application.offer_state`.
 - `/liked` calls `resolve_user_for_chat(message.chat.id)`. When resolved, list
   `UserOfferState` rows filtered explicitly by `user_id=resolved_user_id` and
   `liked_at__isnull=False`, scoped to targets whose `NotificationConfig.chatid` matches
@@ -502,7 +678,8 @@ ingest snapshot.
   `UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=page_ids)`.
 - Count query for pagination is acceptable at the expected scale; use cursor pagination
   later if the inbox grows large.
-- Location parsing is in-memory per page item; no extra DB query in the MVP.
+- Location parsing and attribute extraction are in-memory per page item; no extra DB query
+  in the MVP. Attribute extraction runs every plugin that matches the offer's `list_url`.
 - Removing `OfferLike` removes a second per-offer relation and its anonymous-label
   constraints.
 
@@ -515,7 +692,18 @@ Backend tests with `pytest`:
 - Application service: like/unlike and seen/unseen are idempotent; multi-offer calls;
   cross-user access is rejected; a mixed valid/foreign batch changes nothing; clearing
   both states deletes the row; clear operations never create rows; two commands for the
-  same user run serialized (per-user lock).
+  same user run serialized (per-user lock). Test through
+  `shargain.offers.application.offer_state`.
+- Public read model: `PublicOffer` contains only the curated fields and never `metadata`;
+  `attributes` includes all non-null plugin fields in declaration order except `title` and
+  `price`; `RichValue.display` is preserved; plain booleans have `display=None`; an
+  empty/unsupported `list_url` returns `[]`; page hydration uses one state query (no N+1).
+- Read-path resilience: a plugin or location parser that raises for one offer results in
+  that item having `attributes: []` / `location: null` and the page still returning 200.
+- Location: map-only, name-only, coordinate-less, and no-location offers produce the
+  documented nullability combinations.
+- Boundary: `shargain.offers.api` does not import `shargain.offers.models`; the
+  router calls queries/commands only. Wire this into `tach check` in a separate change.
 - API: auth required; target ownership 404; offer-in-another-target 404; `all`/`liked`/
   `unseen`; ordering; pagination; `passed_filters` exclusion; nullable
   `mainImageUrl`/`location`; list does not mark seen; actions return state and 404 for
@@ -559,6 +747,24 @@ new offers are not stored, so the inbox pauses along with notifications.
 
 These are my calls; the builder may change them without changing the product intent:
 
+- **Flat placement** — no `public/` package. DTOs live in `offers/application/dto.py`,
+  state commands in `offers/application/offer_state.py`, the list/state queries under
+  `offers/application/queries/`, and the router in `offers/api.py`. Models stay in `offers`;
+  promoting these modules to a Django app later is a code move, not a data move.
+- **PublicOffer is web-only** — Telegram keeps `Offer` + `NotificationMessageContext`. If a
+  shared cross-channel representation is needed later, rename the modules (for example
+  `read_models/`) rather than teaching Telegram to use the public API DTO.
+- **Attribute configuration** — ship all non-null attributes; add `list_fields` /
+  `detail_fields` (or `?fields=`) as a later projection. Do not reuse `notification_fields`.
+- **Attribute field set** — exclude `title` and `price` from `attributes` because they are
+  already top-level `PublicOffer` fields and `CoreFieldsPlugin` matches every URL. If the
+  frontend wants a single flat attribute list including them, it can merge the top-level
+  fields itself.
+- **Location shape** — `location` is present when any of name, map URL, or coordinates
+  exists; `name`/`mapUrl` are nullable inside it. This is friendlier than forcing
+  `location: null` when only one part is missing.
+- **Read-path errors** — per item: log and degrade to `attributes: []` / `location: null`
+  rather than failing the page.
 - **Closed offers** — included in all views, exposed via `closedAt`. Hiding them is a
   later UI filter.
 - **Map centring** — `mapUrl` is not centred on waypoints in the MVP; coordinates are
@@ -574,5 +780,12 @@ These are my calls; the builder may change them without changing the product int
   pre-existing limitation; see the Telegram caveat.
 - **Index creation** — use `AddIndexConcurrently` for `offer_inbox_idx` if the `Offer`
   table is large; otherwise a normal migration is fine.
+- **Tach enforcement** — do not block this feature on `tach`. The current `tach.toml`
+  declares only `field_extraction` and `filtering`; the rest is `*` with `unchecked = true`,
+  `tach check` currently fails on `field_extraction` -> `location_parsers`, and CI does not
+  run it. Fix the config in a separate change, then add explicit entries for
+  `offers.api`, `offers.application.queries.list_public_offers`,
+  `offers.application.queries.get_offer_states`, and
+  `offers.application.offer_state`.
 - **Migration test tooling** — extract the copy function and test it directly, or add
   `django-test-migrations`; the default `--nomigrations` test run does not execute it.
