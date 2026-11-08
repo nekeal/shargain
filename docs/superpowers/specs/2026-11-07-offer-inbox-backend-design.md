@@ -85,6 +85,7 @@ The inbox is the primary place to triage offers. Telegram remains the delivery c
 | Telegram identity | Resolve the user from the offer's `NotificationConfig.owner` when the chat id matches. |
 | Existing anonymous likes | Dropped; not matched to accounts. |
 | Endpoint style | Separate `seen` and `like` action endpoints, not a generic `PATCH /state`. |
+| Query filters | Focused boolean filters (`seen: bool | None = None`, `liked: bool | None = None`) instead of rigid tab strings. |
 | Default ordering | Oldest first; `newest` via query parameter. |
 | State model | Single `UserOfferState` table for liked + seen (+ future notes). |
 | Public read model | `PublicOffer` DTO, distinct from the `Offer` ORM; the only offer shape the web API returns. |
@@ -435,8 +436,9 @@ def get_offer_states(actor: Actor, offer_ids: Sequence[int]) -> dict[int, OfferS
 def list_public_offers(
     actor: Actor,
     target_id: int,
-    filter: str = "all",
-    ordering: str = "oldest",
+    seen: bool | None = None,
+    liked: bool | None = None,
+    ordering: Literal["oldest", "newest"] = "oldest",
     limit: int = 20,
     offset: int = 0,
 ) -> PublicOfferPage: ...
@@ -473,13 +475,27 @@ Rules:
 `offer_id__in=page_ids`. It does not raise for offers deleted between the list and
 hydration queries; a missing row means "no state". One query per page, no N+1.
 
-`list_public_offers` is the only read path for the web list. It resolves the target with
-`ScrappingTarget.objects.get(pk=target_id, owner_id=actor.user_id)` (raising
-`TargetDoesNotExist` -> 404), filters `Offer` by `target_id` and `passed_filters=True`,
-applies the `liked`/`unseen` filter, orders by `(created_at, id)`, paginates, then hydrates
-state in one query and builds each `PublicOffer` (attributes + location). The router does
-not query models itself and never imports `offers.models`; it depends only on the public
-queries, commands, and DTOs.
+`list_public_offers` is the only read path for the web list. It executes strictly at the
+database level to guarantee performance and zero Python in-memory filtering:
+1. Resolves target ownership via `ScrappingTarget.objects.get(pk=target_id, owner_id=actor.user_id)`
+   (raising `TargetDoesNotExist` -> 404).
+2. Base query filters `Offer` by `target_id=target_id` and `passed_filters=True`.
+3. Applies `seen` and `liked` filtering completely inside SQL using `django.db.models.Exists`
+   subqueries referencing `UserOfferState` on `(user_id=actor.user_id, offer_id=OuterRef("pk"))`:
+   - `seen is True`: `.filter(Exists(user_states.filter(seen_at__isnull=False)))`
+   - `seen is False`: `.exclude(Exists(user_states.filter(seen_at__isnull=False)))`
+   - `liked is True`: `.filter(Exists(user_states.filter(liked_at__isnull=False)))`
+   - `liked is False`: `.exclude(Exists(user_states.filter(liked_at__isnull=False)))`
+   - `None`: no filter applied on that dimension.
+4. Orders by `(created_at, id)` ascending (`oldest`) or descending (`newest`), utilizing
+   `offer_inbox_idx`.
+5. Applies `.defer("source_html")` so large HTML payload columns are never pulled from DB
+   into memory.
+6. Paginates via SQL `[offset : offset + limit]`.
+7. Hydrates state in one batch query (`get_offer_states`) for the fetched page IDs.
+8. Transforms only the paginated slice (20 items) into `PublicOffer` DTOs (extracting plugin
+   attributes and location). The router does not query models itself and never imports
+   `offers.models`.
 
 Add `OfferDoesNotExist(ApplicationException)` to
 `shargain/offers/application/exceptions.py` (`code = "offer_does_not_exist"`).
@@ -496,23 +512,27 @@ Routes live in `shargain/offers/api.py` and are mounted by
 
 ```
 GET /api/public/targets/{target_id}/offers
-    ?filter=all|liked|unseen
+    ?seen=true|false
+    &liked=true|false
     &ordering=oldest|newest
     &limit=20
     &offset=0
 ```
 
-"all / liked / unseen" are **frontend tabs**, not backend resources. The backend
-exposes one list endpoint with composable `filter` + `ordering` parameters; the frontend
-composes the request, e.g. `filter=unseen&ordering=oldest` for the default inbox tab.
-Because the page is filtered and ordered before pagination, this must happen server-side;
-filtering an already-fetched page in the frontend would break `count` and page boundaries.
+Filtering is focused and composable via explicit boolean parameters:
+- `seen: bool | None = None` (`?seen=false` for unseen offers; `?seen=true` for seen offers; omitted for all).
+- `liked: bool | None = None` (`?liked=true` for liked offers; `?liked=false` for unliked offers; omitted for all).
+- `ordering: Literal["oldest", "newest"] = "oldest"` (`oldest` sorts by `(created_at, id)` ascending; `newest` descending).
 
-- `filter` defaults to `all`; `ordering` defaults to `oldest`.
-- `oldest` sorts by `(created_at, id)` ascending; `newest` by descending.
+Frontend tabs compose cleanly without rigid backend tab endpoints:
+- **Inbox tab (default queue)**: `?seen=false&ordering=oldest`
+- **Liked tab**: `?liked=true`
+- **All offers tab**: no boolean filters specified
+- **Unseen + Liked combo**: `?seen=false&liked=true`
+
+Database execution details:
+- Filtering and pagination happen 100% in PostgreSQL via `Exists` subqueries; no in-memory Python filtering.
 - Only offers with `passed_filters=True` for the target are considered.
-- `filter=liked`: only `UserOfferState.liked_at IS NOT NULL` for the actor.
-- `filter=unseen`: no state row, or `seen_at IS NULL`, for the actor.
 - Returns Ninja `LimitOffsetPagination` shape: `{ "count": N, "items": [...] }`.
 - 404 when the target is not found or not owned by the actor.
 - Listing **never** changes seen state.
@@ -662,24 +682,27 @@ split into two releases (dual-write, then drop `OfferLike`) instead.
 Remove `OfferLikeAdmin`; add `UserOfferStateAdmin` with:
 `list_display = ("user", "offer", "seen_at", "liked_at", "created_at")`,
 `list_filter = ("offer__target",)`, and search on offer URL/title and user email.
-Make `passed_filters` read-only in `OfferAdmin` so manual edits cannot diverge from the
-ingest snapshot.
+
+Update `OfferAdmin`:
+- Add `"passed_filters"` to `OfferAdmin.list_display` alongside title, price, and dates.
+- Add `"passed_filters"` to `OfferAdmin.list_filter` (alongside `target`).
+- Make `passed_filters` read-only (`readonly_fields = ("passed_filters",)`) so manual edits cannot diverge from the ingest snapshot.
 
 ## Performance
 
-- Row volume: a `UserOfferState` row exists only after a user likes or sees an offer.
+- **Zero in-memory filtering in Python**: All filtering (`target_id`, `passed_filters`, `seen`, `liked`), ordering, and limit/offset pagination happen strictly inside PostgreSQL. Python only formats the final paginated 20-item slice.
+- **Row volume**: a `UserOfferState` row exists only after a user likes or sees an offer.
   Browsing without interaction does not create rows.
-- List query: `Offer` filtered by `target_id`, `passed_filters=True`, ordered by
+- **List query**: `Offer` filtered by `target_id`, `passed_filters=True`, ordered by
   `(created_at, id)`. Covered by `offer_inbox_idx`.
-- `liked` filter: `EXISTS` on `UserOfferState` `(user, offer, liked_at)`, using the unique
-  index.
-- `unseen` filter: `NOT EXISTS` on `UserOfferState` `(user, offer, seen_at IS NOT NULL)`.
-- Page hydration: one query
+- **`liked=true/false` filter**: Evaluated in SQL via `django.db.models.Exists` on `UserOfferState(user_id=actor.id, offer_id=OuterRef("pk"), liked_at__isnull=False)`.
+- **`seen=true/false` filter**: Evaluated in SQL via `Exists` / `~Exists` on `UserOfferState(user_id=actor.id, offer_id=OuterRef("pk"), seen_at__isnull=False)`.
+- **Defer heavy columns**: The query uses `.defer("source_html")` so large HTML data is never retrieved over the database connection.
+- **Fast index probes**: The unique index on `UserOfferState(user, offer)` makes `EXISTS` subqueries an O(1) index probe per candidate row.
+- **Page hydration**: One query
   `UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=page_ids)`.
-- Count query for pagination is acceptable at the expected scale; use cursor pagination
-  later if the inbox grows large.
-- Location parsing and attribute extraction are in-memory per page item; no extra DB query
-  in the MVP. Attribute extraction runs every plugin that matches the offer's `list_url`.
+- **Count query**: The count for pagination runs over the same index-covered SQL filters.
+- **Plugin extraction and location parsing**: Strictly in-memory per page item (for the 20 returned DTOs); never executed for the entire unpaginated target offers.
 - Removing `OfferLike` removes a second per-offer relation and its anonymous-label
   constraints.
 
