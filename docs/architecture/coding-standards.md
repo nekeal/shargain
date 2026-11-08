@@ -18,6 +18,12 @@
 | Python Code | `snake_case` | `def get_active_targets():` |
 | TypeScript Code | `camelCase` | `const newTarget = ...` |
 
+## Code Organization
+
+1.  **Locality over premature extraction:** A helper with exactly one consumer **MUST** stay next to that consumer (same module/file), not in its own one-function module. Extract it only when a second consumer appears or when the module hides real complexity. For example, `_build_attributes()` lives in `offers/application/queries/list_public_offers.py` next to the query that is its only caller.
+2.  **A module must earn its boundary:** A new file, package, or interface needs a stable contract or multiple callers — "the file got long" or "smaller files feel cleaner" is not enough on its own.
+3.  **High cohesion:** Keep code that changes together in the same module. A module should have one clear reason to change; splitting tightly coupled code across files makes every change touch several places for no reason.
+
 ## Accessibility (A11y)
 
 ### Compliance Target
