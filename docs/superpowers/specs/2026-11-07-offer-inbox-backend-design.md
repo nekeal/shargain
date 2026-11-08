@@ -46,6 +46,7 @@ The inbox is the primary place to triage offers. Telegram remains the delivery c
 - Supporting group chats for like attribution.
 - Verifying that a user-supplied Telegram `chatid` really belongs to that account.
 - Re-evaluating old offers when notification filters change.
+- Backfilling historical offers into the inbox; pre-existing offers are excluded.
 - Changing the existing quota behaviour.
 
 ## Anti-goals
@@ -170,12 +171,6 @@ passed_filters = models.BooleanField(
     default=None,
     help_text=_("Snapshot of whether the offer passed its scraping URL's notification filters at ingest."),
 )
-filters_evaluated_at = models.DateTimeField(
-    _("Filters evaluated at"),
-    null=True,
-    blank=True,
-    help_text=_("When the notification-filter snapshot was last written."),
-)
 ```
 
 - `True` — the offer passed the filters of its `ScrapingUrl` at ingest.
@@ -184,8 +179,10 @@ filters_evaluated_at = models.DateTimeField(
   pipeline, or extraction/filter-evaluation failure). An offer whose `list_url` has no
   matching `ScrapingUrl` is evaluated as passing (`True`).
 - The inbox includes only `passed_filters=True`.
-- Existing offers are backfilled; offers that cannot be evaluated stay `NULL` and are
-  excluded until a later backfill succeeds.
+- **No backfill.** Pre-existing offers stay `NULL` and are permanently excluded from the
+  inbox. For an existing target the inbox starts empty and fills only with offers scraped
+  after deployment. Offers created manually in Django admin are excluded for the same
+  reason.
 - The value is a snapshot. Changing filters later does not rewrite old offers.
 
 ### Indexes
@@ -208,8 +205,7 @@ Add `db_index=True` to `NotificationConfig.chatid` (a `notifications` migration)
 Telegram identity resolution and `/liked` filter on it.
 
 For a large `Offer` table, create `offer_inbox_idx` with `AddIndexConcurrently` in a
-non-atomic migration. The backfill without `--target-id` scans on
-`passed_filters IS NULL`; that is acceptable for a one-off operational command.
+non-atomic migration.
 
 ## Ingest: Filter Snapshot
 
@@ -241,8 +237,7 @@ Behaviour:
    instead of its current last-row-wins dict.
 3. Build `ExtractedOffer` objects with `OfferFieldResolver.extract`.
 4. Apply `OfferFilterService(scraping_url.filters)` per group.
-5. For every input offer set `passed_filters` to `True`/`False`, and set
-   `filters_evaluated_at`; update in bulk.
+5. For every input offer set `passed_filters` to `True`/`False`; update in bulk.
 6. If there is no matching `ScrapingUrl`, or it has no filters, the offer passes.
 7. If extraction raises for an offer, or filter evaluation raises for a `list_url` group
    (unknown operator, malformed stored filter JSON), log it, leave the affected offers'
@@ -259,30 +254,13 @@ Wiring in `OfferBatchCreateService`:
 - Existing offers are never re-evaluated by ingest.
 - `OfferBatchCreateService` is the only creation path that writes the snapshot.
   The legacy DRF `OfferSerializer.create` path is currently broken and out of scope;
-  offers created manually in Django admin stay `NULL` and are covered by the backfill
-  command. Any future creation path must call the snapshot service.
+  offers created manually in Django admin stay `NULL` and never enter the inbox. There
+  is no backfill for pre-existing offers.
 
 Constraint: `OfferBatchCreateService.run()` currently returns early when the per-target
 offer quota is reached, before creating offers. That stays unchanged. The inbox therefore
 pauses when the quota is exhausted. Decoupling offer storage from the notification quota
 is a separate product decision.
-
-## Backfill
-
-Management command in `shargain/offers/management/commands/backfill_offer_filters.py`:
-
-```bash
-python manage.py backfill_offer_filters [--target-id ID] [--batch-size 500] [--dry-run]
-```
-
-- Selects offers with `passed_filters IS NULL`.
-- Evaluates them against the current matching `ScrapingUrl.filters`, using the same
-  lowest-`pk` deduplication rule as ingest.
-- Writes `passed_filters` and `filters_evaluated_at`.
-- Logs extraction or filter-evaluation failures and leaves those offers `NULL`.
-- Idempotent; can be run repeatedly.
-
-This is a one-time operational step after deploying the model and ingest change.
 
 ## Application Layer
 
@@ -479,7 +457,7 @@ clean state. This change starts with a merge migration:
 
 Then the feature migrations:
 
-2. Add `Offer.passed_filters` / `filters_evaluated_at` and the `offer_inbox_idx` index.
+2. Add `Offer.passed_filters` and the `offer_inbox_idx` index.
 3. Create `UserOfferState` with the unique and check constraints.
 4. `RunPython`:
    - For every `OfferLike` with `owner_id IS NOT NULL`, create
@@ -489,19 +467,20 @@ Then the feature migrations:
    - Do **not** copy rows with `liker_label` (anonymous likes are intentionally dropped).
 5. Delete the `OfferLike` model/table.
 
-Owner backfill is a management command, not a migration, to avoid a dependency cycle
+Owner repair is a management command, not a migration, to avoid a dependency cycle
 (`notifications` already depends on `offers`, while `ScrappingTarget.owner` lives in
 `offers`):
 
 ```bash
-python manage.py backfill_notification_config_owners [--dry-run]
+python manage.py repair_notification_config_owners [--dry-run]
 ```
 
 It sets `NotificationConfig.owner` from the attached `ScrappingTarget.owner` when all
 targets sharing that config have the same non-null owner; ambiguous or ownerless configs
-stay `NULL` and are logged. Without this, existing Telegram chats cannot attribute likes
-even though the code is correct. The rollout must report how many configs remain without
-an owner.
+stay `NULL` and are logged. This is not an offer-history backfill: it only fixes existing
+Telegram configs so likes can be attributed. Without it, those chats cannot attribute
+likes even though the code is correct. The rollout must report how many configs remain
+without an owner.
 
 The forward migration is destructive for anonymous likes and cannot restore them. The
 reverse migration can recreate account-based `OfferLike` rows from `liked_at`, but the
@@ -516,8 +495,8 @@ split into two releases (dual-write, then drop `OfferLike`) instead.
 Remove `OfferLikeAdmin`; add `UserOfferStateAdmin` with:
 `list_display = ("user", "offer", "seen_at", "liked_at", "created_at")`,
 `list_filter = ("offer__target",)`, and search on offer URL/title and user email.
-Make `passed_filters` and `filters_evaluated_at` read-only in `OfferAdmin` so manual edits
-cannot diverge from the ingest snapshot.
+Make `passed_filters` read-only in `OfferAdmin` so manual edits cannot diverge from the
+ingest snapshot.
 
 ## Performance
 
@@ -555,15 +534,15 @@ Backend tests with `pytest`:
   the lowest `pk` for both snapshot and notifications; extraction or filter-evaluation
   failure stays `NULL`, does not abort ingest, and is not notified; existing offers are
   not rewritten.
-- Backfill command: sets flags for `NULL` offers; leaves failures `NULL`; target filter;
-  dry run.
+- Inbox: offers with `passed_filters=NULL` (pre-existing or manually created) are excluded;
+  there is no backfill command to test.
 - Telegram: reply like resolves owner by chat id; offers from other users' targets with
   the same URL are not resolved; a batch with any unattributable offer is rejected
   entirely; mixed-batch toggle semantics; mismatched chat/no owner is rejected; `/liked`
   filters by the resolved `user_id` and `liked_at__isnull=False` (seen-only rows are
   excluded), rejects an ambiguous chat, and scopes to the chat's targets; no anonymous
   rows are created.
-- Notifications: owner backfill sets unambiguous configs and leaves ambiguous ones null.
+- Notifications: owner repair sets unambiguous configs and leaves ambiguous ones null.
 - Migration: account likes copied; anonymous likes dropped. `pytest` runs with
   `--nomigrations`, so extract the copy logic into a function taking the historical
   models (or add `django-test-migrations`) instead of relying on the normal test DB.
@@ -574,15 +553,13 @@ Backend tests with `pytest`:
 1. Stop all application processes that import the bot/offer-like code — background
    workers and the web/webhook process (maintenance window; no rolling deploy).
 2. Deploy code and run migrations (merge → feature → `OfferLike` drop).
-3. Run `backfill_notification_config_owners` and report remaining null owners.
-4. Run `backfill_offer_filters` for existing targets.
-5. Start the application processes.
-6. Regenerate `frontend/openapi.json` and `frontend/src/lib/api`.
-7. Frontend inbox UI and embedded map ship separately.
+3. Run `repair_notification_config_owners` and report remaining null owners.
+4. Start the application processes.
+5. Regenerate `frontend/openapi.json` and `frontend/src/lib/api`.
+6. Frontend inbox UI and embedded map ship separately.
 
-Backfilled `passed_filters` values are evaluated against the filters current at backfill
-time, not at original ingest time; only new offers get a true ingest-time snapshot. Say
-this in the release notes.
+There is no offer-filter backfill. Existing offers stay `NULL` and are excluded, so every
+existing target starts with an empty inbox. Say this in the release notes.
 
 Operational note: quota gating is unchanged. When a target's offer quota is exhausted,
 new offers are not stored, so the inbox pauses along with notifications.
