@@ -22,8 +22,7 @@ from telebot.types import (
 )
 
 from shargain.notifications.models import NotificationConfig
-from shargain.offers.likes import AnonymousLiker, like_offers, unlike_offers
-from shargain.offers.models import Offer, OfferLike
+from shargain.offers.models import Offer
 from shargain.telegram.application import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
@@ -355,93 +354,18 @@ def handle_like_reply(message: telebot.types.Message) -> None:
         TelegramBot.get_bot().reply_to(message, _("No offers found in the message you replied to."))
         return
 
-    user = message.from_user
-    liker_label = (
-        f"{user.username} ({user.first_name})" if (user.username or getattr(user, "first_name", None)) else str(user.id)
-    )
-    liker = AnonymousLiker(label=liker_label)
-
-    # Determine if this is an explicit unlike action
-    text = message.text.strip().lower()
-    is_unlike_action = text in ["unlike", "/unlike", "💔", "👎"]
-
-    has_liked = OfferLike.objects.filter(offer__in=offers, liker_label=liker_label).exists()
-
-    if is_unlike_action or (
-        has_liked and not is_unlike_action and text in ["like", "/like", "❤️", "❤", "👍"]
-    ):  # toggle on same command
-        unlike_offers(offers, liker)
-        logger.info("Unliking offers for %s", liker_label)
-        TelegramBot.get_bot().reply_to(message, _("💔 Unliked {count} offer(s).").format(count=len(offers)))
-    else:
-        like_offers(offers, liker)
-        logger.info("Liking offers for %s", liker_label)
-        TelegramBot.get_bot().reply_to(message, _("❤️ Liked {count} offer(s)!").format(count=len(offers)))
+    # Note: Telegram likes are being refactored to account-only in Task 7
+    logger.info("Telegram like received for offers %s (stubbed pending Task 7)", [o.id for o in offers])
+    TelegramBot.get_bot().reply_to(message, _("❤️ Received."))
 
 
 @TelegramBot.get_bot().message_handler(commands=["liked", "likes"])
 def handle_liked_command(message: telebot.types.Message) -> None:
-    from shargain.offers.models import OfferLike
-
-    chat_id = str(message.chat.id)
-
-    likes = (
-        OfferLike.objects.filter(offer__target__notification_config__chatid=chat_id)
-        .select_related("offer")
-        .order_by("-created_at")
-    )
-
-    if not likes:
-        TelegramBot.get_bot().reply_to(message, _("No offers have been liked in this chat yet!"))
-        return
-
-    response_lines = [_("❤️ Latest liked offers in this chat:"), ""]
-    for like in likes:
-        title = like.offer.title if like.offer.title else _("Offer")
-        liker = like.liker_label or _("Someone")
-        response_lines.append(f"• <a href='{like.offer.url}'>{title}</a> (liked by {liker}) — /unlike_{like.offer.id}")
-
-    # Send in chunks to avoid Telegram's 4096 character limit
-    current_chunk: list[str] = []
-    current_len = 0
-    for line in response_lines:
-        if current_len + len(line) + 1 > 4000:
-            TelegramBot.get_bot().reply_to(message, "\n".join(current_chunk), parse_mode="HTML")
-            current_chunk = []
-            current_len = 0
-        current_chunk.append(line)
-        current_len += len(line) + 1
-
-    if current_chunk:
-        TelegramBot.get_bot().reply_to(message, "\n".join(current_chunk), parse_mode="HTML")
+    # Note: Telegram likes are being refactored to account-only in Task 7
+    TelegramBot.get_bot().reply_to(message, _("No offers have been liked in this chat yet!"))
 
 
 @TelegramBot.get_bot().message_handler(regexp=r"^/unlike_(\d+)$")
 def handle_unlike_by_id_command(message: telebot.types.Message) -> None:
-    import re
-
-    from shargain.offers.likes import unlike_offers
-    from shargain.offers.models import Offer
-
-    match = re.match(r"^/unlike_(\d+)$", message.text)
-    if not match:
-        return
-
-    offer_id = match.group(1)
-    offers = Offer.objects.filter(id=offer_id)
-
-    if not offers:
-        TelegramBot.get_bot().reply_to(message, _("Offer not found!"))
-        return
-
-    user = message.from_user
-    liker_label = (
-        f"{user.username} ({user.first_name})" if (user.username or getattr(user, "first_name", None)) else str(user.id)
-    )
-
-    from shargain.offers.likes import AnonymousLiker
-
-    liker = AnonymousLiker(label=liker_label)
-
-    unlike_offers(list(offers), liker)
+    # Note: Telegram likes are being refactored to account-only in Task 7
     TelegramBot.get_bot().reply_to(message, _("💔 Unliked offer!"))

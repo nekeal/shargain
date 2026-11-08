@@ -6,6 +6,7 @@ and the presentation layer (e.g., API views).
 """
 
 import dataclasses
+from datetime import datetime
 from typing import Self, TypedDict
 
 from shargain.offers.field_extraction import NotificationFieldsSelection
@@ -79,3 +80,18 @@ class TargetDTO:
             notification_config_id=target.notification_config_id,
             urls=urls,
         )
+
+
+@dataclasses.dataclass(frozen=True)
+class OfferState:
+    offer_id: int
+    seen_at: datetime | None
+    liked_at: datetime | None
+
+    @property
+    def is_seen(self) -> bool:
+        return self.seen_at is not None
+
+    @property
+    def is_liked(self) -> bool:
+        return self.liked_at is not None
