@@ -40,7 +40,13 @@ class OfferBatchCreateService:
             new_offers = [r[0] for r in filter(lambda x: x[1], offers)]
             span.set_attribute("offers.total", len(offers))
             span.set_attribute("offers.new", len(new_offers))
-            snapshot_result = OfferFilterSnapshotService().apply(new_offers, target)
+            try:
+                snapshot_result = OfferFilterSnapshotService().apply(new_offers, target)
+            except Exception:
+                logger.exception(
+                    "Unexpected error during filter snapshot for target %s; omitting from notifications", target.id
+                )
+                snapshot_result = FilterSnapshotResult(passed=[], scraping_url_by_list_url={})
             self._notify(snapshot_result, target)
 
             self._record_checkins(serializer.validated_data["offers"], offers, target)

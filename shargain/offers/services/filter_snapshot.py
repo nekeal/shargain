@@ -126,8 +126,10 @@ class OfferFilterSnapshotService:
         if updates_false:
             Offer.objects.filter(id__in=updates_false).update(passed_filters=False)
 
+        set_true = set(updates_true)
+        set_false = set(updates_false)
         for offer in offers:
-            if offer.id in updates_true:
+            if offer.id in set_true:
                 offer.passed_filters = True
-            elif offer.id in updates_false:
+            elif offer.id in set_false:
                 offer.passed_filters = False
