@@ -24,7 +24,7 @@ from shargain.notifications.application.queries.list_notification_configs import
 )
 from shargain.notifications.models import NotificationChannelChoices
 
-# Import the auth router
+# Import the offers router
 from shargain.offers.api import router as offers_router
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.commands.change_notification_config import (

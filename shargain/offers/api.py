@@ -78,7 +78,12 @@ def _get_actor(request: HttpRequest) -> Actor:
     return Actor(user_id=request.user.id)
 
 
-@router.get("/targets/{target_id}/offers", response=PublicOfferPageSchema, by_alias=True)
+@router.get(
+    "/targets/{target_id}/offers",
+    response=PublicOfferPageSchema,
+    by_alias=True,
+    operation_id="get_target_offers",
+)
 def get_target_offers(
     request: HttpRequest,
     target_id: int,
@@ -89,6 +94,7 @@ def get_target_offers(
     offset: int = 0,
 ):
     actor = _get_actor(request)
+    limit = min(max(1, limit), 100)
     try:
         return list_public_offers(
             actor=actor,
@@ -103,7 +109,12 @@ def get_target_offers(
         raise HttpError(404, "Target not found") from e
 
 
-@router.post("/targets/{target_id}/offers/{offer_id}/seen", response=OfferStateResponseSchema, by_alias=True)
+@router.post(
+    "/targets/{target_id}/offers/{offer_id}/seen",
+    response=OfferStateResponseSchema,
+    by_alias=True,
+    operation_id="mark_offer_seen",
+)
 def mark_offer_seen(request: HttpRequest, target_id: int, offer_id: int):
     actor = _get_actor(request)
     try:
@@ -113,7 +124,12 @@ def mark_offer_seen(request: HttpRequest, target_id: int, offer_id: int):
         raise HttpError(404, "Offer not found") from e
 
 
-@router.delete("/targets/{target_id}/offers/{offer_id}/seen", response=OfferStateResponseSchema, by_alias=True)
+@router.delete(
+    "/targets/{target_id}/offers/{offer_id}/seen",
+    response=OfferStateResponseSchema,
+    by_alias=True,
+    operation_id="mark_offer_unseen",
+)
 def mark_offer_unseen(request: HttpRequest, target_id: int, offer_id: int):
     actor = _get_actor(request)
     try:
@@ -123,7 +139,12 @@ def mark_offer_unseen(request: HttpRequest, target_id: int, offer_id: int):
         raise HttpError(404, "Offer not found") from e
 
 
-@router.post("/targets/{target_id}/offers/{offer_id}/like", response=OfferStateResponseSchema, by_alias=True)
+@router.post(
+    "/targets/{target_id}/offers/{offer_id}/like",
+    response=OfferStateResponseSchema,
+    by_alias=True,
+    operation_id="like_offer",
+)
 def like_offer(request: HttpRequest, target_id: int, offer_id: int):
     actor = _get_actor(request)
     try:
@@ -133,7 +154,12 @@ def like_offer(request: HttpRequest, target_id: int, offer_id: int):
         raise HttpError(404, "Offer not found") from e
 
 
-@router.delete("/targets/{target_id}/offers/{offer_id}/like", response=OfferStateResponseSchema, by_alias=True)
+@router.delete(
+    "/targets/{target_id}/offers/{offer_id}/like",
+    response=OfferStateResponseSchema,
+    by_alias=True,
+    operation_id="unlike_offer",
+)
 def unlike_offer(request: HttpRequest, target_id: int, offer_id: int):
     actor = _get_actor(request)
     try:
