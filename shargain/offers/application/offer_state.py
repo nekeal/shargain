@@ -15,10 +15,11 @@ User = get_user_model()
 def _validate_actor_offers(actor: Actor, offer_ids: Sequence[int]) -> list[int]:
     if not offer_ids:
         return []
-    offers = list(Offer.objects.filter(pk__in=offer_ids, target__owner_id=actor.user_id).values_list("pk", flat=True))
-    if len(offers) != len(set(offer_ids)):
+    unique_ids = list(dict.fromkeys(offer_ids))
+    offers = list(Offer.objects.filter(pk__in=unique_ids, target__owner_id=actor.user_id).values_list("pk", flat=True))
+    if len(offers) != len(unique_ids):
         raise OfferDoesNotExist()
-    return list(offer_ids)
+    return unique_ids
 
 
 def _load_states(user_id: int, offer_ids: Sequence[int]) -> list[OfferState]:

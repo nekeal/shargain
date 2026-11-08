@@ -181,3 +181,4 @@ class UserOfferStateAdmin(admin.ModelAdmin):
     list_display = ("user", "offer", "seen_at", "liked_at", "created_at")
     list_filter = ("offer__target",)
     search_fields = ("offer__url", "offer__title", "user__email")
+    list_select_related = ("user", "offer")

@@ -42,6 +42,7 @@ class OfferFactory(factory.django.DjangoModelFactory):
 class UserOfferStateFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     offer = factory.SubFactory(OfferFactory)
+    seen_at = factory.LazyFunction(timezone.now)
 
     class Meta:
         model = UserOfferState
