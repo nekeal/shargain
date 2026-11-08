@@ -12,11 +12,14 @@ from shargain.offers.models import Offer, UserOfferState
 User = get_user_model()
 
 
-def _validate_actor_offers(actor: Actor, offer_ids: Sequence[int]) -> list[int]:
+def _validate_actor_offers(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[int]:
     if not offer_ids:
         return []
     unique_ids = list(dict.fromkeys(offer_ids))
-    offers = list(Offer.objects.filter(pk__in=unique_ids, target__owner_id=actor.user_id).values_list("pk", flat=True))
+    filters = {"pk__in": unique_ids, "target__owner_id": actor.user_id}
+    if target_id is not None:
+        filters["target_id"] = target_id
+    offers = list(Offer.objects.filter(**filters).values_list("pk", flat=True))
     if len(offers) != len(unique_ids):
         raise OfferDoesNotExist()
     return unique_ids
@@ -34,12 +37,12 @@ def _load_states(user_id: int, offer_ids: Sequence[int]) -> list[OfferState]:
     ]
 
 
-def mark_offers_seen(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]:
+def mark_offers_seen(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[OfferState]:
     if not offer_ids:
         return []
     with transaction.atomic():
         User.objects.select_for_update().get(pk=actor.user_id)
-        valid_ids = _validate_actor_offers(actor, offer_ids)
+        valid_ids = _validate_actor_offers(actor, offer_ids, target_id=target_id)
         now = timezone.now()
 
         existing_states = {
@@ -60,12 +63,12 @@ def mark_offers_seen(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]
         return _load_states(actor.user_id, valid_ids)
 
 
-def mark_offers_unseen(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]:
+def mark_offers_unseen(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[OfferState]:
     if not offer_ids:
         return []
     with transaction.atomic():
         User.objects.select_for_update().get(pk=actor.user_id)
-        valid_ids = _validate_actor_offers(actor, offer_ids)
+        valid_ids = _validate_actor_offers(actor, offer_ids, target_id=target_id)
 
         UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, liked_at__isnull=True).delete()
 
@@ -76,12 +79,12 @@ def mark_offers_unseen(actor: Actor, offer_ids: Sequence[int]) -> list[OfferStat
         return _load_states(actor.user_id, valid_ids)
 
 
-def like_offers(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]:
+def like_offers(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[OfferState]:
     if not offer_ids:
         return []
     with transaction.atomic():
         User.objects.select_for_update().get(pk=actor.user_id)
-        valid_ids = _validate_actor_offers(actor, offer_ids)
+        valid_ids = _validate_actor_offers(actor, offer_ids, target_id=target_id)
         now = timezone.now()
 
         existing_states = {
@@ -102,12 +105,12 @@ def like_offers(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]:
         return _load_states(actor.user_id, valid_ids)
 
 
-def unlike_offers(actor: Actor, offer_ids: Sequence[int]) -> list[OfferState]:
+def unlike_offers(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[OfferState]:
     if not offer_ids:
         return []
     with transaction.atomic():
         User.objects.select_for_update().get(pk=actor.user_id)
-        valid_ids = _validate_actor_offers(actor, offer_ids)
+        valid_ids = _validate_actor_offers(actor, offer_ids, target_id=target_id)
 
         UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, seen_at__isnull=True).delete()
 
