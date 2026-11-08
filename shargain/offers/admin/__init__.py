@@ -29,11 +29,14 @@ class OfferAdmin(admin.ModelAdmin):
         "published_at",
         "get_closed_at",
         "get_duration",
+        "passed_filters",
     )
     list_filter = [
         "target",
         ("closed_at", admin.filters.EmptyFieldListFilter),  # type: ignore
+        "passed_filters",
     ]
+    readonly_fields = ("passed_filters",)
     ordering = ("-published_at",)
     search_fields = ("title",)
 

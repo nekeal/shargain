@@ -185,6 +185,13 @@ class Offer(TimeStampedModel):
         help_text=_("Time of last offer check"),
         default=timezone.localtime,
     )
+    passed_filters = models.BooleanField(
+        _("Passed notification filters"),
+        null=True,
+        blank=True,
+        default=None,
+        help_text=_("Snapshot of whether the offer passed its scraping URL's notification filters at ingest."),
+    )
 
     objects = Manager.from_queryset(OfferQueryset)()
 
@@ -193,6 +200,7 @@ class Offer(TimeStampedModel):
         verbose_name_plural = _("Offers")
         indexes = [
             HashIndex(fields=["url"], name="offer_url_hash_idx"),
+            models.Index(fields=["target", "passed_filters", "created_at", "id"], name="offer_inbox_idx"),
         ]
 
     def __str__(self) -> str:

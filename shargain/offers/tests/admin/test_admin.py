@@ -45,3 +45,15 @@ class TestScrappingTargetAdmin:
         url = ScrapingUrlFactory(notification_fields=NotificationFieldsSelection(fields=["price", "title"]))
         response = admin_client.get(reverse("admin:offers_scrappingtarget_change", args=[url.scraping_target_id]))
         assert response.status_code == 200
+
+
+class TestOfferAdmin:
+    def test_offer_admin_lists_passed_filters(self, admin_client):
+        from shargain.offers.tests.factories import OfferFactory
+
+        offer = OfferFactory(passed_filters=True)
+        response = admin_client.get(reverse("admin:offers_offer_changelist"))
+        assert response.status_code == 200
+
+        change_response = admin_client.get(reverse("admin:offers_offer_change", args=[offer.id]))
+        assert change_response.status_code == 200

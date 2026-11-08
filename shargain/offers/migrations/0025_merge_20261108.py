@@ -1,0 +1,10 @@
+from django.db import migrations
+
+
+class Migration(migrations.Migration):
+    dependencies = [
+        ("offers", "0024_offerlike_offerlike_offer_like_has_identity_and_more"),
+        ("offers", "0024_scrapingurl_send_map_in_notifications"),
+    ]
+
+    operations = []

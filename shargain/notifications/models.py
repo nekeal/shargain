@@ -33,7 +33,7 @@ class NotificationConfig(models.Model):
         default=get_random_register_token,
         help_text=_("Token used to register the channel (chat_id)"),
     )
-    chatid = models.CharField(verbose_name=_("Chat ID"), max_length=100, blank=True)
+    chatid = models.CharField(verbose_name=_("Chat ID"), max_length=100, blank=True, db_index=True)
 
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
