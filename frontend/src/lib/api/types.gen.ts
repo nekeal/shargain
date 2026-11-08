@@ -541,6 +541,165 @@ export type SignupRequest = {
     password: string;
 };
 
+/**
+ * OfferAttributeSchema
+ */
+export type OfferAttributeSchema = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Unit
+     */
+    unit?: string | null;
+    /**
+     * Value
+     */
+    value: boolean | number | number | string;
+    /**
+     * Display
+     */
+    display?: string | null;
+};
+
+/**
+ * OfferLocationSchema
+ */
+export type OfferLocationSchema = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Mapurl
+     */
+    mapUrl?: string | null;
+    /**
+     * Latitude
+     */
+    latitude?: number | null;
+    /**
+     * Longitude
+     */
+    longitude?: number | null;
+    /**
+     * Isexact
+     */
+    isExact: boolean;
+};
+
+/**
+ * PublicOfferPageSchema
+ */
+export type PublicOfferPageSchema = {
+    /**
+     * Count
+     */
+    count: number;
+    /**
+     * Items
+     */
+    items: Array<PublicOfferSchema>;
+};
+
+/**
+ * PublicOfferSchema
+ */
+export type PublicOfferSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Url
+     */
+    url: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Price
+     */
+    price?: number | null;
+    /**
+     * Mainimageurl
+     */
+    mainImageUrl?: string | null;
+    /**
+     * Publishedat
+     */
+    publishedAt?: string | null;
+    /**
+     * Createdat
+     */
+    createdAt: string;
+    /**
+     * Closedat
+     */
+    closedAt?: string | null;
+    /**
+     * Listurl
+     */
+    listUrl: string;
+    /**
+     * Isseen
+     */
+    isSeen: boolean;
+    /**
+     * Seenat
+     */
+    seenAt?: string | null;
+    /**
+     * Isliked
+     */
+    isLiked: boolean;
+    /**
+     * Likedat
+     */
+    likedAt?: string | null;
+    /**
+     * Attributes
+     */
+    attributes: Array<OfferAttributeSchema>;
+    location?: OfferLocationSchema | null;
+};
+
+/**
+ * OfferStateResponseSchema
+ */
+export type OfferStateResponseSchema = {
+    /**
+     * Offerid
+     */
+    offerId: number;
+    /**
+     * Isseen
+     */
+    isSeen: boolean;
+    /**
+     * Seenat
+     */
+    seenAt?: string | null;
+    /**
+     * Isliked
+     */
+    isLiked: boolean;
+    /**
+     * Likedat
+     */
+    likedAt?: string | null;
+};
+
 export type GetAvailableFieldsData = {
     body?: never;
     path: {
@@ -1204,6 +1363,148 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type GetTargetOffersData = {
+    body?: never;
+    path: {
+        /**
+         * Target Id
+         */
+        target_id: number;
+    };
+    query?: {
+        /**
+         * Seen
+         */
+        seen?: boolean | null;
+        /**
+         * Liked
+         */
+        liked?: boolean | null;
+        /**
+         * Ordering
+         */
+        ordering?: 'oldest' | 'newest';
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/api/public/targets/{target_id}/offers';
+};
+
+export type GetTargetOffersResponses = {
+    /**
+     * OK
+     */
+    200: PublicOfferPageSchema;
+};
+
+export type GetTargetOffersResponse = GetTargetOffersResponses[keyof GetTargetOffersResponses];
+
+export type MarkOfferUnseenData = {
+    body?: never;
+    path: {
+        /**
+         * Target Id
+         */
+        target_id: number;
+        /**
+         * Offer Id
+         */
+        offer_id: number;
+    };
+    query?: never;
+    url: '/api/public/targets/{target_id}/offers/{offer_id}/seen';
+};
+
+export type MarkOfferUnseenResponses = {
+    /**
+     * OK
+     */
+    200: OfferStateResponseSchema;
+};
+
+export type MarkOfferUnseenResponse = MarkOfferUnseenResponses[keyof MarkOfferUnseenResponses];
+
+export type MarkOfferSeenData = {
+    body?: never;
+    path: {
+        /**
+         * Target Id
+         */
+        target_id: number;
+        /**
+         * Offer Id
+         */
+        offer_id: number;
+    };
+    query?: never;
+    url: '/api/public/targets/{target_id}/offers/{offer_id}/seen';
+};
+
+export type MarkOfferSeenResponses = {
+    /**
+     * OK
+     */
+    200: OfferStateResponseSchema;
+};
+
+export type MarkOfferSeenResponse = MarkOfferSeenResponses[keyof MarkOfferSeenResponses];
+
+export type UnlikeOfferData = {
+    body?: never;
+    path: {
+        /**
+         * Target Id
+         */
+        target_id: number;
+        /**
+         * Offer Id
+         */
+        offer_id: number;
+    };
+    query?: never;
+    url: '/api/public/targets/{target_id}/offers/{offer_id}/like';
+};
+
+export type UnlikeOfferResponses = {
+    /**
+     * OK
+     */
+    200: OfferStateResponseSchema;
+};
+
+export type UnlikeOfferResponse = UnlikeOfferResponses[keyof UnlikeOfferResponses];
+
+export type LikeOfferData = {
+    body?: never;
+    path: {
+        /**
+         * Target Id
+         */
+        target_id: number;
+        /**
+         * Offer Id
+         */
+        offer_id: number;
+    };
+    query?: never;
+    url: '/api/public/targets/{target_id}/offers/{offer_id}/like';
+};
+
+export type LikeOfferResponses = {
+    /**
+     * OK
+     */
+    200: OfferStateResponseSchema;
+};
+
+export type LikeOfferResponse = LikeOfferResponses[keyof LikeOfferResponses];
 
 export type ClientOptions = {
     baseUrl: string;
