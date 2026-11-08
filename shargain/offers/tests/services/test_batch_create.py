@@ -391,3 +391,129 @@ class TestOfferBatchCreateService:
             assert context.coordinates == Coordinates(lat=52.22, lon=21.01)
             assert context.distances
             assert "maps.google.com" in context.map_url
+
+    def test_offer_batch_create_populates_passed_filters_in_db(self):
+        target = ScrappingTargetFactory(enable_notifications=False)
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=target,
+            filters={
+                "ruleGroups": [
+                    {
+                        "rules": [
+                            {"field": "price", "operator": "gte", "value": "1000"},
+                            {"field": "price", "operator": "lte", "value": "3000"},
+                        ]
+                    }
+                ]
+            },
+        )
+        offer_data = {
+            "target": target.id,
+            "offers": [
+                {
+                    "url": "https://example.com/in-budget",
+                    "title": "Apartment in budget",
+                    "price": 2000,
+                    "list_url": scraping_url.url,
+                },
+                {
+                    "url": "https://example.com/too-expensive",
+                    "title": "Apartment too expensive",
+                    "price": 5000,
+                    "list_url": scraping_url.url,
+                },
+            ],
+        }
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+        service.run()
+
+        pass_offer = Offer.objects.get(url="https://example.com/in-budget")
+        fail_offer = Offer.objects.get(url="https://example.com/too-expensive")
+
+        assert pass_offer.passed_filters is True
+        assert fail_offer.passed_filters is False
+
+    def test_offer_batch_create_populates_passed_filters_when_notifications_disabled(self):
+        target = ScrappingTargetFactory(notification_config=None, enable_notifications=False)
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=target,
+            filters={
+                "ruleGroups": [
+                    {
+                        "rules": [
+                            {"field": "price", "operator": "gte", "value": "1000"},
+                        ]
+                    }
+                ]
+            },
+        )
+        offer_data = {
+            "target": target.id,
+            "offers": [
+                {
+                    "url": "https://example.com/no-notifications-offer",
+                    "title": "Apartment",
+                    "price": 2000,
+                    "list_url": scraping_url.url,
+                },
+            ],
+        }
+
+        with patch("shargain.offers.services.batch_create.NewOfferNotificationService") as mock_notification:
+            service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+            service.run()
+            mock_notification.assert_not_called()
+
+        offer = Offer.objects.get(url="https://example.com/no-notifications-offer")
+        assert offer.passed_filters is True
+
+    def test_offer_batch_create_does_not_rewrite_existing_offers(self):
+        target = ScrappingTargetFactory(enable_notifications=False)
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=target,
+            filters={
+                "ruleGroups": [
+                    {
+                        "rules": [
+                            {"field": "price", "operator": "gte", "value": "1000"},
+                        ]
+                    }
+                ]
+            },
+        )
+        existing_offer = Offer.objects.create(
+            url="https://example.com/existing-offer",
+            title="Pre-existing offer",
+            target=target,
+            list_url=scraping_url.url,
+            price=2000,
+            passed_filters=None,
+        )
+
+        offer_data = {
+            "target": target.id,
+            "offers": [
+                {
+                    "url": "https://example.com/existing-offer",
+                    "title": "Pre-existing offer updated",
+                    "price": 2000,
+                    "list_url": scraping_url.url,
+                },
+                {
+                    "url": "https://example.com/new-offer",
+                    "title": "Brand new offer",
+                    "price": 2000,
+                    "list_url": scraping_url.url,
+                },
+            ],
+        }
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+        created_urls = service.run()
+
+        assert created_urls == ["https://example.com/new-offer"]
+
+        existing_offer.refresh_from_db()
+        assert existing_offer.passed_filters is None
+
+        new_offer = Offer.objects.get(url="https://example.com/new-offer")
+        assert new_offer.passed_filters is True
