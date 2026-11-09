@@ -48,6 +48,10 @@ htmlcov/
 .coverage.*
 .cache
 .pytest_cache/
+
+# Plans
+docs/superpowers/plans/
+docs/plans/
 nosetests.xml
 coverage.xml
 *.cover

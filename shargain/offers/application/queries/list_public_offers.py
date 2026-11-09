@@ -11,7 +11,7 @@ from shargain.offers.application.dto import (
     PublicOfferPage,
 )
 from shargain.offers.application.exceptions import TargetDoesNotExist
-from shargain.offers.application.queries.get_offer_states import get_offer_states
+from shargain.offers.application.offer_state import get_offer_states
 from shargain.offers.field_extraction import ListUrl, OfferFieldResolver, RichValue
 from shargain.offers.location_parsers import LocationParserFactory
 from shargain.offers.models import Offer, ScrappingTarget, UserOfferState

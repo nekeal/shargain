@@ -25,8 +25,7 @@ from telebot.types import (
 from shargain.commons.application.actor import Actor
 from shargain.notifications.models import NotificationConfig
 from shargain.offers.application.exceptions import OfferDoesNotExist
-from shargain.offers.application.offer_state import like_offers, unlike_offers
-from shargain.offers.application.queries.get_offer_states import get_offer_states
+from shargain.offers.application.offer_state import get_offer_states, like_offers, unlike_offers
 from shargain.offers.models import Offer, ScrappingTarget, UserOfferState
 from shargain.telegram.application import (
     AddScrapingLinkHandler,
