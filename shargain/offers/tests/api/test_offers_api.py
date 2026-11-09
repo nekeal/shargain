@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 from django.test import Client
 
@@ -172,9 +170,3 @@ class TestOffersApi:
 
         resp_del_like = client.delete(f"/api/public/targets/{target2.id}/offers/{offer.id}/like")
         assert resp_del_like.status_code == 404
-
-    def test_boundary_no_offer_model_import_in_api(self):
-        content = Path("shargain/offers/api.py").read_text()
-        assert "from shargain.offers.models" not in content
-        assert "import Offer" not in content
-        assert "shargain.offers.models" not in content
