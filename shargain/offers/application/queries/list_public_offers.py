@@ -1,4 +1,3 @@
-import logging
 from typing import Literal
 
 from django.db.models import Exists, OuterRef
@@ -16,82 +15,67 @@ from shargain.offers.field_extraction import ListUrl, OfferFieldResolver, RichVa
 from shargain.offers.location_parsers import LocationParserFactory
 from shargain.offers.models import Offer, ScrappingTarget, UserOfferState
 
-logger = logging.getLogger(__name__)
-
 
 def _build_attributes(offer: Offer) -> list[OfferAttribute]:
     if not offer.list_url:
         return []
-    try:
-        list_url = ListUrl(offer.list_url)
-        field_specs = OfferFieldResolver.get_fields(list_url)
-        extracted = OfferFieldResolver.extract(offer, list_url)
+    list_url = ListUrl(offer.list_url)
+    field_specs = OfferFieldResolver.get_fields(list_url)
+    extracted = OfferFieldResolver.extract(offer, list_url)
 
-        attributes: list[OfferAttribute] = []
-        specs = field_specs.values() if isinstance(field_specs, dict) else field_specs
-        for spec in specs:
-            try:
-                name = spec.name
-                if name in ("title", "price"):
-                    continue
-                val = extracted.get(name)
-                if val is None:
-                    continue
+    attributes: list[OfferAttribute] = []
+    specs = field_specs.values() if isinstance(field_specs, dict) else field_specs
+    for spec in specs:
+        name = spec.name
+        if name in ("title", "price"):
+            continue
+        val = extracted.get(name)
+        if val is None:
+            continue
 
-                if isinstance(val, RichValue):
-                    raw_val = val.value
-                    display = val.display
-                else:
-                    raw_val = val
-                    display = None
+        if isinstance(val, RichValue):
+            raw_val = val.value
+            display = val.display
+        else:
+            raw_val = val
+            display = None
 
-                if raw_val is None:
-                    continue
+        if raw_val is None:
+            continue
 
-                field_type_str = spec.field_type.value if hasattr(spec.field_type, "value") else str(spec.field_type)
-                unit_str = str(spec.unit) if spec.unit is not None else None
+        field_type_str = spec.field_type.value if hasattr(spec.field_type, "value") else str(spec.field_type)
+        unit_str = str(spec.unit) if spec.unit is not None else None
 
-                attributes.append(
-                    OfferAttribute(
-                        name=name,
-                        label=str(spec.label),
-                        type=field_type_str,
-                        unit=unit_str,
-                        value=raw_val,
-                        display=display,
-                    )
-                )
-            except Exception:
-                logger.exception(
-                    "Failed to build attribute '%s' for offer %s", getattr(spec, "name", "unknown"), offer.id
-                )
-        return attributes
-    except Exception:
-        logger.exception("Failed to build attributes for offer %s", offer.id)
-        return []
+        attributes.append(
+            OfferAttribute(
+                name=name,
+                label=str(spec.label),
+                type=field_type_str,
+                unit=unit_str,
+                value=raw_val,
+                display=display,
+            )
+        )
+    return attributes
 
 
 def _build_location(offer: Offer) -> OfferLocation | None:
-    try:
-        parser = LocationParserFactory.get_parser(offer.domain, offer.metadata)
-        coords = parser.get_coordinates()
-        map_url = parser.get_map_url()
-        loc_name = parser.get_location_name()
-        is_exact = parser.is_location_exact()
+    parser = LocationParserFactory.get_parser(offer.domain, offer.metadata)
+    coords = parser.get_coordinates()
+    map_url = parser.get_map_url()
+    loc_name = parser.get_location_name()
+    is_exact = parser.is_location_exact()
 
-        if not loc_name and not map_url and not coords:
-            return None
-
-        return OfferLocation(
-            name=loc_name,
-            map_url=map_url,
-            latitude=coords.lat if coords else None,
-            longitude=coords.lon if coords else None,
-            is_exact=bool(is_exact),
-        )
-    except Exception:
-        logger.exception("Failed to build location for offer %s", offer.id)
+    if not loc_name and not map_url and not coords:
         return None
+
+    return OfferLocation(
+        name=loc_name,
+        map_url=map_url,
+        latitude=coords.lat if coords else None,
+        longitude=coords.lon if coords else None,
+        is_exact=bool(is_exact),
+    )
 
 
 def list_public_offers(

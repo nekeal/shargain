@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 
 from shargain.accounts.tests.factories import UserFactory
@@ -273,32 +271,6 @@ class TestListPublicOffers:
         page = list_public_offers(actor, target.id, ordering="oldest")
         assert page.items[0].main_image_url is None
         assert page.items[1].main_image_url == "https://img.example.com/1.jpg"
-
-    def test_fail_soft_resilience(self):
-        user = UserFactory()
-        target = ScrappingTargetFactory(owner=user)
-        actor = Actor(user_id=user.id)
-
-        OfferFactory(
-            target=target,
-            passed_filters=True,
-            list_url="https://www.olx.pl/d/nieruchomosci/",
-        )
-
-        with (
-            patch(
-                "shargain.offers.application.queries.list_public_offers.OfferFieldResolver.extract",
-                side_effect=RuntimeError("Plugin explosion"),
-            ),
-            patch(
-                "shargain.offers.application.queries.list_public_offers.LocationParserFactory.get_parser",
-                side_effect=RuntimeError("Parser explosion"),
-            ),
-        ):
-            page = list_public_offers(actor, target.id)
-            assert page.count == 1
-            assert page.items[0].attributes == []
-            assert page.items[0].location is None
 
     def test_single_hydration_query_no_n_plus_1(self, django_assert_num_queries):
         user = UserFactory()
