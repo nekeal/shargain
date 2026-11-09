@@ -49,18 +49,10 @@ def _mutate_seen(
 
         if seen:
             now = timezone.now()
-            existing = set(
-                UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids).values_list(
-                    "offer_id", flat=True
-                )
+            UserOfferState.objects.bulk_create(
+                [UserOfferState(user_id=actor.user_id, offer_id=oid, seen_at=now) for oid in valid_ids],
+                ignore_conflicts=True,
             )
-            to_create = [
-                UserOfferState(user_id=actor.user_id, offer_id=oid, seen_at=now)
-                for oid in valid_ids
-                if oid not in existing
-            ]
-            if to_create:
-                UserOfferState.objects.bulk_create(to_create, ignore_conflicts=True)
             UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, seen_at__isnull=True).update(
                 seen_at=now
             )
@@ -88,18 +80,10 @@ def _mutate_liked(
 
         if liked:
             now = timezone.now()
-            existing = set(
-                UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids).values_list(
-                    "offer_id", flat=True
-                )
+            UserOfferState.objects.bulk_create(
+                [UserOfferState(user_id=actor.user_id, offer_id=oid, liked_at=now) for oid in valid_ids],
+                ignore_conflicts=True,
             )
-            to_create = [
-                UserOfferState(user_id=actor.user_id, offer_id=oid, liked_at=now)
-                for oid in valid_ids
-                if oid not in existing
-            ]
-            if to_create:
-                UserOfferState.objects.bulk_create(to_create, ignore_conflicts=True)
             UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, liked_at__isnull=True).update(
                 liked_at=now
             )
