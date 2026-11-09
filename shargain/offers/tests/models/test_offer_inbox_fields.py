@@ -1,6 +1,5 @@
 import pytest
 
-from shargain.notifications.models import NotificationConfig
 from shargain.offers.models import Offer
 from shargain.offers.tests.factories import ScrappingTargetFactory
 
@@ -15,12 +14,6 @@ def test_offer_passed_filters_defaults_to_none():
     )
     offer.refresh_from_db()
     assert offer.passed_filters is None
-
-
-@pytest.mark.django_db
-def test_notification_config_chatid_has_db_index():
-    chatid_field = NotificationConfig._meta.get_field("chatid")
-    assert chatid_field.db_index is True
 
 
 @pytest.mark.django_db

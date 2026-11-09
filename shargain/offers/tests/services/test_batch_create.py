@@ -517,3 +517,38 @@ class TestOfferBatchCreateService:
 
         new_offer = Offer.objects.get(url="https://example.com/new-offer")
         assert new_offer.passed_filters is True
+
+    def test_offer_batch_create_duplicate_scraping_urls_selects_lowest_pk(self):
+        target = ScrappingTargetFactory(enable_notifications=False)
+        url = "https://example.com/feed"
+        ScrapingUrlFactory(
+            scraping_target=target,
+            url=url,
+            filters={
+                "ruleGroups": [{"rules": [{"field": "price", "operator": "gte", "value": "500"}]}],
+            },
+        )
+        ScrapingUrlFactory(
+            scraping_target=target,
+            url=url,
+            filters={
+                "ruleGroups": [{"rules": [{"field": "price", "operator": "gte", "value": "9999"}]}],
+            },
+        )
+        offer_data = {
+            "target": target.id,
+            "offers": [
+                {
+                    "url": "https://example.com/new-1",
+                    "title": "Apartment",
+                    "price": 1000,
+                    "list_url": url,
+                }
+            ],
+        }
+        service = OfferBatchCreateService(serializer_kwargs={"data": offer_data})
+        service.run()
+
+        offer = Offer.objects.get(url="https://example.com/new-1")
+        # Uses lowest pk (sc_first where price >= 500 passes; if second was used, price >= 9999 would fail)
+        assert offer.passed_filters is True

@@ -35,11 +35,10 @@ def get_offer_states(actor: Actor, offer_ids: Sequence[int]) -> dict[int, OfferS
     return {oid: db_states.get(oid, OfferState(offer_id=oid, seen_at=None, liked_at=None)) for oid in offer_ids}
 
 
-def _mutate_offer_state(
+def _mutate_seen(
     actor: Actor,
     offer_ids: Sequence[int],
-    field: str,
-    active: bool,
+    seen: bool,
     target_id: int | None = None,
 ) -> list[OfferState]:
     if not offer_ids:
@@ -47,9 +46,8 @@ def _mutate_offer_state(
     with transaction.atomic():
         User.objects.select_for_update().get(pk=actor.user_id)
         valid_ids = _validate_actor_offers(actor, offer_ids, target_id=target_id)
-        other_field = "liked_at" if field == "seen_at" else "seen_at"
 
-        if active:
+        if seen:
             now = timezone.now()
             existing = set(
                 UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids).values_list(
@@ -57,38 +55,75 @@ def _mutate_offer_state(
                 )
             )
             to_create = [
-                UserOfferState(user_id=actor.user_id, offer_id=oid, **{field: now})
+                UserOfferState(user_id=actor.user_id, offer_id=oid, seen_at=now)
                 for oid in valid_ids
                 if oid not in existing
             ]
             if to_create:
                 UserOfferState.objects.bulk_create(to_create, ignore_conflicts=True)
-            UserOfferState.objects.filter(
-                user_id=actor.user_id, offer_id__in=valid_ids, **{f"{field}__isnull": True}
-            ).update(**{field: now})
+            UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, seen_at__isnull=True).update(
+                seen_at=now
+            )
         else:
-            UserOfferState.objects.filter(
-                user_id=actor.user_id, offer_id__in=valid_ids, **{f"{other_field}__isnull": True}
-            ).delete()
-            UserOfferState.objects.filter(
-                user_id=actor.user_id, offer_id__in=valid_ids, **{f"{other_field}__isnull": False}
-            ).update(**{field: None})
+            UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, liked_at__isnull=True).delete()
+            UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, liked_at__isnull=False).update(
+                seen_at=None
+            )
+
+        states = get_offer_states(actor, valid_ids)
+        return [states[oid] for oid in valid_ids]
+
+
+def _mutate_liked(
+    actor: Actor,
+    offer_ids: Sequence[int],
+    liked: bool,
+    target_id: int | None = None,
+) -> list[OfferState]:
+    if not offer_ids:
+        return []
+    with transaction.atomic():
+        User.objects.select_for_update().get(pk=actor.user_id)
+        valid_ids = _validate_actor_offers(actor, offer_ids, target_id=target_id)
+
+        if liked:
+            now = timezone.now()
+            existing = set(
+                UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids).values_list(
+                    "offer_id", flat=True
+                )
+            )
+            to_create = [
+                UserOfferState(user_id=actor.user_id, offer_id=oid, liked_at=now)
+                for oid in valid_ids
+                if oid not in existing
+            ]
+            if to_create:
+                UserOfferState.objects.bulk_create(to_create, ignore_conflicts=True)
+            UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, liked_at__isnull=True).update(
+                liked_at=now
+            )
+        else:
+            UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, seen_at__isnull=True).delete()
+            UserOfferState.objects.filter(user_id=actor.user_id, offer_id__in=valid_ids, seen_at__isnull=False).update(
+                liked_at=None
+            )
 
         states = get_offer_states(actor, valid_ids)
         return [states[oid] for oid in valid_ids]
 
 
 def mark_offers_seen(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[OfferState]:
-    return _mutate_offer_state(actor, offer_ids, field="seen_at", active=True, target_id=target_id)
+    return _mutate_seen(actor, offer_ids, seen=True, target_id=target_id)
 
 
 def mark_offers_unseen(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[OfferState]:
-    return _mutate_offer_state(actor, offer_ids, field="seen_at", active=False, target_id=target_id)
+    return _mutate_seen(actor, offer_ids, seen=False, target_id=target_id)
 
 
 def like_offers(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[OfferState]:
-    return _mutate_offer_state(actor, offer_ids, field="liked_at", active=True, target_id=target_id)
+    return _mutate_liked(actor, offer_ids, liked=True, target_id=target_id)
 
 
 def unlike_offers(actor: Actor, offer_ids: Sequence[int], target_id: int | None = None) -> list[OfferState]:
-    return _mutate_offer_state(actor, offer_ids, field="liked_at", active=False, target_id=target_id)
+    return _mutate_liked(actor, offer_ids, liked=False, target_id=target_id)
