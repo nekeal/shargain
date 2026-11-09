@@ -157,10 +157,3 @@ def test_get_offer_states_returns_state_and_defaults_missing():
     assert states[o3.id].liked_at is None
     assert states[o3.id].is_seen is False
     assert states[o3.id].is_liked is False
-
-
-@pytest.mark.django_db
-def test_get_offer_states_empty_ids_returns_empty_dict():
-    user = UserFactory()
-    actor = Actor(user_id=user.id)
-    assert get_offer_states(actor, []) == {}

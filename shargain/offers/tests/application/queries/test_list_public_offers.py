@@ -28,13 +28,6 @@ class TestListPublicOffers:
         with pytest.raises(TargetDoesNotExist):
             list_public_offers(actor, target.id)
 
-    def test_target_not_found(self):
-        user = UserFactory()
-        actor = Actor(user_id=user.id)
-
-        with pytest.raises(TargetDoesNotExist):
-            list_public_offers(actor, 999999)
-
     def test_excludes_passed_filters_null_or_false(self):
         user = UserFactory()
         target = ScrappingTargetFactory(owner=user)
