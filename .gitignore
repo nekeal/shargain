@@ -49,8 +49,8 @@ htmlcov/
 .cache
 .pytest_cache/
 
-# Plans
-docs/superpowers/plans/
+# Plans and Superpowers
+docs/superpowers/
 docs/plans/
 nosetests.xml
 coverage.xml
