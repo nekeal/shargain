@@ -1,3 +1,4 @@
+import html
 import logging
 import re
 from enum import StrEnum
@@ -21,9 +22,11 @@ from telebot.types import (
     Message as TelebotMessage,
 )
 
+from shargain.commons.application.actor import Actor
 from shargain.notifications.models import NotificationConfig
-from shargain.offers.likes import AnonymousLiker, like_offers, unlike_offers
-from shargain.offers.models import Offer, OfferLike
+from shargain.offers.application.exceptions import OfferDoesNotExist
+from shargain.offers.application.offer_state import get_offer_states, like_offers, unlike_offers
+from shargain.offers.models import Offer, ScrappingTarget, UserOfferState
 from shargain.telegram.application import (
     AddScrapingLinkHandler,
     DeleteScrapingLinkHandler,
@@ -328,15 +331,49 @@ def is_heart_reaction_added(reaction_update: MessageReactionUpdated) -> bool:
     return new_has_heart and not old_has_heart
 
 
+def resolve_user_for_offer_chat(offer: Offer, chat_id: int | str) -> int | None:
+    target = getattr(offer, "target", None)
+    config = getattr(target, "notification_config", None) if target else None
+    if (
+        target
+        and config
+        and config.owner_id
+        and str(config.chatid) == str(chat_id)
+        and target.owner_id == config.owner_id
+    ):
+        return config.owner_id
+    return None
+
+
+def resolve_user_for_chat(chat_id: int | str) -> int | None:
+    owners = list(
+        ScrappingTarget.objects.filter(
+            notification_config__chatid=str(chat_id),
+            notification_config__owner__isnull=False,
+        )
+        .values_list("notification_config__owner_id", flat=True)
+        .distinct()
+    )
+    if len(owners) == 1:
+        return owners[0]
+    return None
+
+
 def resolve_offers_from_message(message: telebot.types.Message) -> list[Offer]:
-    if not message or not message.text:
+    if not message or not message.text or not getattr(message, "chat", None):
         return []
 
     urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', message.text)
     if not urls:
         return []
 
-    return list(Offer.objects.filter(url__in=urls))
+    return list(
+        Offer.objects.filter(
+            url__in=urls,
+            target__notification_config__chatid=str(message.chat.id),
+            target__notification_config__owner__isnull=False,
+        ).select_related("target__notification_config")
+    )
 
 
 def is_like_reply(message: telebot.types.Message) -> bool:
@@ -355,93 +392,108 @@ def handle_like_reply(message: telebot.types.Message) -> None:
         TelegramBot.get_bot().reply_to(message, _("No offers found in the message you replied to."))
         return
 
-    user = message.from_user
-    liker_label = (
-        f"{user.username} ({user.first_name})" if (user.username or getattr(user, "first_name", None)) else str(user.id)
-    )
-    liker = AnonymousLiker(label=liker_label)
+    user_ids = {resolve_user_for_offer_chat(o, message.chat.id) for o in offers}
+    if None in user_ids or len(user_ids) != 1:
+        logger.warning("Could not attribute like in chat %s for offers %s", message.chat.id, [o.id for o in offers])
+        TelegramBot.get_bot().reply_to(message, _("Could not attribute like to an authorized account."))
+        return
+    user_id = next(iter(user_ids))
+    if user_id is None:
+        return
+    actor = Actor(user_id=user_id)
 
-    # Determine if this is an explicit unlike action
     text = message.text.strip().lower()
     is_unlike_action = text in ["unlike", "/unlike", "💔", "👎"]
-
-    has_liked = OfferLike.objects.filter(offer__in=offers, liker_label=liker_label).exists()
-
-    if is_unlike_action or (
-        has_liked and not is_unlike_action and text in ["like", "/like", "❤️", "❤", "👍"]
-    ):  # toggle on same command
-        unlike_offers(offers, liker)
-        logger.info("Unliking offers for %s", liker_label)
-        TelegramBot.get_bot().reply_to(message, _("💔 Unliked {count} offer(s).").format(count=len(offers)))
-    else:
-        like_offers(offers, liker)
-        logger.info("Liking offers for %s", liker_label)
-        TelegramBot.get_bot().reply_to(message, _("❤️ Liked {count} offer(s)!").format(count=len(offers)))
+    states = get_offer_states(actor, [o.id for o in offers])
+    all_liked = all(s.is_liked for s in states.values())
+    try:
+        if is_unlike_action or (all_liked and text in ["like", "/like", "❤️", "❤", "👍"]):
+            unlike_offers(actor, [o.id for o in offers])
+            TelegramBot.get_bot().reply_to(message, _("💔 Unliked {count} offer(s).").format(count=len(offers)))
+        else:
+            like_offers(actor, [o.id for o in offers])
+            TelegramBot.get_bot().reply_to(message, _("❤️ Liked {count} offer(s)!").format(count=len(offers)))
+    except OfferDoesNotExist:
+        logger.warning("Target owner mismatch or offer does not exist in chat %s", message.chat.id)
+        TelegramBot.get_bot().reply_to(message, _("Could not attribute like to an authorized account."))
 
 
 @TelegramBot.get_bot().message_handler(commands=["liked", "likes"])
 def handle_liked_command(message: telebot.types.Message) -> None:
-    from shargain.offers.models import OfferLike
+    user_id = resolve_user_for_chat(message.chat.id)
+    if not user_id:
+        TelegramBot.get_bot().reply_to(message, _("Could not find registered targets for this chat."))
+        return
 
-    chat_id = str(message.chat.id)
-
-    likes = (
-        OfferLike.objects.filter(offer__target__notification_config__chatid=chat_id)
+    states = list(
+        UserOfferState.objects.filter(
+            user_id=user_id,
+            liked_at__isnull=False,
+            offer__target__notification_config__chatid=str(message.chat.id),
+        )
         .select_related("offer")
-        .order_by("-created_at")
+        .order_by("-liked_at")[:50]
     )
-
-    if not likes:
+    if not states:
         TelegramBot.get_bot().reply_to(message, _("No offers have been liked in this chat yet!"))
         return
 
-    response_lines = [_("❤️ Latest liked offers in this chat:"), ""]
-    for like in likes:
-        title = like.offer.title if like.offer.title else _("Offer")
-        liker = like.liker_label or _("Someone")
-        response_lines.append(f"• <a href='{like.offer.url}'>{title}</a> (liked by {liker}) — /unlike_{like.offer.id}")
+    header = _("Latest liked offers in this chat:")
+    lines = [header]
+    for state in states:
+        raw_title = state.offer.title if state.offer.title else _("Offer")
+        escaped_title = html.escape(str(raw_title))
+        escaped_url = html.escape(state.offer.url)
+        lines.append(f"• <a href='{escaped_url}'>{escaped_title}</a> — /unlike_{state.offer.id}")
 
-    # Send in chunks to avoid Telegram's 4096 character limit
+    chunks: list[str] = []
     current_chunk: list[str] = []
     current_len = 0
-    for line in response_lines:
-        if current_len + len(line) + 1 > 4000:
-            TelegramBot.get_bot().reply_to(message, "\n".join(current_chunk), parse_mode="HTML")
-            current_chunk = []
-            current_len = 0
-        current_chunk.append(line)
-        current_len += len(line) + 1
-
+    for line in lines:
+        line_len = len(line) + 1
+        if current_chunk and current_len + line_len > 4000:
+            chunks.append("\n".join(current_chunk))
+            current_chunk = [line]
+            current_len = line_len
+        else:
+            current_chunk.append(line)
+            current_len += line_len
     if current_chunk:
-        TelegramBot.get_bot().reply_to(message, "\n".join(current_chunk), parse_mode="HTML")
+        chunks.append("\n".join(current_chunk))
+
+    for chunk in chunks:
+        TelegramBot.get_bot().reply_to(message, chunk, parse_mode="HTML")
 
 
-@TelegramBot.get_bot().message_handler(regexp=r"^/unlike_(\d+)$")
+@TelegramBot.get_bot().message_handler(regexp=r"^/unlike_(\d+)(?:@\w+)?$")
 def handle_unlike_by_id_command(message: telebot.types.Message) -> None:
-    import re
-
-    from shargain.offers.likes import unlike_offers
-    from shargain.offers.models import Offer
-
-    match = re.match(r"^/unlike_(\d+)$", message.text)
+    match = re.match(r"^/unlike_(\d+)(?:@\w+)?$", message.text.strip() if message.text else "")
     if not match:
         return
-
-    offer_id = match.group(1)
-    offers = Offer.objects.filter(id=offer_id)
-
-    if not offers:
-        TelegramBot.get_bot().reply_to(message, _("Offer not found!"))
+    offer_id = int(match.group(1))
+    offer = (
+        Offer.objects.filter(
+            pk=offer_id,
+            target__notification_config__chatid=str(message.chat.id),
+            target__notification_config__owner__isnull=False,
+        )
+        .select_related("target__notification_config", "target")
+        .first()
+    )
+    if not offer:
+        TelegramBot.get_bot().reply_to(message, _("Offer not found or not accessible in this chat."))
         return
 
-    user = message.from_user
-    liker_label = (
-        f"{user.username} ({user.first_name})" if (user.username or getattr(user, "first_name", None)) else str(user.id)
-    )
+    user_id = resolve_user_for_offer_chat(offer, message.chat.id)
+    if not user_id:
+        TelegramBot.get_bot().reply_to(message, _("Could not attribute action to an authorized account."))
+        return
 
-    from shargain.offers.likes import AnonymousLiker
-
-    liker = AnonymousLiker(label=liker_label)
-
-    unlike_offers(list(offers), liker)
-    TelegramBot.get_bot().reply_to(message, _("💔 Unliked offer!"))
+    actor = Actor(user_id=user_id)
+    try:
+        unlike_offers(actor, [offer.id])
+    except OfferDoesNotExist:
+        TelegramBot.get_bot().reply_to(message, _("Could not attribute action to an authorized account."))
+        return
+    title = offer.title if offer.title else _("Offer")
+    TelegramBot.get_bot().reply_to(message, _("💔 Unliked offer: {title}").format(title=title))

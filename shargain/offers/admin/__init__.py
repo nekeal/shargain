@@ -15,7 +15,7 @@ from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 from django_better_admin_arrayfield.models.fields import ArrayField
 
 from shargain.offers.admin.forms import ScrappingTargetAdminForm
-from shargain.offers.models import Offer, OfferLike, ScrapingCheckin, ScrapingUrl, ScrappingTarget
+from shargain.offers.models import Offer, ScrapingCheckin, ScrapingUrl, ScrappingTarget, UserOfferState
 from shargain.offers.widgets import AdminDynamicArrayWidget
 
 
@@ -29,11 +29,14 @@ class OfferAdmin(admin.ModelAdmin):
         "published_at",
         "get_closed_at",
         "get_duration",
+        "passed_filters",
     )
     list_filter = [
         "target",
         ("closed_at", admin.filters.EmptyFieldListFilter),  # type: ignore
+        "passed_filters",
     ]
+    readonly_fields = ("passed_filters",)
     ordering = ("-published_at",)
     search_fields = ("title",)
 
@@ -173,11 +176,9 @@ class ScrapingCheckinAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related("scraping_url")
 
 
-@admin.register(OfferLike)
-class OfferLikeAdmin(admin.ModelAdmin):
-    list_display = ("offer", "liker_label", "owner", "created_at")
+@admin.register(UserOfferState)
+class UserOfferStateAdmin(admin.ModelAdmin):
+    list_display = ("user", "offer", "seen_at", "liked_at", "created_at")
     list_filter = ("offer__target",)
-    search_fields = ("offer__url", "offer__title", "liker_label")
-
-    def get_queryset(self, request: HttpRequest) -> QuerySet[OfferLike]:
-        return super().get_queryset(request).select_related("offer", "owner")
+    search_fields = ("offer__url", "offer__title", "user__email")
+    list_select_related = ("user", "offer")

@@ -185,6 +185,13 @@ class Offer(TimeStampedModel):
         help_text=_("Time of last offer check"),
         default=timezone.localtime,
     )
+    passed_filters = models.BooleanField(
+        _("Passed notification filters"),
+        null=True,
+        blank=True,
+        default=None,
+        help_text=_("Snapshot of whether the offer passed its scraping URL's notification filters at ingest."),
+    )
 
     objects = Manager.from_queryset(OfferQueryset)()
 
@@ -193,6 +200,7 @@ class Offer(TimeStampedModel):
         verbose_name_plural = _("Offers")
         indexes = [
             HashIndex(fields=["url"], name="offer_url_hash_idx"),
+            models.Index(fields=["target", "passed_filters", "created_at", "id"], name="offer_inbox_idx"),
         ]
 
     def __str__(self) -> str:
@@ -203,54 +211,35 @@ class Offer(TimeStampedModel):
         return urlparse(self.url).netloc
 
 
-class OfferLike(TimeStampedModel):
-    """A user marked an offer as liked, from any channel."""
-
+class UserOfferState(TimeStampedModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="offer_states",
+        verbose_name=_("User"),
+    )
     offer = models.ForeignKey(
         Offer,
         on_delete=models.CASCADE,
-        related_name="likes",
+        related_name="user_states",
         verbose_name=_("Offer"),
     )
-
-    # Authenticated surface (e.g. web dashboard). Either this or liker_label is set.
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="offer_likes",
-        null=True,
-        blank=True,
-        verbose_name=_("Owner"),
-    )
-
-    # Anonymous surface (e.g. Telegram). Free-form identity string.
-    liker_label = models.CharField(_("Liker label"), max_length=255, blank=True)
+    seen_at = models.DateTimeField(_("Seen at"), null=True, blank=True)
+    liked_at = models.DateTimeField(_("Liked at"), null=True, blank=True)
 
     class Meta:
-        verbose_name = _("Offer like")
-        verbose_name_plural = _("Offer likes")
-        ordering = ["offer_id", "pk"]
+        verbose_name = _("User offer state")
+        verbose_name_plural = _("User offer states")
         constraints = [
-            # Exactly one identity source: a known account or an identity label.
+            models.UniqueConstraint(
+                fields=["user", "offer"],
+                name="uniq_user_offer_state",
+            ),
             models.CheckConstraint(
-                condition=Q(owner__isnull=False) | ~Q(liker_label=""),
-                name="offer_like_has_identity",
-            ),
-            # Idempotent likes: a known user can like an offer only once.
-            models.UniqueConstraint(
-                fields=["offer", "owner"],
-                name="uniq_offer_like_owner",
-                condition=Q(owner__isnull=False),
-            ),
-            # Idempotent likes: an anonymous liker can like an offer only once.
-            models.UniqueConstraint(
-                fields=["offer", "liker_label"],
-                name="uniq_offer_like_label",
-                condition=~Q(liker_label=""),
+                condition=Q(seen_at__isnull=False) | Q(liked_at__isnull=False),
+                name="user_offer_state_has_state",
             ),
         ]
 
     def __str__(self) -> str:
-        identity = self.liker_label or f"user#{self.owner_id}"
-        offer_name = self.offer.title if self.offer_id else "Unknown offer"
-        return f"{identity} liked {offer_name}"
+        return f"User #{self.user_id} state for offer #{self.offer_id}"

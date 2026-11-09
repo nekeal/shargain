@@ -3,7 +3,7 @@ from django.utils import timezone
 from faker import Faker
 
 from shargain.accounts.tests.factories import UserFactory
-from shargain.offers.models import Offer, OfferLike, ScrapingUrl, ScrappingTarget
+from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget, UserOfferState
 
 fake = Faker()
 
@@ -39,10 +39,10 @@ class OfferFactory(factory.django.DjangoModelFactory):
         model = Offer
 
 
-class OfferLikeFactory(factory.django.DjangoModelFactory):
+class UserOfferStateFactory(factory.django.DjangoModelFactory):
+    user = factory.SubFactory(UserFactory)
     offer = factory.SubFactory(OfferFactory)
-    liker_label = factory.LazyFunction(lambda: str(fake.random_int()))
+    seen_at = factory.LazyFunction(timezone.now)
 
     class Meta:
-        model = OfferLike
-        django_get_or_create = ("offer", "liker_label")
+        model = UserOfferState

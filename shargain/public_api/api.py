@@ -23,6 +23,9 @@ from shargain.notifications.application.queries.list_notification_configs import
     list_notification_configs,
 )
 from shargain.notifications.models import NotificationChannelChoices
+
+# Import the offers router
+from shargain.offers.api import router as offers_router
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.commands.change_notification_config import (
     change_notification_config,
@@ -67,15 +70,15 @@ from shargain.telegram.application.commands.generate_telegram_token import (
 )
 from shargain.telegram.bot import TelegramBot
 
-# Import the auth router
 from .auth import auth_router
 from .auth import router as protected_router
 
 router = NinjaAPI()
 
-# Include both routers
+# Include routers
 router.add_router("/auth", auth_router)
 router.add_router("/", protected_router)
+router.add_router("/", offers_router)
 
 
 class ErrorSchema(Schema):

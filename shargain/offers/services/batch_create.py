@@ -40,7 +40,9 @@ class OfferBatchCreateService:
             new_offers = [r[0] for r in filter(lambda x: x[1], offers)]
             span.set_attribute("offers.total", len(offers))
             span.set_attribute("offers.new", len(new_offers))
-            self._notify(new_offers, target)
+
+            passed_offers, scraping_url_map = self._snapshot_and_filter_new_offers(new_offers, target)
+            self._notify(passed_offers, target, scraping_url_map)
 
             self._record_checkins(serializer.validated_data["offers"], offers, target)
             if target.owner_id and new_offers:
@@ -110,9 +112,9 @@ class OfferBatchCreateService:
 
         for list_url, count in offers_count.items():
             if not (
-                scraping_url := ScrapingUrl.objects.filter(
-                    url=list_url, scraping_target=target
-                ).first()  # it's first instead of get because we don't care if user has duplicated urls
+                scraping_url := ScrapingUrl.objects.filter(url=list_url, scraping_target=target)
+                .order_by("pk")
+                .first()  # it's first instead of get because we don't care if user has duplicated urls
             ):
                 logger.warning("Scraping URL %s does not exist for target %s", list_url, target)
                 continue
@@ -122,8 +124,77 @@ class OfferBatchCreateService:
                 new_offers_count=new_offers_count.get(list_url, 0),
             )
 
-    def _notify(self, new_offers, scrapping_target):
+    @staticmethod
+    def _fetch_scraping_urls_map(list_urls, target: ScrappingTarget) -> dict[str, ScrapingUrl]:
+        raw = ScrapingUrl.objects.filter(url__in=list(list_urls), scraping_target=target).order_by("pk")
+        mapping: dict[str, ScrapingUrl] = {}
+        for sc in raw:
+            if sc.url not in mapping:
+                mapping[sc.url] = sc
+        return mapping
+
+    @staticmethod
+    def _evaluate_group_filters(
+        extracted: list[ExtractedOffer],
+        url_offers: list[Offer],
+        scraping_url: ScrapingUrl | None,
+    ) -> tuple[list[ExtractedOffer], list[int], list[int]]:
+        if not scraping_url or not scraping_url.filters:
+            return extracted, [o.id for o in url_offers], []
+
+        filtered_passed = OfferFilterService(scraping_url.filters).apply(extracted)
+        passed_ids_set = {eo._offer.id for eo in filtered_passed}
+        passed_ids = [o.id for o in url_offers if o.id in passed_ids_set]
+        filtered_out_ids = [o.id for o in url_offers if o.id not in passed_ids_set]
+        return filtered_passed, passed_ids, filtered_out_ids
+
+    def _snapshot_and_filter_new_offers(
+        self, new_offers: list[Offer], target: ScrappingTarget
+    ) -> tuple[list[ExtractedOffer], dict[str, ScrapingUrl]]:
         if not new_offers:
+            return [], {}
+
+        offers_by_url: dict[str, list[Offer]] = {}
+        for offer in new_offers:
+            offers_by_url.setdefault(offer.list_url or "", []).append(offer)
+
+        scraping_url_by_list_url = self._fetch_scraping_urls_map(offers_by_url.keys(), target)
+
+        passed_extracted: list[ExtractedOffer] = []
+        passed_ids: list[int] = []
+        filtered_out_ids: list[int] = []
+
+        for list_url, url_offers in offers_by_url.items():
+            scraping_url = scraping_url_by_list_url.get(list_url)
+            extracted = [
+                ExtractedOffer(_offer=offer, fields=OfferFieldResolver.extract(offer, ListUrl(list_url)))
+                for offer in url_offers
+            ]
+            group_passed, ids_passed, ids_filtered = self._evaluate_group_filters(extracted, url_offers, scraping_url)
+            passed_extracted.extend(group_passed)
+            passed_ids.extend(ids_passed)
+            filtered_out_ids.extend(ids_filtered)
+
+        if passed_ids:
+            Offer.objects.filter(id__in=passed_ids).update(passed_filters=True)
+        if filtered_out_ids:
+            Offer.objects.filter(id__in=filtered_out_ids).update(passed_filters=False)
+
+        for offer in new_offers:
+            if offer.id in set(passed_ids):
+                offer.passed_filters = True
+            elif offer.id in set(filtered_out_ids):
+                offer.passed_filters = False
+
+        return passed_extracted, scraping_url_by_list_url
+
+    def _notify(
+        self,
+        passed_offers: list[ExtractedOffer],
+        scrapping_target: ScrappingTarget,
+        scraping_url_by_list_url: dict[str, ScrapingUrl],
+    ):
+        if not passed_offers:
             return
 
         if not (scrapping_target.notification_config and scrapping_target.enable_notifications):
@@ -135,67 +206,31 @@ class OfferBatchCreateService:
             )
             return
 
-        offers_by_url = self._group_by_url(new_offers)
-        scraping_urls = self._fetch_scraping_urls(offers_by_url.keys(), scrapping_target)
-        url_to_config_map = {sc.url: sc for sc in scraping_urls}
+        # Group passing ExtractedOffers by list_url
+        by_list_url: dict[str, list[ExtractedOffer]] = {}
+        for ext in passed_offers:
+            by_list_url.setdefault(ext._offer.list_url or "", []).append(ext)
 
         message_contexts: list[NotificationMessageContext] = []
-        offers_after_filters = 0
-        for list_url, url_offers in offers_by_url.items():
-            scraping_url = url_to_config_map.get(list_url)
-
-            extracted = self._extract_offers(url_offers, list_url)
-            filtered = self._filter_offers(extracted, scraping_url)
-            offers_after_filters += len(filtered)
-            if not filtered:
-                logger.info(
-                    "All %d new offers for list_url %s (target %s) were filtered out by notification filters",
-                    len(extracted),
-                    list_url,
-                    scrapping_target.id,
-                )
-                continue
-
-            contexts = self._build_contexts(filtered, scraping_url)
+        for list_url, ext_offers in by_list_url.items():
+            scraping_url = scraping_url_by_list_url.get(list_url)
+            contexts = self._build_contexts(ext_offers, scraping_url)
             message_contexts.extend(contexts)
 
         span = trace.get_current_span()
-        span.set_attribute("notifications.offers_in", len(new_offers))
-        span.set_attribute("notifications.offers_after_filters", offers_after_filters)
+        span.set_attribute("notifications.offers_in", len(passed_offers))
+        span.set_attribute("notifications.offers_after_filters", len(passed_offers))
         span.set_attribute("notifications.messages", len(message_contexts))
 
         if not message_contexts:
             return
 
-        notification_title = self._get_notification_title(scraping_urls, scrapping_target, list(offers_by_url.keys()))
+        notification_title = self._get_notification_title(
+            list(scraping_url_by_list_url.values()),
+            scrapping_target,
+            list(by_list_url.keys()),
+        )
         self.notification_service_class(message_contexts, scrapping_target, notification_title=notification_title).run()
-
-    @staticmethod
-    def _group_by_url(offers):
-        offers_by_url: dict[str, list[Offer]] = {}
-        for offer in offers:
-            offers_by_url.setdefault(offer.list_url, []).append(offer)
-        return offers_by_url
-
-    @staticmethod
-    def _fetch_scraping_urls(list_urls, scrapping_target):
-        return list(ScrapingUrl.objects.filter(url__in=list(list_urls), scraping_target=scrapping_target))
-
-    @staticmethod
-    def _extract_offers(offers, list_url):
-        return [
-            ExtractedOffer(
-                _offer=offer,
-                fields=OfferFieldResolver.extract(offer, ListUrl(list_url)),
-            )
-            for offer in offers
-        ]
-
-    @staticmethod
-    def _filter_offers(extracted_offers, scraping_url):
-        if not scraping_url or not scraping_url.filters:
-            return extracted_offers
-        return OfferFilterService(scraping_url.filters).apply(extracted_offers)
 
     @staticmethod
     def _build_contexts(extracted_offers, scraping_url):

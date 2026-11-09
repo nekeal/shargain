@@ -878,7 +878,12 @@
             }
           },
           "required": true
-        }
+        },
+        "security": [
+          {
+            "CSRFOnlyAuth": []
+          }
+        ]
       }
     },
     "/api/public/auth/signup": {
@@ -908,7 +913,12 @@
             }
           },
           "required": true
-        }
+        },
+        "security": [
+          {
+            "CSRFOnlyAuth": []
+          }
+        ]
       }
     },
     "/api/public/auth/logout": {
@@ -928,7 +938,12 @@
             }
           }
         },
-        "description": "Logout endpoint that clears session"
+        "description": "Logout endpoint that clears session",
+        "security": [
+          {
+            "CSRFOnlyAuth": []
+          }
+        ]
       }
     },
     "/api/public/me": {
@@ -953,6 +968,264 @@
           {
             "SessionAuth": []
           }
+        ]
+      }
+    },
+    "/api/public/targets/{target_id}/offers": {
+      "get": {
+        "operationId": "get_target_offers",
+        "summary": "Get Target Offers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "seen",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Seen"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "liked",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Liked"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "ordering",
+            "schema": {
+              "default": "oldest",
+              "enum": [
+                "oldest",
+                "newest"
+              ],
+              "title": "Ordering",
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicOfferPageSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "offers"
+        ]
+      }
+    },
+    "/api/public/targets/{target_id}/offers/{offer_id}/seen": {
+      "post": {
+        "operationId": "mark_offer_seen",
+        "summary": "Mark Offer Seen",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "offer_id",
+            "schema": {
+              "title": "Offer Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferStateResponseSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "offers"
+        ]
+      },
+      "delete": {
+        "operationId": "mark_offer_unseen",
+        "summary": "Mark Offer Unseen",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "offer_id",
+            "schema": {
+              "title": "Offer Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferStateResponseSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "offers"
+        ]
+      }
+    },
+    "/api/public/targets/{target_id}/offers/{offer_id}/like": {
+      "post": {
+        "operationId": "like_offer",
+        "summary": "Like Offer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "offer_id",
+            "schema": {
+              "title": "Offer Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferStateResponseSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "offers"
+        ]
+      },
+      "delete": {
+        "operationId": "unlike_offer",
+        "summary": "Unlike Offer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "target_id",
+            "schema": {
+              "title": "Target Id",
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "offer_id",
+            "schema": {
+              "title": "Offer Id",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferStateResponseSchema"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "offers"
         ]
       }
     }
@@ -1867,9 +2140,334 @@
         ],
         "title": "SignupRequest",
         "type": "object"
+      },
+      "OfferAttributeSchema": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Value"
+          },
+          "display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "type",
+          "value"
+        ],
+        "title": "OfferAttributeSchema",
+        "type": "object"
+      },
+      "OfferLocationSchema": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "mapUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mapurl"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          },
+          "isExact": {
+            "title": "Isexact",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isExact"
+        ],
+        "title": "OfferLocationSchema",
+        "type": "object"
+      },
+      "PublicOfferPageSchema": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PublicOfferSchema"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "items"
+        ],
+        "title": "PublicOfferPageSchema",
+        "type": "object"
+      },
+      "PublicOfferSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "mainImageUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mainimageurl"
+          },
+          "publishedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publishedat"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "closedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closedat"
+          },
+          "listUrl": {
+            "title": "Listurl",
+            "type": "string"
+          },
+          "isSeen": {
+            "title": "Isseen",
+            "type": "boolean"
+          },
+          "seenAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seenat"
+          },
+          "isLiked": {
+            "title": "Isliked",
+            "type": "boolean"
+          },
+          "likedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Likedat"
+          },
+          "attributes": {
+            "items": {
+              "$ref": "#/components/schemas/OfferAttributeSchema"
+            },
+            "title": "Attributes",
+            "type": "array"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OfferLocationSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "title",
+          "createdAt",
+          "listUrl",
+          "isSeen",
+          "isLiked",
+          "attributes"
+        ],
+        "title": "PublicOfferSchema",
+        "type": "object"
+      },
+      "OfferStateResponseSchema": {
+        "properties": {
+          "offerId": {
+            "title": "Offerid",
+            "type": "integer"
+          },
+          "isSeen": {
+            "title": "Isseen",
+            "type": "boolean"
+          },
+          "seenAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seenat"
+          },
+          "isLiked": {
+            "title": "Isliked",
+            "type": "boolean"
+          },
+          "likedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Likedat"
+          }
+        },
+        "required": [
+          "offerId",
+          "isSeen",
+          "isLiked"
+        ],
+        "title": "OfferStateResponseSchema",
+        "type": "object"
       }
     },
     "securitySchemes": {
+      "CSRFOnlyAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__csrf_only__"
+      },
       "SessionAuth": {
         "type": "apiKey",
         "in": "cookie",
