@@ -1,3 +1,4 @@
+from shargain.offers.field_extraction.cleaners import clean_html_description
 from shargain.offers.field_extraction.plugin import (
     BaseFieldPlugin,
     ExtractedFieldEntry,
@@ -25,6 +26,7 @@ __all__ = [
     "OfferFieldResolver",
     "Operator",
     "RichValue",
+    "clean_html_description",
     "get_operators_for_type",
     "registered_plugins",
 ]

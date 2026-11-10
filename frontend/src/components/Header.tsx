@@ -7,6 +7,7 @@ export default function Header() {
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard' },
+    { path: '/offers', label: 'Offers' },
     { path: '/notifications', label: 'Notifications' }
   ]
 

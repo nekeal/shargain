@@ -133,6 +133,9 @@ class PublicOffer:
     liked_at: datetime | None
     attributes: list[OfferAttribute]
     location: OfferLocation | None
+    images: list[str] = dataclasses.field(default_factory=list)
+    scraping_url_name: str | None = None
+    description: str | None = None
 
 
 @dataclasses.dataclass(frozen=True)

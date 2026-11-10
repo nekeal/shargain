@@ -265,6 +265,52 @@ class TestListPublicOffers:
         assert page.items[0].main_image_url is None
         assert page.items[1].main_image_url == "https://img.example.com/1.jpg"
 
+    def test_images_extraction_for_otodom_and_olx(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+
+        # OLX format with photos array
+        OfferFactory(
+            target=target,
+            passed_filters=True,
+            main_image_url="https://img.example.com/main.jpg",
+            metadata={
+                "extra": {
+                    "photos": [
+                        "https://img.example.com/1.jpg",
+                        "https://img.example.com/2.jpg",
+                    ]
+                }
+            },
+        )
+        # Otodom format with images array of dicts
+        OfferFactory(
+            target=target,
+            passed_filters=True,
+            main_image_url="https://img.example.com/oto-main.jpg",
+            metadata={
+                "extra": {
+                    "images": [
+                        {"large": "https://img.example.com/oto1.jpg"},
+                        {"medium": "https://img.example.com/oto2.jpg"},
+                    ]
+                }
+            },
+        )
+        # Fallback to main_image_url when extra is empty
+        OfferFactory(
+            target=target,
+            passed_filters=True,
+            main_image_url="https://img.example.com/fallback.jpg",
+            metadata={"extra": {}},
+        )
+
+        page = list_public_offers(actor, target.id, ordering="oldest")
+        assert page.items[0].images == ["https://img.example.com/1.jpg", "https://img.example.com/2.jpg"]
+        assert page.items[1].images == ["https://img.example.com/oto1.jpg", "https://img.example.com/oto2.jpg"]
+        assert page.items[2].images == ["https://img.example.com/fallback.jpg"]
+
     def test_single_hydration_query_no_n_plus_1(self, django_assert_num_queries):
         user = UserFactory()
         target = ScrappingTargetFactory(owner=user)
@@ -279,7 +325,34 @@ class TestListPublicOffers:
         # 2. Offer count: Offer.objects.filter(...).count()
         # 3. Offer page: Offer.objects.filter(...)[offset:offset+limit]
         # 4. UserOfferState hydration: UserOfferState.objects.filter(user_id=..., offer_id__in=...)
-        with django_assert_num_queries(4):
+        # 5. ScrapingUrl hydration: ScrapingUrl.objects.filter(scraping_target_id=...).values(...)
+        with django_assert_num_queries(5):
             page = list_public_offers(actor, target.id, limit=10)
             assert page.count == 10
             assert len(page.items) == 10
+
+    def test_scraping_url_name_and_description_extraction(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        from shargain.offers.tests.factories import ScrapingUrlFactory
+
+        ScrapingUrlFactory(
+            scraping_target=target,
+            name="OLX Mieszkania Kraków",
+            url="https://www.olx.pl/nieruchomosci/mieszkania/krakow/",
+        )
+
+        OfferFactory(
+            target=target,
+            passed_filters=True,
+            list_url="https://www.olx.pl/nieruchomosci/mieszkania/krakow/?search[order]=created_at:desc",
+            metadata={"extra": {"description": "<p>Ciche mieszkanie z balkonem.</p><br />Polecam!"}},
+        )
+
+        page = list_public_offers(actor, target.id)
+        assert len(page.items) == 1
+        assert page.items[0].scraping_url_name == "OLX Mieszkania Kraków"
+        assert page.items[0].description == "Ciche mieszkanie z balkonem.\n\nPolecam!"
+        attr_names = [a.name for a in page.items[0].attributes]
+        assert "description" not in attr_names

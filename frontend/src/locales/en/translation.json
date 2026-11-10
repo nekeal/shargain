@@ -351,5 +351,111 @@
       "saveError": "An error occurred while saving the configuration",
       "updateError": "An error occurred while updating the configuration"
     }
+  },
+  "offers": {
+    "title": "Offers Inbox",
+    "subtitle": "Browse, evaluate, and triage new offers from all monitored sources.",
+    "targetLabel": "Target:",
+    "resultsCount": "Results: {{count}}",
+    "resultsCountWithTotal": "Results: {{count}} of {{total}}",
+    "loadingFromBackend": "Fetching offers from backend...",
+    "viewOffers": "View offers",
+    "viewOffersSplitReader": "View offers (Split Reader)",
+    "browseTargetOffers": "Browse offers ({{name}})",
+    "emptyState": {
+      "title": "No offers in this tab",
+      "description": "Change filters or target to view available offers.",
+      "refreshButton": "Check again"
+    },
+    "tabs": {
+      "unseen": "Unread",
+      "liked": "Liked",
+      "all": "All"
+    },
+    "ordering": {
+      "label": "Order:",
+      "oldest": "Oldest (queue)",
+      "newest": "Newest"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "refreshServer": "Refresh list from server",
+      "refreshOffers": "Refresh offers list",
+      "like": "Like offer",
+      "unlike": "Remove like",
+      "likeShortcut": "Like (L)",
+      "liked": "Liked (L)",
+      "markSeen": "Mark read (S)",
+      "markUnseen": "Unread (S)",
+      "markSeenAndNext": "Read & Next (J)",
+      "openOriginal": "Open offer",
+      "openOriginalShortcut": "Open (O)",
+      "prev": "Previous",
+      "next": "Next",
+      "expandDetails": "Show details",
+      "hideDetails": "Hide details"
+    },
+    "queue": {
+      "title": "Offers queue",
+      "count": "{{count}} offers",
+      "shortcuts": "Shortcuts:",
+      "unreadDot": "New (unread)",
+      "sourceUrl": "Source URL: {{name}}",
+      "unknownLocation": "Unknown location"
+    },
+    "pagination": {
+      "loadMore": "Load more ({{remaining}} remaining)",
+      "loading": "Loading offers..."
+    },
+    "detail": {
+      "title": "Offer details",
+      "description": "Listing description",
+      "expandDescription": "Expand full description",
+      "collapseDescription": "Collapse description",
+      "noDescription": "No description provided in listing",
+      "gallery": "Photo gallery",
+      "parameters": "Offer parameters",
+      "noParameters": "No parameters provided in listing",
+      "map": "Location on map",
+      "unknownPrice": "Price on request"
+    },
+    "gallery": {
+      "photoCount": "{{current}} / {{total}}",
+      "noImages": "No photos in listing",
+      "openFullscreen": "Click to open fullscreen gallery",
+      "prevPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "close": "Close (Esc)",
+      "thumbnail": "Thumbnail {{index}}"
+    },
+    "map": {
+      "noLocation": "No location provided for this offer",
+      "defaultTitle": "Listing location",
+      "coordinates": "Coordinates: {{lat}}, {{lng}}",
+      "noGpsNotice": "Exact GPS point was not provided by the seller.",
+      "streetSearch": "Search by street / district",
+      "zoomIn": "Zoom in (street details)",
+      "zoomOut": "Zoom out (wider area)",
+      "zoomArea": "Area",
+      "zoomMedium": "Medium",
+      "zoomClose": "Close-up",
+      "gpsPoint": "Exact GPS point",
+      "approximateRadius": "Area ~300m",
+      "streetArea": "Street / Area",
+      "cityArea": "City / Region",
+      "openGoogleMaps": "Google Maps",
+      "clickToInteract": "Click to interact with map",
+      "loadingMap": "Loading map..."
+    },
+    "attributes": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}} min ago",
+      "hoursAgo": "{{count}} hrs ago",
+      "daysAgo": "{{count}} days ago"
+    }
   }
 }

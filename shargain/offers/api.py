@@ -47,6 +47,7 @@ class PublicOfferSchema(BaseSchema):
     title: str
     price: int | None = None
     main_image_url: str | None = None
+    images: list[str] = []
     published_at: datetime | None = None
     created_at: datetime
     closed_at: datetime | None = None
@@ -57,6 +58,8 @@ class PublicOfferSchema(BaseSchema):
     liked_at: datetime | None = None
     attributes: list[OfferAttributeSchema]
     location: OfferLocationSchema | None = None
+    scraping_url_name: str | None = None
+    description: str | None = None
 
 
 class PublicOfferPageSchema(BaseSchema):

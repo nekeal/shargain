@@ -636,6 +636,10 @@ export type PublicOfferSchema = {
      */
     mainImageUrl?: string | null;
     /**
+     * Images
+     */
+    images?: Array<string>;
+    /**
      * Publishedat
      */
     publishedAt?: string | null;
@@ -672,6 +676,14 @@ export type PublicOfferSchema = {
      */
     attributes: Array<OfferAttributeSchema>;
     location?: OfferLocationSchema | null;
+    /**
+     * Scrapingurlname
+     */
+    scrapingUrlName?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
 };
 
 /**

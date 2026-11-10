@@ -351,5 +351,111 @@
       "saveError": "Wystąpił błąd podczas zapisywania konfiguracji",
       "updateError": "Wystąpił błąd podczas aktualizowania konfiguracji"
     }
+  },
+  "offers": {
+    "title": "Skrzynka Ofert (Offers Inbox)",
+    "subtitle": "Przeglądaj, oceniaj i selekcjonuj nowe oferty ze wszystkich monitorowanych źródeł.",
+    "targetLabel": "Cel:",
+    "resultsCount": "Wyników: {{count}}",
+    "resultsCountWithTotal": "Wyników: {{count}} z {{total}}",
+    "loadingFromBackend": "Pobieranie ofert z backendu...",
+    "viewOffers": "Zobacz oferty",
+    "viewOffersSplitReader": "Zobacz oferty (Split Reader)",
+    "browseTargetOffers": "Przeglądaj oferty ({{name}})",
+    "emptyState": {
+      "title": "Brak ofert w tej zakładce",
+      "description": "Zmień filtry lub cel, aby zobaczyć dostępne oferty.",
+      "refreshButton": "Sprawdź ponownie"
+    },
+    "tabs": {
+      "unseen": "Nieprzeczytane",
+      "liked": "Polubione",
+      "all": "Wszystkie"
+    },
+    "ordering": {
+      "label": "Kolejność:",
+      "oldest": "Najstarsze (kolejka)",
+      "newest": "Najnowsze"
+    },
+    "actions": {
+      "refresh": "Odśwież",
+      "refreshServer": "Odśwież listę z serwera",
+      "refreshOffers": "Odśwież listę ofert",
+      "like": "Polub ofertę",
+      "unlike": "Usuń polubienie",
+      "likeShortcut": "Polub (L)",
+      "liked": "Polubione (L)",
+      "markSeen": "Oznacz przeczytane (S)",
+      "markUnseen": "Nieprzeczytane (S)",
+      "markSeenAndNext": "Przeczytane & Następna (J)",
+      "openOriginal": "Otwórz ofertę",
+      "openOriginalShortcut": "Otwórz (O)",
+      "prev": "Poprzednia",
+      "next": "Następna",
+      "expandDetails": "Pokaż szczegóły",
+      "hideDetails": "Zwiń szczegóły"
+    },
+    "queue": {
+      "title": "Kolejka ofert",
+      "count": "{{count}} ofert",
+      "shortcuts": "Skróty:",
+      "unreadDot": "Nowa (nieprzeczytana)",
+      "sourceUrl": "Źródło URL: {{name}}",
+      "unknownLocation": "Lokalizacja nieznana"
+    },
+    "pagination": {
+      "loadMore": "Załaduj więcej (pozostało {{remaining}})",
+      "loading": "Ładowanie ofert..."
+    },
+    "detail": {
+      "title": "Szczegóły oferty",
+      "description": "Opis ogłoszenia",
+      "expandDescription": "Rozwiń pełny opis",
+      "collapseDescription": "Zwiń opis",
+      "noDescription": "Brak opisu w danych ogłoszenia",
+      "gallery": "Galeria zdjęć",
+      "parameters": "Parametry oferty",
+      "noParameters": "Brak parametrów w ogłoszeniu",
+      "map": "Lokalizacja na mapie",
+      "unknownPrice": "Zapytaj o cenę"
+    },
+    "gallery": {
+      "photoCount": "{{current}} / {{total}}",
+      "noImages": "Brak zdjęć w ogłoszeniu",
+      "openFullscreen": "Kliknij, aby otworzyć galerię na pełnym ekranie",
+      "prevPhoto": "Poprzednie zdjęcie",
+      "nextPhoto": "Następne zdjęcie",
+      "close": "Zamknij (Esc)",
+      "thumbnail": "Miniaturka {{index}}"
+    },
+    "map": {
+      "noLocation": "Brak podanej lokalizacji dla tej oferty",
+      "defaultTitle": "Lokalizacja z ogłoszenia",
+      "coordinates": "Współrzędne: {{lat}}, {{lng}}",
+      "noGpsNotice": "Dokładny punkt GPS nie został udostępniony przez ogłoszeniodawcę.",
+      "streetSearch": "Wyszukiwanie po ulicy / dzielnicy",
+      "zoomIn": "Przybliż mapę (szczegóły ulicy)",
+      "zoomOut": "Oddal mapę (pokaż więcej okolicy)",
+      "zoomArea": "Okolica",
+      "zoomMedium": "Średni",
+      "zoomClose": "Zbliżenie",
+      "gpsPoint": "Dokładny punkt GPS",
+      "approximateRadius": "Obszar ~300m",
+      "streetArea": "Ulica / Okolica",
+      "cityArea": "Miasto / Rejon",
+      "openGoogleMaps": "Google Maps",
+      "clickToInteract": "Kliknij, aby korzystać z mapy",
+      "loadingMap": "Ładowanie mapy..."
+    },
+    "attributes": {
+      "yes": "Tak",
+      "no": "Nie"
+    },
+    "time": {
+      "justNow": "Przed chwilą",
+      "minutesAgo": "{{count}} min temu",
+      "hoursAgo": "{{count}} godz. temu",
+      "daysAgo": "{{count}} dni temu"
+    }
   }
 }
