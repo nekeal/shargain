@@ -33,11 +33,14 @@ def test_does_not_match_other(url):
     assert olx.matches(ListUrl(url)) is False
 
 
-def test_fields_declare_address_string():
-    assert [f.name for f in olx.fields] == ["address"]
-    field = olx.fields[0]
-    assert field.field_type == FieldType.STRING
-    assert str(field.label) == "Address"
+def test_fields_declare_address_and_description():
+    assert [f.name for f in olx.fields] == ["address", "description"]
+    field_addr = olx.fields[0]
+    assert field_addr.field_type == FieldType.STRING
+    assert str(field_addr.label) == "Address"
+    field_desc = olx.fields[1]
+    assert field_desc.field_type == FieldType.STRING
+    assert str(field_desc.label) == "Description"
 
 
 @pytest.mark.parametrize(
@@ -56,3 +59,10 @@ def test_extract_address(location, expected):
 def test_extract_without_location_returns_none():
     offer = OfferFactory.build(url=OLX_URL, metadata={"extra": {}})
     assert olx.extract(offer, ListUrl(OLX_URL))["address"] is None
+
+
+def test_extract_description_cleans_html():
+    raw_html = "<p>Super mieszkanie!</p><p>Blisko centrum.<br />Polecam.</p>"
+    offer = OfferFactory.build(url=OLX_URL, metadata={"extra": {"description": raw_html}})
+    extracted = olx.extract(offer, ListUrl(OLX_URL))
+    assert extracted["description"] == "Super mieszkanie!\nBlisko centrum.\nPolecam."

@@ -1,6 +1,6 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, Globe } from "lucide-react";
+import { AlertCircle, ArrowRight, Globe, Layers, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { OfferMonitor } from "@/types/dashboard";
 import type { TargetSummaryResponse } from "@/lib/api/types.gen";
@@ -138,13 +138,25 @@ function DashboardLayout({
   return (
     <div className="min-h-screen bg-secondary">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-foreground">
-            {t("dashboard.greeting", { name: user?.username || "" })}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("dashboard.subtitle")}
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">
+              {t("dashboard.greeting", { name: user?.username || "" })}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t("dashboard.subtitle")}
+            </p>
+          </div>
+          <Button asChild size="default" className="gap-2 shadow-sm shrink-0">
+            <Link
+              to="/offers"
+              search={{ targetId: offerMonitor.id }}
+            >
+              <Sparkles className="w-4 h-4 text-primary-foreground" />
+              <span>{t("offers.browseTargetOffers", { name: offerMonitor.name })}</span>
+              <ArrowRight className="w-4 h-4 ml-0.5" />
+            </Link>
+          </Button>
         </div>
 
         {sidebarTop ? <div className="mb-8 lg:hidden">{sidebarTop}</div> : null}
@@ -223,12 +235,28 @@ function MultiTargetDashboard({
               {t("dashboard.scrapingTarget")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <TargetSelectorInline
               targets={targets}
               selectedTargetId={selectedTargetId}
               onSelect={handleSelectTarget}
             />
+            <Button
+              asChild
+              variant="outline"
+              className="w-full justify-center gap-2 hover:bg-primary/5 hover:border-primary/50 text-xs h-9"
+            >
+              <Link
+                to="/offers"
+                search={{ targetId: selectedTargetId }}
+              >
+                <Layers className="w-3.5 h-3.5 text-primary" />
+                <span>
+                  {t("offers.viewOffers")} ({targets.find((target) => target.id === selectedTargetId)?.name || t("dashboard.scrapingTarget")})
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 ml-auto text-muted-foreground" />
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       }
@@ -238,6 +266,7 @@ function MultiTargetDashboard({
 
 function SingleTargetDashboard({ onAddUrl }: { onAddUrl?: () => void }) {
   const { data: myTarget, isLoading, isError } = useGetMyTarget();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -251,7 +280,37 @@ function SingleTargetDashboard({ onAddUrl }: { onAddUrl?: () => void }) {
     return <EmptyState onAddUrl={onAddUrl} />;
   }
 
-  return <DashboardLayout offerMonitor={myTarget} onAddUrl={onAddUrl} />;
+  return (
+    <DashboardLayout
+      offerMonitor={myTarget}
+      onAddUrl={onAddUrl}
+      sidebarTop={
+        <Card className="bg-card border border-border">
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {t("dashboard.scrapingTarget")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full justify-center gap-2 text-xs h-9"
+            >
+              <Link
+                to="/offers"
+                search={{ targetId: myTarget.id }}
+              >
+                <Layers className="w-3.5 h-3.5 text-primary" />
+                <span>{t("offers.viewOffers")} ({myTarget.name})</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-auto text-muted-foreground" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      }
+    />
+  );
 }
 
 function DashboardContent() {

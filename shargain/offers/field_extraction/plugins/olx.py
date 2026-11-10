@@ -12,6 +12,7 @@ from shargain.offers.field_extraction.plugin import (
     FieldDefinition,
     FieldType,
     ListUrl,
+    clean_html_description,
 )
 from shargain.offers.location_parsers import LocationParserFactory
 
@@ -22,7 +23,7 @@ OLX_DOMAIN = "olx.pl"
 
 
 class OlxPlugin(BaseFieldPlugin):
-    """Extracts source-level fields (currently `address`) for all OLX listings."""
+    """Extracts source-level fields (currently `address` and `description`) for all OLX listings."""
 
     def matches(self, url: ListUrl) -> bool:
         host = urlparse(url).netloc.lower()
@@ -32,11 +33,17 @@ class OlxPlugin(BaseFieldPlugin):
     def fields(self) -> list[FieldDefinition]:
         return [
             FieldDefinition("address", _("Address"), FieldType.STRING),
+            FieldDefinition("description", _("Description"), FieldType.STRING),
         ]
 
     def extract(self, offer: Offer, url: ListUrl) -> dict:
         parser = LocationParserFactory.get_parser(offer.domain, offer.metadata)
-        return {"address": parser.get_location_name()}
+        extra = (offer.metadata or {}).get("extra") or {}
+        raw_desc = extra.get("description")
+        return {
+            "address": parser.get_location_name(),
+            "description": clean_html_description(raw_desc),
+        }
 
 
 olx = OlxPlugin()

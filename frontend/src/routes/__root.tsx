@@ -48,6 +48,11 @@ function RootComponent() {
                     active: !!matchRoute({ to: '/dashboard' })
                   },
                   {
+                    label: 'Offers',
+                    href: '/offers',
+                    active: !!matchRoute({ to: '/offers' })
+                  },
+                  {
                     label: 'Notifications',
                     href: '/notifications',
                     active: !!matchRoute({ to: '/notifications' })

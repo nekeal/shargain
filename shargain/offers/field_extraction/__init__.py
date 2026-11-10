@@ -9,6 +9,7 @@ from shargain.offers.field_extraction.plugin import (
     NotificationFieldsSelection,
     Operator,
     RichValue,
+    clean_html_description,
 )
 from shargain.offers.field_extraction.plugins import registered_plugins
 from shargain.offers.field_extraction.resolver import OfferFieldResolver, get_operators_for_type
@@ -25,6 +26,7 @@ __all__ = [
     "OfferFieldResolver",
     "Operator",
     "RichValue",
+    "clean_html_description",
     "get_operators_for_type",
     "registered_plugins",
 ]

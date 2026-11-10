@@ -2318,6 +2318,14 @@
             ],
             "title": "Mainimageurl"
           },
+          "images": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Images",
+            "type": "array"
+          },
           "publishedAt": {
             "anyOf": [
               {
@@ -2399,6 +2407,28 @@
                 "type": "null"
               }
             ]
+          },
+          "scrapingUrlName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scrapingurlname"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           }
         },
         "required": [

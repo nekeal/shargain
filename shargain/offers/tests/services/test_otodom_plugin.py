@@ -33,11 +33,14 @@ def test_does_not_match_other(url):
     assert otodom.matches(ListUrl(url)) is False
 
 
-def test_fields_declare_address_string():
-    assert [f.name for f in otodom.fields] == ["address"]
-    field = otodom.fields[0]
-    assert field.field_type == FieldType.STRING
-    assert str(field.label) == "Address"
+def test_fields_declare_address_and_description():
+    assert [f.name for f in otodom.fields] == ["address", "description"]
+    field_addr = otodom.fields[0]
+    assert field_addr.field_type == FieldType.STRING
+    assert str(field_addr.label) == "Address"
+    field_desc = otodom.fields[1]
+    assert field_desc.field_type == FieldType.STRING
+    assert str(field_desc.label) == "Description"
 
 
 @pytest.mark.parametrize(
@@ -77,3 +80,8 @@ def test_extract_address(location, expected):
 def test_extract_without_location_returns_none():
     offer = OfferFactory.build(url=OTODOM_URL, metadata={"extra": {}})
     assert otodom.extract(offer, ListUrl(OTODOM_URL))["address"] is None
+
+
+def test_extract_description_from_short_description():
+    offer = OfferFactory.build(url=OTODOM_URL, metadata={"extra": {"shortDescription": "Piękne mieszkanie w Krakowie"}})
+    assert otodom.extract(offer, ListUrl(OTODOM_URL))["description"] == "Piękne mieszkanie w Krakowie"
