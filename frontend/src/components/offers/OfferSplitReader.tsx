@@ -264,7 +264,7 @@ function SplitReaderContent({
       </div>
 
       {/* RIGHT COLUMN: Full Inspection & Triage Cockpit */}
-      {isDetailsOpen && (
+      {isDetailsOpen && activeOffer && (
         <OfferDetailCockpit
           activeOffer={activeOffer}
           activeIndex={activeIndex}

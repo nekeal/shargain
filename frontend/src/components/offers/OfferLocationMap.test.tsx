@@ -124,7 +124,7 @@ describe("OfferLocationMap", () => {
 
     // Fetch was called with encoded query
     expect(fetchSpy).toHaveBeenCalledWith(
-      "https://photon.komoot.io/api/?q=Warszawa%2C%20ul.%20Marsza%C5%82kowska&limit=1",
+      "https://photon.komoot.io/api/?q=Warszawa%2C%20ul.%20Marsza%C5%82kowska&countrycode=pl&limit=1",
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
 

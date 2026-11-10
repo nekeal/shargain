@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OffersPage } from "./OffersPage";
+import { useOfferKeyboardTriage } from "./useOfferKeyboardTriage";
 import type { PublicOfferSchema, TargetSummaryResponse } from "@/lib/api/types.gen";
 import * as api from "@/lib/api/sdk.gen";
 import plTranslations from "@/locales/pl/translation.json";
@@ -400,5 +401,20 @@ describe("OffersPage", () => {
         }),
       );
     });
+  });
+
+  it("useOfferKeyboardTriage handles empty offers list without throwing", () => {
+    const { result } = renderHook(() =>
+      useOfferKeyboardTriage({
+        offers: [],
+        selectedOfferId: 0,
+        setSelectedOfferId: vi.fn(),
+        isDetailsOpen: true,
+        onToggleLike: vi.fn(),
+        onToggleSeen: vi.fn(),
+      }),
+    );
+    expect(result.current.activeOffer).toBeUndefined();
+    expect(result.current.activeIndex).toBe(0);
   });
 });

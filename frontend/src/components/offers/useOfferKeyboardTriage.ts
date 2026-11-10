@@ -19,7 +19,8 @@ export function useOfferKeyboardTriage({
   onToggleSeen,
 }: UseOfferKeyboardTriageOptions) {
   const activeIndex = offers.findIndex((o) => o.id === selectedOfferId);
-  const activeOffer = offers[activeIndex >= 0 ? activeIndex : 0];
+  const activeOffer =
+    offers.length > 0 ? offers[activeIndex >= 0 ? activeIndex : 0] : undefined;
 
   const offersRef = useRef(offers);
   useEffect(() => {
@@ -33,14 +34,14 @@ export function useOfferKeyboardTriage({
 
   // Auto-mark offer as seen after 1 second of inspection ONLY when details panel is open
   useEffect(() => {
-    if (!isDetailsOpen || activeOffer.isSeen) return;
+    if (!isDetailsOpen || activeOffer == null || activeOffer.isSeen) return;
 
     const timer = setTimeout(() => {
       onToggleSeen(activeOffer.id, false);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [activeOffer.id, activeOffer.isSeen, isDetailsOpen, onToggleSeen]);
+  }, [activeOffer, isDetailsOpen, onToggleSeen]);
 
   // Preload adjacent offers' main images in background for instant switching
   useEffect(() => {

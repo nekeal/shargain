@@ -127,7 +127,7 @@ export function OfferLocationMap({
     setGeocodedCoords(null);
     const controller = new AbortController();
 
-    fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`, {
+    fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&countrycode=pl&limit=1`, {
       signal: controller.signal,
     })
       .then((res) => {
