@@ -303,7 +303,7 @@ describe("OffersPage", () => {
     });
   });
 
-  it("presses J shortcut to mark seen and advance to next offer", async () => {
+  it("presses J shortcut to advance to next offer", async () => {
     vi.mocked(api.markOfferSeen).mockResolvedValue({
       data: { ...mockOffer1, isSeen: true },
     } as any);
@@ -317,19 +317,12 @@ describe("OffersPage", () => {
     // Press 'J' key
     fireEvent.keyDown(window, { key: "j" });
 
-    // Should call markOfferSeen on offer 1
-    await waitFor(() => {
-      expect(api.markOfferSeen).toHaveBeenCalledWith(
-        expect.objectContaining({
-          path: { target_id: 1, offer_id: 1 },
-        }),
-      );
-    });
-
-    // Should now show mockOffer2 details in detail header
+    // Should advance selection to next offer without calling markOfferSeen
     await waitFor(() => {
       expect(screen.getAllByText("Kawalerka Śródmieście").length).toBeGreaterThan(0);
     });
+
+    expect(api.markOfferSeen).not.toHaveBeenCalled();
   });
 
   it("auto-marks offer as seen after 1 second only when details panel is open", async () => {

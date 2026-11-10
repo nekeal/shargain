@@ -1,3 +1,4 @@
+from shargain.offers.field_extraction.cleaners import clean_html_description
 from shargain.offers.field_extraction.plugin import (
     BaseFieldPlugin,
     ExtractedFieldEntry,
@@ -9,7 +10,6 @@ from shargain.offers.field_extraction.plugin import (
     NotificationFieldsSelection,
     Operator,
     RichValue,
-    clean_html_description,
 )
 from shargain.offers.field_extraction.plugins import registered_plugins
 from shargain.offers.field_extraction.resolver import OfferFieldResolver, get_operators_for_type

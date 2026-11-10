@@ -7,12 +7,12 @@ from urllib.parse import urlparse
 
 from django.utils.translation import gettext_lazy as _
 
+from shargain.offers.field_extraction.cleaners import clean_html_description
 from shargain.offers.field_extraction.plugin import (
     BaseFieldPlugin,
     FieldDefinition,
     FieldType,
     ListUrl,
-    clean_html_description,
 )
 from shargain.offers.location_parsers import LocationParserFactory
 
@@ -39,7 +39,9 @@ class OlxPlugin(BaseFieldPlugin):
     def extract(self, offer: Offer, url: ListUrl) -> dict:
         parser = LocationParserFactory.get_parser(offer.domain, offer.metadata)
         extra = (offer.metadata or {}).get("extra") or {}
-        raw_desc = extra.get("description")
+        raw_desc = (
+            extra.get("description") or extra.get("description_clean") or (offer.metadata or {}).get("description")
+        )
         return {
             "address": parser.get_location_name(),
             "description": clean_html_description(raw_desc),

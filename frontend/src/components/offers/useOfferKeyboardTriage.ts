@@ -128,7 +128,7 @@ export function useOfferKeyboardTriage({
 
       if (e.key === "j" || e.key === "J") {
         e.preventDefault();
-        handleMarkSeenAndNext();
+        handleNext();
       } else if (e.key === "k" || e.key === "K") {
         e.preventDefault();
         handlePrev();
@@ -147,7 +147,7 @@ export function useOfferKeyboardTriage({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
-    handleMarkSeenAndNext,
+    handleNext,
     handlePrev,
     onToggleLike,
     onToggleSeen,

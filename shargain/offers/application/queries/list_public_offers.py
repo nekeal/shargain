@@ -12,21 +12,24 @@ from shargain.offers.application.dto import (
 from shargain.offers.application.exceptions import TargetDoesNotExist
 from shargain.offers.application.offer_state import get_offer_states
 from shargain.offers.field_extraction import (
+    ExtractedFieldValue,
     ListUrl,
     OfferFieldResolver,
     RichValue,
-    clean_html_description,
 )
+from shargain.offers.field_extraction.cleaners import clean_html_description
 from shargain.offers.location_parsers import LocationParserFactory
 from shargain.offers.models import Offer, OfferQueryset, ScrapingUrl, ScrappingTarget, UserOfferState
 
 
-def _build_attributes(offer: Offer) -> list[OfferAttribute]:
-    if not offer.list_url:
+def _build_attributes(
+    offer: Offer,
+    list_url: ListUrl | None,
+    extracted: dict[str, ExtractedFieldValue],
+) -> list[OfferAttribute]:
+    if not list_url:
         return []
-    list_url = ListUrl(offer.list_url)
     field_specs = OfferFieldResolver.get_fields(list_url)
-    extracted = OfferFieldResolver.extract(offer, list_url)
 
     attributes: list[OfferAttribute] = []
     specs = field_specs.values() if isinstance(field_specs, dict) else field_specs
@@ -108,14 +111,12 @@ def _build_images(offer: Offer) -> list[str]:
     return images
 
 
-def _build_description(offer: Offer) -> str | None:
-    if offer.list_url:
-        extracted = OfferFieldResolver.extract(offer, ListUrl(offer.list_url))
-        desc = extracted.get("description")
-        if desc:
-            val = desc.value if isinstance(desc, RichValue) else desc
-            if val and str(val).strip():
-                return str(val)
+def _build_description(offer: Offer, extracted: dict[str, ExtractedFieldValue]) -> str | None:
+    desc = extracted.get("description")
+    if desc:
+        val = desc.value if isinstance(desc, RichValue) else desc
+        if val and str(val).strip():
+            return str(val)
     extra = (offer.metadata or {}).get("extra") or {}
     raw = (
         extra.get("description")
@@ -193,28 +194,31 @@ def list_public_offers(
     scraping_urls = list(ScrapingUrl.objects.filter(scraping_target_id=target_id).values("url", "name"))
     scraping_url_map = {su["url"]: su["name"] for su in scraping_urls if su["url"]}
 
-    items = [
-        PublicOffer(
-            id=o.id,
-            url=o.url,
-            title=o.title,
-            price=o.price,
-            main_image_url=o.main_image_url or None,
-            published_at=o.published_at,
-            created_at=o.created_at,
-            closed_at=o.closed_at,
-            list_url=o.list_url,
-            is_seen=state_map[o.id].is_seen,
-            seen_at=state_map[o.id].seen_at,
-            is_liked=state_map[o.id].is_liked,
-            liked_at=state_map[o.id].liked_at,
-            attributes=_build_attributes(o),
-            location=_build_location(o),
-            images=_build_images(o),
-            scraping_url_name=_resolve_scraping_url_name(o.list_url, scraping_url_map),
-            description=_build_description(o),
+    items: list[PublicOffer] = []
+    for o in page_offers:
+        list_url = ListUrl(o.list_url) if o.list_url else None
+        extracted = OfferFieldResolver.extract(o, list_url) if list_url else {}
+        items.append(
+            PublicOffer(
+                id=o.id,
+                url=o.url,
+                title=o.title,
+                price=o.price,
+                main_image_url=o.main_image_url or None,
+                published_at=o.published_at,
+                created_at=o.created_at,
+                closed_at=o.closed_at,
+                list_url=o.list_url,
+                is_seen=state_map[o.id].is_seen,
+                seen_at=state_map[o.id].seen_at,
+                is_liked=state_map[o.id].is_liked,
+                liked_at=state_map[o.id].liked_at,
+                attributes=_build_attributes(o, list_url, extracted),
+                location=_build_location(o),
+                images=_build_images(o),
+                scraping_url_name=_resolve_scraping_url_name(o.list_url, scraping_url_map),
+                description=_build_description(o, extracted),
+            )
         )
-        for o in page_offers
-    ]
 
     return PublicOfferPage(count=total_count, items=items)
