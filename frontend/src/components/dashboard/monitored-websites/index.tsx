@@ -212,7 +212,11 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                 targetId={offerMonitor.id}
                 urlId={url.id}
                 initialShowLocationMap={url.showLocationMapInNotifications ?? false}
+<<<<<<< HEAD
+                initialSendMap={url.sendMapInNotifications ?? true}
+=======
                 initialSendMap={url.sendMapInNotifications}
+>>>>>>> origin/master
                 initialWaypoints={url.waypoints ?? []}
                 initialNotificationFields={url.notificationFields ?? null}
               />

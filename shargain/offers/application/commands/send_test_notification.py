@@ -3,7 +3,7 @@ Send a test notification to the configured channel for a ScrapingTarget.
 """
 
 from shargain.commons.application.actor import Actor
-from shargain.notifications.senders import TelegramNotificationSender
+from shargain.jobs.service import Jobs
 from shargain.offers.application.exceptions import (
     NotificationConfigDoesNotExist,
     TargetDoesNotExist,
@@ -13,7 +13,7 @@ from shargain.offers.models import ScrappingTarget
 
 def send_test_notification(actor: Actor, target_id: int) -> None:
     """
-    Sends a test notification to the configured channel for a ScrapingTarget.
+    Enqueues a test notification to the configured channel for a ScrapingTarget.
 
     Args:
         actor: The user performing the action.
@@ -31,5 +31,14 @@ def send_test_notification(actor: Actor, target_id: int) -> None:
     if not target.notification_config:
         raise NotificationConfigDoesNotExist()
 
-    sender = TelegramNotificationSender(target.notification_config)
-    sender.send("This is a test notification from Shargain.")
+    config = target.notification_config
+    Jobs.enqueue(
+        "notification.telegram",
+        stream_key=f"telegram:{config.chatid}",
+        payload={
+            "config_id": config.id,
+            "kind": "text",
+            "message": "This is a test notification from Shargain.",
+            "rate_limit_scope": "notification:telegram",
+        },
+    )

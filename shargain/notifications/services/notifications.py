@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 
+from shargain.jobs.service import Jobs
 from shargain.notifications.models import NotificationChannelChoices
 from shargain.notifications.senders import TelegramNotificationSender
 from shargain.offers.field_extraction import ExtractedFieldEntry, RichValue
@@ -83,20 +84,38 @@ class NewOfferNotificationService:
             self._send(message)
 
     def _send_single_with_pin(self, context: NotificationMessageContext):
-        notification_sender = self._get_notification_sender_class()(self._scrapping_target.notification_config)
+        config = self._scrapping_target.notification_config
         coordinates = context.coordinates
         assert coordinates is not None  # noqa: S101
         card = self.get_message_for_offer(context)
-        notification_sender.send_with_pin(
-            card,
-            coordinates.lat,
-            coordinates.lon,
-            horizontal_accuracy=1500.0,
+        Jobs.enqueue(
+            "notification.telegram",
+            stream_key=f"telegram:{config.chatid}",
+            payload={
+                "config_id": config.id,
+                "kind": "location",
+                "message": card,
+                "lat": coordinates.lat,
+                "lon": coordinates.lon,
+                "horizontal_accuracy": 1500.0,
+                "rate_limit_scope": "notification:telegram",
+            },
+            dedup_key=f"telegram:{config.id}:{hash(card)}",
         )
 
     def _send(self, message):
-        notification_sender = self._get_notification_sender_class()(self._scrapping_target.notification_config)
-        notification_sender.send(message)
+        config = self._scrapping_target.notification_config
+        Jobs.enqueue(
+            "notification.telegram",
+            stream_key=f"telegram:{config.chatid}",
+            payload={
+                "config_id": config.id,
+                "kind": "text",
+                "message": message,
+                "rate_limit_scope": "notification:telegram",
+            },
+            dedup_key=f"telegram:{config.id}:{hash(message)}",
+        )
 
     def _get_notification_sender_class(self):
         return self.get_notification_sender_class(
