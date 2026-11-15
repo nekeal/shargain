@@ -9,6 +9,7 @@ import {
   Heart,
   Inbox,
   RefreshCw,
+  X,
 } from "lucide-react";
 import {
   useOffersQuery,
@@ -18,6 +19,7 @@ import {
 import { OfferSplitReader } from "./OfferSplitReader";
 import type { PublicOfferSchema } from "@/lib/api/types.gen";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   loadStoredTargetId,
@@ -34,6 +36,11 @@ export interface OffersPageProps {
   onTargetChange?: (targetId: number) => void;
 }
 
+function parsePriceInput(raw: string): number | undefined {
+  const trimmed = raw.trim();
+  return trimmed === "" ? undefined : Number(trimmed);
+}
+
 export function OffersPage({
   initialTargetId,
   onTargetChange,
@@ -47,15 +54,44 @@ export function OffersPage({
     initialTargetId ?? loadStoredTargetId(),
   );
 
+  // Raw filter input state (debounced into applied values below)
+  const [searchInput, setSearchInput] = useState("");
+  const [minPriceInput, setMinPriceInput] = useState("");
+  const [maxPriceInput, setMaxPriceInput] = useState("");
+
+  const [search, setSearch] = useState<string | undefined>();
+  const [minPrice, setMinPrice] = useState<number | undefined>();
+  const [maxPrice, setMaxPrice] = useState<number | undefined>();
+
   const queryClient = useQueryClient();
 
   const { data: targets } = useGetTargets();
   const { data: myTarget } = useGetMyTarget();
 
-  // Reset pagination limit when target, tab or ordering changes
+  // Debounce raw filter inputs into applied query values
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmedSearch = searchInput.trim();
+      setSearch(trimmedSearch === "" ? undefined : trimmedSearch);
+      setMinPrice(parsePriceInput(minPriceInput));
+      setMaxPrice(parsePriceInput(maxPriceInput));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput, minPriceInput, maxPriceInput]);
+
+  const hasActiveFilters =
+    searchInput !== "" || minPriceInput !== "" || maxPriceInput !== "";
+
+  const handleClearFilters = useCallback(() => {
+    setSearchInput("");
+    setMinPriceInput("");
+    setMaxPriceInput("");
+  }, []);
+
+  // Reset pagination limit when target, tab, ordering or filters change
   useEffect(() => {
     setLimit(50);
-  }, [selectedTargetId, activeTab, ordering]);
+  }, [selectedTargetId, activeTab, ordering, search, minPrice, maxPrice]);
 
   // Sync initialTargetId if changed externally
   useEffect(() => {
@@ -97,6 +133,9 @@ export function OffersPage({
     tab: activeTab,
     ordering,
     limit,
+    search,
+    minPrice,
+    maxPrice,
   });
 
   const toggleLikeMutation = useToggleLikeMutation(selectedTargetId);
@@ -198,6 +237,46 @@ export function OffersPage({
                 />
               </div>
             )}
+
+            {/* Inline title search & price range */}
+            <div className="flex items-center gap-1.5 border-l border-border pl-3">
+              <Input
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                aria-label={t("offers.filters.searchLabel")}
+                placeholder={t("offers.filters.searchPlaceholder")}
+                className="h-7 w-36 text-xs"
+              />
+              <Input
+                value={minPriceInput}
+                onChange={(event) => setMinPriceInput(event.target.value)}
+                inputMode="numeric"
+                aria-label={t("offers.filters.minPriceLabel")}
+                placeholder={t("offers.filters.minPrice")}
+                className="h-7 w-20 text-xs"
+              />
+              <span className="text-xs text-muted-foreground">–</span>
+              <Input
+                value={maxPriceInput}
+                onChange={(event) => setMaxPriceInput(event.target.value)}
+                inputMode="numeric"
+                aria-label={t("offers.filters.maxPriceLabel")}
+                placeholder={t("offers.filters.maxPrice")}
+                className="h-7 w-20 text-xs"
+              />
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground"
+                  title={t("offers.filters.clear")}
+                  aria-label={t("offers.filters.clear")}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Ordering & Count */}

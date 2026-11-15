@@ -403,6 +403,47 @@ describe("OffersPage", () => {
     });
   });
 
+  it("sends title search and price range to the API after typing", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "  rower  " },
+    });
+    fireEvent.change(screen.getByLabelText("Cena od"), { target: { value: "100" } });
+    fireEvent.change(screen.getByLabelText("Cena do"), { target: { value: "500" } });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({
+            search: "rower",
+            minPrice: 100,
+            maxPrice: 500,
+          }),
+        }),
+      ),
+    );
+  });
+
+  it("omits price bounds when the inputs are blank", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "rower" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ search: "rower" }),
+        }),
+      ),
+    );
+    const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+    expect(lastCall?.query?.minPrice).toBeUndefined();
+    expect(lastCall?.query?.maxPrice).toBeUndefined();
+  });
+
   it("useOfferKeyboardTriage handles empty offers list without throwing", () => {
     const { result } = renderHook(() =>
       useOfferKeyboardTriage({
