@@ -356,3 +356,100 @@ class TestListPublicOffers:
         assert page.items[0].description == "Ciche mieszkanie z balkonem.\n\nPolecam!"
         attr_names = [a.name for a in page.items[0].attributes]
         assert "description" not in attr_names
+
+    def test_search_matches_title_case_insensitively(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        OfferFactory(target=target, passed_filters=True, title="Mieszkanie Mokotów")
+        OfferFactory(target=target, passed_filters=True, title="Kawalerka Śródmieście")
+
+        page = list_public_offers(actor, target.id, search="mOKOT")
+        assert [i.title for i in page.items] == ["Mieszkanie Mokotów"]
+        assert page.count == 1
+
+    def test_search_handles_polish_diacritics(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        OfferFactory(target=target, passed_filters=True, title="Ładne mieszkanie Łódź")
+        OfferFactory(target=target, passed_filters=True, title="Mieszkanie Kraków")
+
+        page = list_public_offers(actor, target.id, search="łódź")
+        assert [i.title for i in page.items] == ["Ładne mieszkanie Łódź"]
+
+    def test_search_treats_like_wildcards_literally(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        OfferFactory(target=target, passed_filters=True, title="Zniżka 100% na rower")
+        OfferFactory(target=target, passed_filters=True, title="Rower 1000 zł")
+
+        page = list_public_offers(actor, target.id, search="100%")
+        assert [i.title for i in page.items] == ["Zniżka 100% na rower"]
+
+    def test_search_is_trimmed_and_blank_is_ignored(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        OfferFactory(target=target, passed_filters=True, title="Rower górski")
+        OfferFactory(target=target, passed_filters=True, title="Hulajnoga")
+
+        assert list_public_offers(actor, target.id, search="  rower  ").count == 1
+        assert list_public_offers(actor, target.id, search="   ").count == 2
+        assert list_public_offers(actor, target.id, search="").count == 2
+
+    def test_price_bounds_are_inclusive(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        OfferFactory(target=target, passed_filters=True, price=100)
+        OfferFactory(target=target, passed_filters=True, price=200)
+        OfferFactory(target=target, passed_filters=True, price=300)
+
+        page = list_public_offers(actor, target.id, min_price=200, max_price=300)
+        assert sorted(i.price for i in page.items) == [200, 300]
+        assert page.count == 2
+
+    def test_price_bounds_work_open_ended(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        OfferFactory(target=target, passed_filters=True, price=100)
+        OfferFactory(target=target, passed_filters=True, price=500)
+
+        assert [i.price for i in list_public_offers(actor, target.id, min_price=200).items] == [500]
+        assert [i.price for i in list_public_offers(actor, target.id, max_price=200).items] == [100]
+
+    def test_price_bound_excludes_null_prices(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        OfferFactory(target=target, passed_filters=True, price=None)
+        OfferFactory(target=target, passed_filters=True, price=100)
+
+        assert list_public_offers(actor, target.id).count == 2
+        assert list_public_offers(actor, target.id, min_price=0).count == 1
+
+    def test_inverted_price_range_returns_empty_page(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        OfferFactory(target=target, passed_filters=True, price=100)
+
+        page = list_public_offers(actor, target.id, min_price=300, max_price=200)
+        assert page.count == 0
+        assert page.items == []
+
+    def test_filters_combine_with_seen_and_count_before_pagination(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        unseen = OfferFactory(target=target, passed_filters=True, title="Rower A", price=300)
+        OfferFactory(target=target, passed_filters=True, title="Rower B", price=300)
+        OfferFactory(target=target, passed_filters=True, title="Rower C", price=900)
+        mark_offers_seen(actor, [unseen.id])
+
+        page = list_public_offers(actor, target.id, search="rower", max_price=500, seen=False, limit=1)
+        assert page.count == 1
+        assert [i.title for i in page.items] == ["Rower B"]
