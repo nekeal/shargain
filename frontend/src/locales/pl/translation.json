@@ -362,6 +362,15 @@
     "viewOffers": "Zobacz oferty",
     "viewOffersSplitReader": "Zobacz oferty (Split Reader)",
     "browseTargetOffers": "Przeglądaj oferty ({{name}})",
+    "filters": {
+      "searchLabel": "Szukaj po tytule",
+      "searchPlaceholder": "Szukaj w tytule…",
+      "minPriceLabel": "Cena od",
+      "minPrice": "Cena od",
+      "maxPriceLabel": "Cena do",
+      "maxPrice": "Cena do",
+      "clear": "Wyczyść filtry"
+    },
     "emptyState": {
       "title": "Brak ofert w tej zakładce",
       "description": "Zmień filtry lub cel, aby zobaczyć dostępne oferty.",

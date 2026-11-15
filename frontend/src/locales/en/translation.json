@@ -362,6 +362,15 @@
     "viewOffers": "View offers",
     "viewOffersSplitReader": "View offers (Split Reader)",
     "browseTargetOffers": "Browse offers ({{name}})",
+    "filters": {
+      "searchLabel": "Search by title",
+      "searchPlaceholder": "Search title…",
+      "minPriceLabel": "Minimum price",
+      "minPrice": "Min price",
+      "maxPriceLabel": "Maximum price",
+      "maxPrice": "Max price",
+      "clear": "Clear filters"
+    },
     "emptyState": {
       "title": "No offers in this tab",
       "description": "Change filters or target to view available offers.",
