@@ -469,6 +469,66 @@ describe("OffersPage", () => {
     expect(lastCall?.query?.maxPrice).toBeUndefined();
   });
 
+  it("ignores dot-grouped price input and flags it invalid", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "1.000" },
+    });
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "rower" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ search: "rower" }),
+        }),
+      ),
+    );
+    const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+    expect(lastCall?.query?.minPrice).toBeUndefined();
+    expect(screen.getByLabelText("Cena od")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+  });
+
+  it("parses space-grouped price input as a whole zloty amount", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "650 000" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ minPrice: 650000 }),
+        }),
+      ),
+    );
+    expect(screen.getByLabelText("Cena od")).not.toHaveAttribute("aria-invalid");
+  });
+
+  it("sends a literal zero price bound", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "0" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ minPrice: 0 }),
+        }),
+      ),
+    );
+    const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+    expect(lastCall?.query?.minPrice).toBe(0);
+  });
+
   it("useOfferKeyboardTriage handles empty offers list without throwing", () => {
     const { result } = renderHook(() =>
       useOfferKeyboardTriage({
