@@ -36,11 +36,19 @@ export interface OffersPageProps {
   onTargetChange?: (targetId: number) => void;
 }
 
+// Postgres `price` is int4; anything above this cannot be a valid bound.
+const MAX_PRICE = 2_147_483_647;
+
 function parsePriceInput(raw: string): number | undefined {
-  const trimmed = raw.trim();
-  if (trimmed === "") return undefined;
-  const value = Number(trimmed);
-  return Number.isFinite(value) && Number.isInteger(value) ? value : undefined;
+  // Prices are whole zloty; tolerate grouping whitespace (incl. NBSP variants).
+  const normalised = raw.replace(/[\s\u00a0\u202f\u2009]/g, "");
+  if (!/^\d+$/.test(normalised)) return undefined;
+  const value = Number(normalised);
+  return Number.isSafeInteger(value) && value <= MAX_PRICE ? value : undefined;
+}
+
+function isPriceInputInvalid(raw: string): boolean {
+  return raw.trim() !== "" && parsePriceInput(raw) === undefined;
 }
 
 export function OffersPage({
@@ -83,6 +91,9 @@ export function OffersPage({
 
   const hasActiveFilters =
     searchInput !== "" || minPriceInput !== "" || maxPriceInput !== "";
+
+  const minPriceInvalid = isPriceInputInvalid(minPriceInput);
+  const maxPriceInvalid = isPriceInputInvalid(maxPriceInput);
 
   const handleClearFilters = useCallback(() => {
     setSearchInput("");
@@ -254,8 +265,13 @@ export function OffersPage({
                 onChange={(event) => setMinPriceInput(event.target.value)}
                 inputMode="numeric"
                 aria-label={t("offers.filters.minPriceLabel")}
+                aria-invalid={minPriceInvalid || undefined}
                 placeholder={t("offers.filters.minPrice")}
-                className="h-7 w-20 text-xs"
+                className={`h-7 w-20 text-xs${
+                  minPriceInvalid
+                    ? " border-destructive ring-1 ring-destructive/40"
+                    : ""
+                }`}
               />
               <span className="text-xs text-muted-foreground">–</span>
               <Input
@@ -263,8 +279,13 @@ export function OffersPage({
                 onChange={(event) => setMaxPriceInput(event.target.value)}
                 inputMode="numeric"
                 aria-label={t("offers.filters.maxPriceLabel")}
+                aria-invalid={maxPriceInvalid || undefined}
                 placeholder={t("offers.filters.maxPrice")}
-                className="h-7 w-20 text-xs"
+                className={`h-7 w-20 text-xs${
+                  maxPriceInvalid
+                    ? " border-destructive ring-1 ring-destructive/40"
+                    : ""
+                }`}
               />
               {hasActiveFilters && (
                 <Button
