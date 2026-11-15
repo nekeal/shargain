@@ -1405,6 +1405,18 @@ export type GetTargetOffersData = {
          * Offset
          */
         offset?: number;
+        /**
+         * Search
+         */
+        search?: string | null;
+        /**
+         * Min price
+         */
+        minPrice?: number | null;
+        /**
+         * Max price
+         */
+        maxPrice?: number | null;
     };
     url: '/api/public/targets/{target_id}/offers';
 };
