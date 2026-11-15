@@ -38,7 +38,9 @@ export interface OffersPageProps {
 
 function parsePriceInput(raw: string): number | undefined {
   const trimmed = raw.trim();
-  return trimmed === "" ? undefined : Number(trimmed);
+  if (trimmed === "") return undefined;
+  const value = Number(trimmed);
+  return Number.isFinite(value) && Number.isInteger(value) ? value : undefined;
 }
 
 export function OffersPage({

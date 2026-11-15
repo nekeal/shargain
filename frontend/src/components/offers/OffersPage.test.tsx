@@ -444,6 +444,31 @@ describe("OffersPage", () => {
     expect(lastCall?.query?.maxPrice).toBeUndefined();
   });
 
+  it("ignores price inputs that are not whole numbers", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "100,50" },
+    });
+    fireEvent.change(screen.getByLabelText("Cena do"), {
+      target: { value: "12.5" },
+    });
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "rower" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ search: "rower" }),
+        }),
+      ),
+    );
+    const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+    expect(lastCall?.query?.minPrice).toBeUndefined();
+    expect(lastCall?.query?.maxPrice).toBeUndefined();
+  });
+
   it("useOfferKeyboardTriage handles empty offers list without throwing", () => {
     const { result } = renderHook(() =>
       useOfferKeyboardTriage({
