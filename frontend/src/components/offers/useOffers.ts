@@ -1,9 +1,4 @@
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import type {
   PublicOfferPageSchema,
@@ -83,7 +78,10 @@ export function useOffersQuery({
     },
     enabled: enabled && targetId !== null,
     staleTime: 15_000,
-    placeholderData: targetId !== null ? keepPreviousData : undefined,
+    // Keep the previous page while tabs/ordering/filters change, but never
+    // across a target switch: old-target offers are not actionable here.
+    placeholderData: (previousData, previousQuery) =>
+      previousQuery?.queryKey[1] === targetId ? previousData : undefined,
   });
 }
 

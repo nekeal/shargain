@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OffersPage } from "./OffersPage";
+import { useOffersQuery } from "./useOffers";
 import { useOfferKeyboardTriage } from "./useOfferKeyboardTriage";
 import type { PublicOfferSchema, TargetSummaryResponse } from "@/lib/api/types.gen";
 import * as api from "@/lib/api/sdk.gen";
@@ -588,6 +589,52 @@ describe("OffersPage", () => {
       "aria-describedby",
       "offers-price-hint",
     );
+  });
+
+  it("does not carry the previous target's offers across a target switch", async () => {
+    let resolveTarget2: (value: any) => void = () => {};
+    const target2Response = new Promise((resolve) => {
+      resolveTarget2 = resolve;
+    });
+
+    vi.mocked(api.getTargetOffers).mockImplementation((options: any) => {
+      if (options?.path?.target_id === 2) {
+        return target2Response as any;
+      }
+      return Promise.resolve({
+        data: { count: 2, items: [mockOffer1, mockOffer2] },
+      }) as any;
+    });
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+
+    const { result, rerender } = renderHook(
+      ({ targetId }: { targetId: number }) =>
+        useOffersQuery({
+          targetId,
+          tab: "all",
+          ordering: "oldest",
+          limit: 50,
+          offset: 0,
+        }),
+      { wrapper, initialProps: { targetId: 1 } },
+    );
+
+    await waitFor(() => {
+      expect(result.current.data?.items).toHaveLength(2);
+    });
+
+    rerender({ targetId: 2 });
+
+    expect(result.current.data).toBeUndefined();
+
+    resolveTarget2({ data: { count: 1, items: [mockOffer2] } });
+
+    await waitFor(() => {
+      expect(result.current.data?.items).toEqual([mockOffer2]);
+    });
   });
 
   it("useOfferKeyboardTriage handles empty offers list without throwing", () => {

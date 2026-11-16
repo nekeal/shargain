@@ -83,7 +83,6 @@ export function OfferSplitReader({
       hasMore={hasMore}
       onLoadMore={onLoadMore}
       isLoadingMore={isLoadingMore}
-      isLoading={isLoading}
       totalCount={totalCount}
     />
   );
