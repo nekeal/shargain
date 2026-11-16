@@ -369,7 +369,9 @@
       "minPrice": "Min price",
       "maxPriceLabel": "Maximum price",
       "maxPrice": "Max price",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "invalidPrice": "Whole złoty only — price filter ignored",
+      "groupLabel": "Offer filters"
     },
     "emptyState": {
       "title": "No offers in this tab",

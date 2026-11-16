@@ -369,7 +369,9 @@
       "minPrice": "Cena od",
       "maxPriceLabel": "Cena do",
       "maxPrice": "Cena do",
-      "clear": "Wyczyść filtry"
+      "clear": "Wyczyść filtry",
+      "invalidPrice": "Tylko pełne złote — filtr ceny pominięty",
+      "groupLabel": "Filtry ofert"
     },
     "emptyState": {
       "title": "Brak ofert w tej zakładce",

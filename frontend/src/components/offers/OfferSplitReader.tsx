@@ -22,6 +22,7 @@ export interface OfferSplitReaderProps {
   hasMore?: boolean;
   onLoadMore?: () => void;
   isLoadingMore?: boolean;
+  isLoading?: boolean;
   totalCount?: number;
 }
 
@@ -34,9 +35,14 @@ export function OfferSplitReader({
   hasMore,
   onLoadMore,
   isLoadingMore,
+  isLoading,
   totalCount,
 }: OfferSplitReaderProps) {
   const { t } = useTranslation();
+
+  if (offers.length === 0 && isLoading) {
+    return null;
+  }
 
   if (offers.length === 0) {
     return (
@@ -77,6 +83,7 @@ export function OfferSplitReader({
       hasMore={hasMore}
       onLoadMore={onLoadMore}
       isLoadingMore={isLoadingMore}
+      isLoading={isLoading}
       totalCount={totalCount}
     />
   );

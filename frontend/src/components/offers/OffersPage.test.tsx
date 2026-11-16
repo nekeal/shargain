@@ -529,6 +529,67 @@ describe("OffersPage", () => {
     expect(lastCall?.query?.minPrice).toBe(0);
   });
 
+  it("clears all filters and restores focus to the search input", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "rower" },
+    });
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "100" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ search: "rower", minPrice: 100 }),
+        }),
+      ),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Wyczyść filtry" }));
+
+    await waitFor(() => {
+      const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+      expect(lastCall?.query?.search).toBeUndefined();
+      expect(lastCall?.query?.minPrice).toBeUndefined();
+      expect(lastCall?.query?.maxPrice).toBeUndefined();
+    });
+    expect(document.activeElement).toBe(
+      screen.getByLabelText("Szukaj po tytule"),
+    );
+  });
+
+  it("does not trigger triage shortcuts while typing in the filter inputs", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Mieszkanie 2-pokojowe Mokotów").length).toBeGreaterThan(0);
+    });
+
+    const searchInput = screen.getByLabelText("Szukaj po tytule");
+    searchInput.focus();
+    fireEvent.keyDown(searchInput, { key: "s" });
+    fireEvent.keyDown(searchInput, { key: "l" });
+
+    expect(api.markOfferSeen).not.toHaveBeenCalled();
+    expect(api.likeOffer).not.toHaveBeenCalled();
+  });
+
+  it("announces invalid price input with a linked hint", () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "abc" },
+    });
+
+    expect(screen.getByText(/filtr ceny pominięty/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Cena od")).toHaveAttribute(
+      "aria-describedby",
+      "offers-price-hint",
+    );
+  });
+
   it("useOfferKeyboardTriage handles empty offers list without throwing", () => {
     const { result } = renderHook(() =>
       useOfferKeyboardTriage({
