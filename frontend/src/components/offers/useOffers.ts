@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import type {
   PublicOfferPageSchema,
@@ -78,6 +83,7 @@ export function useOffersQuery({
     },
     enabled: enabled && targetId !== null,
     staleTime: 15_000,
+    placeholderData: targetId !== null ? keepPreviousData : undefined,
   });
 }
 

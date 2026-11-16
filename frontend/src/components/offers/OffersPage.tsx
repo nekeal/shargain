@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -69,6 +69,8 @@ export function OffersPage({
   const [minPriceInput, setMinPriceInput] = useState("");
   const [maxPriceInput, setMaxPriceInput] = useState("");
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const [search, setSearch] = useState<string | undefined>();
   const [minPrice, setMinPrice] = useState<number | undefined>();
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
@@ -94,12 +96,20 @@ export function OffersPage({
 
   const minPriceInvalid = isPriceInputInvalid(minPriceInput);
   const maxPriceInvalid = isPriceInputInvalid(maxPriceInput);
+  const priceInvalid = minPriceInvalid || maxPriceInvalid;
 
   const handleClearFilters = useCallback(() => {
     setSearchInput("");
     setMinPriceInput("");
     setMaxPriceInput("");
-  }, []);
+    // Apply immediately; the pending debounce timer re-applies undefined (no-op).
+    setSearch(undefined);
+    setMinPrice(undefined);
+    setMaxPrice(undefined);
+    // The unfiltered result may already be cached, so refresh it explicitly.
+    queryClient.invalidateQueries({ queryKey: ["offers", selectedTargetId] });
+    searchInputRef.current?.focus();
+  }, [queryClient, selectedTargetId]);
 
   // Reset pagination limit when target, tab, ordering or filters change
   useEffect(() => {
@@ -190,6 +200,8 @@ export function OffersPage({
   }, []);
 
   const isBusy = isRefreshing || liveLoading || isFetching;
+  const isLoadingOffers =
+    liveLoading || (isFetching && displayedOffers.length === 0);
 
   return (
     <div className="min-h-screen bg-secondary pb-3 flex flex-col">
@@ -252,8 +264,13 @@ export function OffersPage({
             )}
 
             {/* Inline title search & price range */}
-            <div className="flex items-center gap-1.5 border-l border-border pl-3">
+            <div
+              role="group"
+              aria-label={t("offers.filters.groupLabel")}
+              className="flex flex-wrap items-center gap-1.5 border-l border-border pl-3"
+            >
               <Input
+                ref={searchInputRef}
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 aria-label={t("offers.filters.searchLabel")}
@@ -266,6 +283,9 @@ export function OffersPage({
                 inputMode="numeric"
                 aria-label={t("offers.filters.minPriceLabel")}
                 aria-invalid={minPriceInvalid || undefined}
+                aria-describedby={
+                  minPriceInvalid ? "offers-price-hint" : undefined
+                }
                 placeholder={t("offers.filters.minPrice")}
                 className={`h-7 w-20 text-xs${
                   minPriceInvalid
@@ -273,13 +293,18 @@ export function OffersPage({
                     : ""
                 }`}
               />
-              <span className="text-xs text-muted-foreground">–</span>
+              <span aria-hidden="true" className="text-xs text-muted-foreground">
+                –
+              </span>
               <Input
                 value={maxPriceInput}
                 onChange={(event) => setMaxPriceInput(event.target.value)}
                 inputMode="numeric"
                 aria-label={t("offers.filters.maxPriceLabel")}
                 aria-invalid={maxPriceInvalid || undefined}
+                aria-describedby={
+                  maxPriceInvalid ? "offers-price-hint" : undefined
+                }
                 placeholder={t("offers.filters.maxPrice")}
                 className={`h-7 w-20 text-xs${
                   maxPriceInvalid
@@ -298,6 +323,14 @@ export function OffersPage({
                 >
                   <X className="w-3.5 h-3.5" />
                 </Button>
+              )}
+              {priceInvalid && (
+                <span
+                  id="offers-price-hint"
+                  className="text-[11px] text-destructive whitespace-nowrap"
+                >
+                  {t("offers.filters.invalidPrice")}
+                </span>
               )}
             </div>
           </div>
@@ -352,8 +385,8 @@ export function OffersPage({
           </div>
         </div>
 
-        {/* Loading indicator for initial live query */}
-        {liveLoading && displayedOffers.length === 0 && (
+        {/* Loading indicator while there are no offers to show */}
+        {isLoadingOffers && (
           <div className="p-12 text-center text-muted-foreground animate-pulse">
             <Globe className="w-8 h-8 mx-auto mb-2 opacity-50 animate-spin" />
             <p className="text-sm">{t("offers.loadingFromBackend")}</p>
@@ -371,6 +404,7 @@ export function OffersPage({
             hasMore={hasMore}
             onLoadMore={handleLoadMore}
             isLoadingMore={isFetching && displayedOffers.length > 0}
+            isLoading={isLoadingOffers}
             totalCount={totalCount}
           />
         </div>
