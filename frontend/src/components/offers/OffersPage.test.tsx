@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OffersPage } from "./OffersPage";
+import { useOffersQuery } from "./useOffers";
 import { useOfferKeyboardTriage } from "./useOfferKeyboardTriage";
 import type { PublicOfferSchema, TargetSummaryResponse } from "@/lib/api/types.gen";
 import * as api from "@/lib/api/sdk.gen";
@@ -400,6 +401,239 @@ describe("OffersPage", () => {
           query: expect.objectContaining({ limit: 100 }),
         }),
       );
+    });
+  });
+
+  it("sends title search and price range to the API after typing", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "  rower  " },
+    });
+    fireEvent.change(screen.getByLabelText("Cena od"), { target: { value: "100" } });
+    fireEvent.change(screen.getByLabelText("Cena do"), { target: { value: "500" } });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({
+            search: "rower",
+            minPrice: 100,
+            maxPrice: 500,
+          }),
+        }),
+      ),
+    );
+  });
+
+  it("omits price bounds when the inputs are blank", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "rower" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ search: "rower" }),
+        }),
+      ),
+    );
+    const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+    expect(lastCall?.query?.minPrice).toBeUndefined();
+    expect(lastCall?.query?.maxPrice).toBeUndefined();
+  });
+
+  it("ignores price inputs that are not whole numbers", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "100,50" },
+    });
+    fireEvent.change(screen.getByLabelText("Cena do"), {
+      target: { value: "12.5" },
+    });
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "rower" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ search: "rower" }),
+        }),
+      ),
+    );
+    const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+    expect(lastCall?.query?.minPrice).toBeUndefined();
+    expect(lastCall?.query?.maxPrice).toBeUndefined();
+  });
+
+  it("ignores dot-grouped price input and flags it invalid", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "1.000" },
+    });
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "rower" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ search: "rower" }),
+        }),
+      ),
+    );
+    const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+    expect(lastCall?.query?.minPrice).toBeUndefined();
+    expect(screen.getByLabelText("Cena od")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+  });
+
+  it("parses space-grouped price input as a whole zloty amount", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "650 000" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ minPrice: 650000 }),
+        }),
+      ),
+    );
+    expect(screen.getByLabelText("Cena od")).not.toHaveAttribute("aria-invalid");
+  });
+
+  it("sends a literal zero price bound", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "0" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ minPrice: 0 }),
+        }),
+      ),
+    );
+    const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+    expect(lastCall?.query?.minPrice).toBe(0);
+  });
+
+  it("clears all filters and restores focus to the search input", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
+      target: { value: "rower" },
+    });
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "100" },
+    });
+
+    await waitFor(() =>
+      expect(api.getTargetOffers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          query: expect.objectContaining({ search: "rower", minPrice: 100 }),
+        }),
+      ),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Wyczyść filtry" }));
+
+    await waitFor(() => {
+      const lastCall = vi.mocked(api.getTargetOffers).mock.calls.at(-1)?.[0];
+      expect(lastCall?.query?.search).toBeUndefined();
+      expect(lastCall?.query?.minPrice).toBeUndefined();
+      expect(lastCall?.query?.maxPrice).toBeUndefined();
+    });
+    expect(document.activeElement).toBe(
+      screen.getByLabelText("Szukaj po tytule"),
+    );
+  });
+
+  it("does not trigger triage shortcuts while typing in the filter inputs", async () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Mieszkanie 2-pokojowe Mokotów").length).toBeGreaterThan(0);
+    });
+
+    const searchInput = screen.getByLabelText("Szukaj po tytule");
+    searchInput.focus();
+    fireEvent.keyDown(searchInput, { key: "s" });
+    fireEvent.keyDown(searchInput, { key: "l" });
+
+    expect(api.markOfferSeen).not.toHaveBeenCalled();
+    expect(api.likeOffer).not.toHaveBeenCalled();
+  });
+
+  it("announces invalid price input with a linked hint", () => {
+    renderWithProviders(<OffersPage initialTargetId={1} />);
+
+    fireEvent.change(screen.getByLabelText("Cena od"), {
+      target: { value: "abc" },
+    });
+
+    expect(screen.getByText(/filtr ceny pominięty/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Cena od")).toHaveAttribute(
+      "aria-describedby",
+      "offers-price-hint",
+    );
+  });
+
+  it("does not carry the previous target's offers across a target switch", async () => {
+    let resolveTarget2: (value: any) => void = () => {};
+    const target2Response = new Promise((resolve) => {
+      resolveTarget2 = resolve;
+    });
+
+    vi.mocked(api.getTargetOffers).mockImplementation((options: any) => {
+      if (options?.path?.target_id === 2) {
+        return target2Response as any;
+      }
+      return Promise.resolve({
+        data: { count: 2, items: [mockOffer1, mockOffer2] },
+      }) as any;
+    });
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+
+    const { result, rerender } = renderHook(
+      ({ targetId }: { targetId: number }) =>
+        useOffersQuery({
+          targetId,
+          tab: "all",
+          ordering: "oldest",
+          limit: 50,
+          offset: 0,
+        }),
+      { wrapper, initialProps: { targetId: 1 } },
+    );
+
+    await waitFor(() => {
+      expect(result.current.data?.items).toHaveLength(2);
+    });
+
+    rerender({ targetId: 2 });
+
+    expect(result.current.data).toBeUndefined();
+
+    resolveTarget2({ data: { count: 1, items: [mockOffer2] } });
+
+    await waitFor(() => {
+      expect(result.current.data?.items).toEqual([mockOffer2]);
     });
   });
 

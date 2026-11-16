@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -9,6 +9,7 @@ import {
   Heart,
   Inbox,
   RefreshCw,
+  X,
 } from "lucide-react";
 import {
   useOffersQuery,
@@ -18,6 +19,7 @@ import {
 import { OfferSplitReader } from "./OfferSplitReader";
 import type { PublicOfferSchema } from "@/lib/api/types.gen";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   loadStoredTargetId,
@@ -34,6 +36,21 @@ export interface OffersPageProps {
   onTargetChange?: (targetId: number) => void;
 }
 
+// Postgres `price` is int4; anything above this cannot be a valid bound.
+const MAX_PRICE = 2_147_483_647;
+
+function parsePriceInput(raw: string): number | undefined {
+  // Prices are whole zloty; tolerate grouping whitespace (incl. NBSP variants).
+  const normalised = raw.replace(/[\s\u00a0\u202f\u2009]/g, "");
+  if (!/^\d+$/.test(normalised)) return undefined;
+  const value = Number(normalised);
+  return Number.isSafeInteger(value) && value <= MAX_PRICE ? value : undefined;
+}
+
+function isPriceInputInvalid(raw: string): boolean {
+  return raw.trim() !== "" && parsePriceInput(raw) === undefined;
+}
+
 export function OffersPage({
   initialTargetId,
   onTargetChange,
@@ -47,15 +64,57 @@ export function OffersPage({
     initialTargetId ?? loadStoredTargetId(),
   );
 
+  // Raw filter input state (debounced into applied values below)
+  const [searchInput, setSearchInput] = useState("");
+  const [minPriceInput, setMinPriceInput] = useState("");
+  const [maxPriceInput, setMaxPriceInput] = useState("");
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const [search, setSearch] = useState<string | undefined>();
+  const [minPrice, setMinPrice] = useState<number | undefined>();
+  const [maxPrice, setMaxPrice] = useState<number | undefined>();
+
   const queryClient = useQueryClient();
 
   const { data: targets } = useGetTargets();
   const { data: myTarget } = useGetMyTarget();
 
-  // Reset pagination limit when target, tab or ordering changes
+  // Debounce raw filter inputs into applied query values
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmedSearch = searchInput.trim();
+      setSearch(trimmedSearch === "" ? undefined : trimmedSearch);
+      setMinPrice(parsePriceInput(minPriceInput));
+      setMaxPrice(parsePriceInput(maxPriceInput));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput, minPriceInput, maxPriceInput]);
+
+  const hasActiveFilters =
+    searchInput !== "" || minPriceInput !== "" || maxPriceInput !== "";
+
+  const minPriceInvalid = isPriceInputInvalid(minPriceInput);
+  const maxPriceInvalid = isPriceInputInvalid(maxPriceInput);
+  const priceInvalid = minPriceInvalid || maxPriceInvalid;
+
+  const handleClearFilters = useCallback(() => {
+    setSearchInput("");
+    setMinPriceInput("");
+    setMaxPriceInput("");
+    // Apply immediately; the pending debounce timer re-applies undefined (no-op).
+    setSearch(undefined);
+    setMinPrice(undefined);
+    setMaxPrice(undefined);
+    // The unfiltered result may already be cached, so refresh it explicitly.
+    queryClient.invalidateQueries({ queryKey: ["offers", selectedTargetId] });
+    searchInputRef.current?.focus();
+  }, [queryClient, selectedTargetId]);
+
+  // Reset pagination limit when target, tab, ordering or filters change
   useEffect(() => {
     setLimit(50);
-  }, [selectedTargetId, activeTab, ordering]);
+  }, [selectedTargetId, activeTab, ordering, search, minPrice, maxPrice]);
 
   // Sync initialTargetId if changed externally
   useEffect(() => {
@@ -97,6 +156,9 @@ export function OffersPage({
     tab: activeTab,
     ordering,
     limit,
+    search,
+    minPrice,
+    maxPrice,
   });
 
   const toggleLikeMutation = useToggleLikeMutation(selectedTargetId);
@@ -138,6 +200,8 @@ export function OffersPage({
   }, []);
 
   const isBusy = isRefreshing || liveLoading || isFetching;
+  const isLoadingOffers =
+    liveLoading || (isFetching && displayedOffers.length === 0);
 
   return (
     <div className="min-h-screen bg-secondary pb-3 flex flex-col">
@@ -198,6 +262,77 @@ export function OffersPage({
                 />
               </div>
             )}
+
+            {/* Inline title search & price range */}
+            <div
+              role="group"
+              aria-label={t("offers.filters.groupLabel")}
+              className="flex flex-wrap items-center gap-1.5 border-l border-border pl-3"
+            >
+              <Input
+                ref={searchInputRef}
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                aria-label={t("offers.filters.searchLabel")}
+                placeholder={t("offers.filters.searchPlaceholder")}
+                className="h-7 w-36 text-xs"
+              />
+              <Input
+                value={minPriceInput}
+                onChange={(event) => setMinPriceInput(event.target.value)}
+                inputMode="numeric"
+                aria-label={t("offers.filters.minPriceLabel")}
+                aria-invalid={minPriceInvalid || undefined}
+                aria-describedby={
+                  minPriceInvalid ? "offers-price-hint" : undefined
+                }
+                placeholder={t("offers.filters.minPrice")}
+                className={`h-7 w-20 text-xs${
+                  minPriceInvalid
+                    ? " border-destructive ring-1 ring-destructive/40"
+                    : ""
+                }`}
+              />
+              <span aria-hidden="true" className="text-xs text-muted-foreground">
+                –
+              </span>
+              <Input
+                value={maxPriceInput}
+                onChange={(event) => setMaxPriceInput(event.target.value)}
+                inputMode="numeric"
+                aria-label={t("offers.filters.maxPriceLabel")}
+                aria-invalid={maxPriceInvalid || undefined}
+                aria-describedby={
+                  maxPriceInvalid ? "offers-price-hint" : undefined
+                }
+                placeholder={t("offers.filters.maxPrice")}
+                className={`h-7 w-20 text-xs${
+                  maxPriceInvalid
+                    ? " border-destructive ring-1 ring-destructive/40"
+                    : ""
+                }`}
+              />
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground"
+                  title={t("offers.filters.clear")}
+                  aria-label={t("offers.filters.clear")}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              )}
+              {priceInvalid && (
+                <span
+                  id="offers-price-hint"
+                  className="text-[11px] text-destructive whitespace-nowrap"
+                >
+                  {t("offers.filters.invalidPrice")}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Ordering & Count */}
@@ -250,8 +385,8 @@ export function OffersPage({
           </div>
         </div>
 
-        {/* Loading indicator for initial live query */}
-        {liveLoading && displayedOffers.length === 0 && (
+        {/* Loading indicator while there are no offers to show */}
+        {isLoadingOffers && (
           <div className="p-12 text-center text-muted-foreground animate-pulse">
             <Globe className="w-8 h-8 mx-auto mb-2 opacity-50 animate-spin" />
             <p className="text-sm">{t("offers.loadingFromBackend")}</p>
@@ -269,6 +404,7 @@ export function OffersPage({
             hasMore={hasMore}
             onLoadMore={handleLoadMore}
             isLoadingMore={isFetching && displayedOffers.length > 0}
+            isLoading={isLoadingOffers}
             totalCount={totalCount}
           />
         </div>

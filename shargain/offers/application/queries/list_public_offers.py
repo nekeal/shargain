@@ -137,6 +137,9 @@ def _apply_filters_and_ordering(
     seen: bool | None,
     liked: bool | None,
     ordering: Literal["oldest", "newest"],
+    search: str | None = None,
+    min_price: int | None = None,
+    max_price: int | None = None,
 ) -> OfferQueryset:
     state_subquery = UserOfferState.objects.filter(user_id=user_id, offer_id=OuterRef("pk"))
 
@@ -149,6 +152,15 @@ def _apply_filters_and_ordering(
         qs = qs.filter(Exists(state_subquery.filter(liked_at__isnull=False)))
     elif liked is False:
         qs = qs.exclude(Exists(state_subquery.filter(liked_at__isnull=False)))
+
+    search = search.strip() if search else ""
+    if search:
+        qs = qs.filter(title__icontains=search)
+
+    if min_price is not None:
+        qs = qs.filter(price__gte=min_price)
+    if max_price is not None:
+        qs = qs.filter(price__lte=max_price)
 
     if ordering == "oldest":
         return qs.order_by("created_at", "id")
@@ -175,12 +187,15 @@ def list_public_offers(
     ordering: Literal["oldest", "newest"] = "oldest",
     limit: int = 20,
     offset: int = 0,
+    search: str | None = None,
+    min_price: int | None = None,
+    max_price: int | None = None,
 ) -> PublicOfferPage:
     if not ScrappingTarget.objects.filter(pk=target_id, owner_id=actor.user_id).exists():
         raise TargetDoesNotExist()
 
     qs = Offer.objects.filter(target_id=target_id, passed_filters=True).defer("source_html")
-    qs = _apply_filters_and_ordering(qs, actor.user_id, seen, liked, ordering)
+    qs = _apply_filters_and_ordering(qs, actor.user_id, seen, liked, ordering, search, min_price, max_price)
 
     limit = max(1, limit)
     offset = max(0, offset)
