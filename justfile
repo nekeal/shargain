@@ -115,6 +115,11 @@ frontend-build:
 frontend-generate-api-client:
     npm --prefix frontend run generate:api-client
 
+# Deploy frontend preview to Cloudflare Pages
+frontend-deploy-preview:
+    pnpm --prefix frontend run build
+    pnpm --prefix frontend run deploy:preview
+
 # --- Docker ---
 
 # Show docker tags for current build
