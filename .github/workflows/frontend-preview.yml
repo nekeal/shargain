@@ -1,0 +1,114 @@
+name: Frontend Preview Deployment
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-preview.yml'
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+concurrency:
+  group: preview-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: write
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
+
+      - name: Install dependencies
+        run: pnpm -C frontend install --frozen-lockfile
+
+      - name: Build frontend
+        env:
+          VITE_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        run: pnpm -C frontend build
+
+      - name: Check Cloudflare credentials
+        id: check_credentials
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] || [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ] || [ -z "${{ secrets.CLOUDFLARE_PAGES_PROJECT }}" ] || [ -z "${{ secrets.PRODUCTION_API_URL }}" ]; then
+            echo "has_credentials=false" >> $GITHUB_OUTPUT
+            echo "::warning::Cloudflare or API secrets (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_PAGES_PROJECT, PRODUCTION_API_URL) are not fully configured in repository secrets. Skipping preview deployment."
+          else
+            echo "has_credentials=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        id: cloudflare_pages
+        if: steps.check_credentials.outputs.has_credentials == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy frontend/dist --project-name=${{ secrets.CLOUDFLARE_PAGES_PROJECT }} --branch=${{ github.head_ref || github.ref_name }}
+
+      - name: Post or update PR preview comment
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && steps.check_credentials.outputs.has_credentials == 'true'
+        env:
+          TARGET_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+          PREVIEW_URL: ${{ steps.cloudflare_pages.outputs.pages-deployment-alias-url || steps.cloudflare_pages.outputs.deployment-url }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          script: |
+            const marker = '<!-- cloudflare-pages-preview -->';
+            const previewUrl = process.env.PREVIEW_URL;
+            const commitSha = (process.env.COMMIT_SHA || '').substring(0, 7);
+            const branchName = context.payload.pull_request?.head?.ref || context.ref;
+            const apiUrl = process.env.TARGET_API_URL;
+
+            const body = `${marker}
+            ### 🚀 Cloudflare Pages Preview Deployed
+
+            | Item | Details |
+            | :--- | :--- |
+            | **Preview URL** | [${previewUrl}](${previewUrl}) |
+            | **Branch** | \`${branchName}\` |
+            | **Commit** | \`${commitSha}\` |
+            | **Backend API** | \`${apiUrl}\` |
+
+            *Built for rapid design validation against production backend. Updated automatically on new pushes.*`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const botComment = comments.find(c => c.body && c.body.includes(marker));
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.payload.pull_request.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
+              });
+            }
