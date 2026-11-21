@@ -2,10 +2,12 @@
   "name": "frontend",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.24.0",
   "scripts": {
     "dev": "vite --port 3000",
     "start": "vite --port 3000",
     "build": "vite build && tsc",
+    "deploy:preview": "wrangler pages deploy dist",
     "serve": "vite preview",
     "test": "vitest run",
     "lint": "tsc --noEmit; eslint .",
@@ -69,6 +71,7 @@
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.5",
-    "web-vitals": "^4.2.4"
+    "web-vitals": "^4.2.4",
+    "wrangler": "^4.165.0"
   }
 }
