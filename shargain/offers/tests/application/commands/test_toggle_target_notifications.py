@@ -7,9 +7,9 @@ from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.toggle_target_notifications import (
     toggle_target_notifications,
 )
-from shargain.offers.application.exceptions import TargetDoesNotExist
-from shargain.offers.models import ScrappingTarget
-from shargain.offers.tests.factories import ScrappingTargetFactory
+from shargain.offers.application.exceptions import TargetDoesNotExist, TargetPermissionDenied
+from shargain.offers.models import ScrappingTarget, TargetRole
+from shargain.offers.tests.factories import ScrappingTargetFactory, TargetAccessFactory
 
 
 @pytest.mark.django_db
@@ -71,6 +71,26 @@ class TestToggleTargetNotifications:
         actor = Actor(user_id=other_user.id)
         with pytest.raises(TargetDoesNotExist):
             toggle_target_notifications(actor, target_with_notifications.id)
+
+    def test_admin_can_toggle_target_notifications(self, target_with_notifications):
+        admin = UserFactory()
+        TargetAccessFactory(target=target_with_notifications, user=admin, role=TargetRole.ADMIN)
+        actor = Actor(user_id=admin.id)
+
+        result = toggle_target_notifications(actor, target_with_notifications.id, enable=False)
+        assert result.enable_notifications is False
+        target_with_notifications.refresh_from_db()
+        assert target_with_notifications.enable_notifications is False
+
+    def test_editor_cannot_toggle_target_notifications(self, target_with_notifications):
+        editor = UserFactory()
+        TargetAccessFactory(target=target_with_notifications, user=editor, role=TargetRole.EDITOR)
+        actor = Actor(user_id=editor.id)
+
+        with pytest.raises(TargetPermissionDenied):
+            toggle_target_notifications(actor, target_with_notifications.id, enable=False)
+        target_with_notifications.refresh_from_db()
+        assert target_with_notifications.enable_notifications is True
 
     def test_updated_at_changes_on_toggle(self, target_with_notifications):
         """Test that updated_at is updated when notifications are toggled."""

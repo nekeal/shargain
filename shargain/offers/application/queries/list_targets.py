@@ -24,7 +24,7 @@ class TargetDto:
 
 def _get_user_targets(actor: Actor) -> QuerySet[ScrappingTarget]:
     """Get queryset of targets for the given user."""
-    return ScrappingTarget.objects.filter(owner_id=actor.user_id)
+    return ScrappingTarget.objects.for_user(actor.user_id)
 
 
 def list_targets(
@@ -47,7 +47,9 @@ def list_targets(
     offset = (page - 1) * per_page
 
     targets = (
-        _get_user_targets(actor).annotate(url_count=Count("scrapingurl")).order_by("-id")[offset : offset + per_page]
+        _get_user_targets(actor)
+        .annotate(url_count=Count("scrapingurl", distinct=True))
+        .order_by("-id")[offset : offset + per_page]
     )
 
     return [

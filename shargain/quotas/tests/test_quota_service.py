@@ -4,7 +4,9 @@ import pytest
 from django.conf import settings
 from django.utils import timezone
 
-from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
+from shargain.accounts.tests.factories import UserFactory
+from shargain.offers.models import TargetRole
+from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory, TargetAccessFactory
 from shargain.quotas.models import OfferQuota, ScrapingUrlQuota
 from shargain.quotas.services.quota import QuotaService
 from shargain.quotas.tests.factories import OfferQuotaFactory
@@ -106,3 +108,22 @@ class TestQuotaService:
         assert len(status.quotas) == 2
         assert any(q.slug == "scraping_urls" and q.target_id == target.id and q.used == 1 for q in status.quotas)
         assert any(q.slug == "offers" and q.target_id == target.id and q.limit == 15 for q in status.quotas)
+
+    def test_scenario_get_quota_status_includes_shared_targets(self):
+        target = ScrappingTargetFactory(name="Shared Cars")
+        viewer = UserFactory()
+        TargetAccessFactory(target=target, user=viewer, role=TargetRole.VIEWER)
+        OfferQuotaFactory(
+            user=target.owner,
+            target=target,
+            max_offers_per_period=25,
+            used_offers_count=5,
+            is_free_tier=False,
+            auto_renew=False,
+        )
+        ScrapingUrlFactory(scraping_target=target)
+
+        status = QuotaService.get_quota_status(user_id=viewer.id)
+
+        assert any(q.slug == "scraping_urls" and q.target_id == target.id and q.used == 1 for q in status.quotas)
+        assert any(q.slug == "offers" and q.target_id == target.id and q.limit == 25 for q in status.quotas)

@@ -9,8 +9,11 @@ from shargain.offers.application.commands.change_notification_config import (
 from shargain.offers.application.exceptions import (
     NotificationConfigDoesNotExist,
     TargetDoesNotExist,
+    TargetPermissionDenied,
 )
 from shargain.offers.application.queries.get_target import get_target
+from shargain.offers.models import TargetRole
+from shargain.offers.tests.factories import TargetAccessFactory
 
 
 @pytest.mark.django_db
@@ -63,3 +66,30 @@ class TestChangeNotificationConfig:
 
         with pytest.raises(NotificationConfigDoesNotExist):
             change_notification_config(actor, scraping_target.id, other_config.id)
+
+    def test_admin_member_can_change_notification_config(self, scraping_target, notification_config):
+        scraping_target.notification_config = notification_config
+        scraping_target.save()
+
+        admin = UserFactory()
+        TargetAccessFactory(target=scraping_target, user=admin, role=TargetRole.ADMIN)
+        actor = Actor(user_id=admin.id)
+
+        change_notification_config(actor, scraping_target.id, None)
+
+        updated_target = get_target(actor, scraping_target.id)
+        assert updated_target.notification_config_id is None
+
+    def test_editor_member_cannot_change_notification_config(self, scraping_target, notification_config):
+        scraping_target.notification_config = notification_config
+        scraping_target.save()
+
+        editor = UserFactory()
+        TargetAccessFactory(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        actor = Actor(user_id=editor.id)
+
+        with pytest.raises(TargetPermissionDenied):
+            change_notification_config(actor, scraping_target.id, None)
+
+        target = get_target(actor, scraping_target.id)
+        assert target.notification_config_id == notification_config.id

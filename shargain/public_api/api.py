@@ -26,6 +26,7 @@ from shargain.notifications.models import NotificationChannelChoices
 
 # Import the offers router
 from shargain.offers.api import router as offers_router
+from shargain.offers.application.access import can_manage_urls
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.commands.change_notification_config import (
     change_notification_config,
@@ -54,6 +55,7 @@ from shargain.offers.application.exceptions import (
     QuotaExceeded,
     ScrapingUrlDoesNotExist,
     TargetDoesNotExist,
+    TargetPermissionDenied,
 )
 from shargain.offers.application.queries.get_target import (
     get_target,
@@ -79,6 +81,11 @@ router = NinjaAPI()
 router.add_router("/auth", auth_router)
 router.add_router("/", protected_router)
 router.add_router("/", offers_router)
+
+
+@router.exception_handler(TargetPermissionDenied)
+def target_permission_denied_handler(request: HttpRequest, exc: TargetPermissionDenied):
+    return router.create_response(request, {"detail": exc.message, "code": exc.code}, status=403)
 
 
 class ErrorSchema(Schema):
@@ -254,7 +261,7 @@ def get_available_fields(request: HttpRequest, url_id: int):
     actor = get_actor(request)
 
     try:
-        url_dto = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
+        url_dto = ScrapingUrl.objects.for_user(actor.user_id).get(id=url_id)
     except ScrapingUrl.DoesNotExist as e:
         raise HttpError(404, "Scraping URL not found") from e
 
@@ -422,7 +429,7 @@ def get_quota_status(request: HttpRequest):
 )
 def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
-    delete_scraping_url(actor, url_id)
+    delete_scraping_url(actor, url_id=url_id, target_id=target_id)
     return 204, None
 
 
@@ -445,9 +452,15 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
 
     if isinstance(filters_arg, dict):
         try:
-            existing_url = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
+            existing_url = (
+                ScrapingUrl.objects.for_user(actor.user_id)
+                .select_related("scraping_target")
+                .get(id=url_id, scraping_target_id=target_id)
+            )
         except ScrapingUrl.DoesNotExist as e:
             raise HttpError(404, "Scraping URL not found") from e
+        if not can_manage_urls(actor.user_id, existing_url.scraping_target):
+            raise TargetPermissionDenied()
         try:
             filters_arg = validate_filters_for_url(filters_arg, existing_url.url)
         except ValueError as e:
@@ -463,6 +476,7 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
         return update_scraping_url(
             actor=actor,
             url_id=url_id,
+            target_id=target_id,
             filters=filters_arg,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
             send_map_in_notifications=payload.send_map_in_notifications,

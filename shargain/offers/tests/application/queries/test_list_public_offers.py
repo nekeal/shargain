@@ -14,7 +14,8 @@ from shargain.offers.field_extraction import (
     OfferFieldResolver,
     RichValue,
 )
-from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
+from shargain.offers.models import TargetRole
+from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory, TargetAccessFactory
 
 
 @pytest.mark.django_db
@@ -27,6 +28,38 @@ class TestListPublicOffers:
 
         with pytest.raises(TargetDoesNotExist):
             list_public_offers(actor, target.id)
+
+    def test_shared_user_can_list_offers_and_triage_independently(self):
+        owner = UserFactory()
+        viewer = UserFactory()
+        target = ScrappingTargetFactory(owner=owner)
+        TargetAccessFactory(target=target, user=viewer, role=TargetRole.VIEWER)
+
+        offer = OfferFactory(target=target, passed_filters=True)
+
+        viewer_actor = Actor(user_id=viewer.id)
+        owner_actor = Actor(user_id=owner.id)
+
+        # Viewer can list offers
+        page = list_public_offers(viewer_actor, target.id)
+        assert page.count == 1
+        assert page.items[0].id == offer.id
+        assert page.items[0].is_seen is False
+        assert page.items[0].is_liked is False
+
+        # Viewer marks as seen and liked
+        mark_offers_seen(viewer_actor, [offer.id])
+        like_offers(viewer_actor, [offer.id])
+
+        # Verify viewer sees them as seen and liked
+        viewer_page = list_public_offers(viewer_actor, target.id)
+        assert viewer_page.items[0].is_seen is True
+        assert viewer_page.items[0].is_liked is True
+
+        # Verify owner still sees them as unseen and unliked
+        owner_page = list_public_offers(owner_actor, target.id)
+        assert owner_page.items[0].is_seen is False
+        assert owner_page.items[0].is_liked is False
 
     def test_excludes_passed_filters_null_or_false(self):
         user = UserFactory()

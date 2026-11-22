@@ -102,7 +102,6 @@ class QuotaService:
         quota = QuotaService._get_or_create_url_quota(user_id=user_id)
         current_urls = ScrapingUrl.objects.filter(
             scraping_target_id=target_id,
-            scraping_target__owner_id=user_id,
         ).count()
         return current_urls < quota.max_urls
 
@@ -131,23 +130,24 @@ class QuotaService:
 
     @staticmethod
     def get_quota_status(user_id: int) -> QuotaStatusResponse:
-        url_quota = QuotaService._get_or_create_url_quota(user_id=user_id)
         quotas: list[QuotaStatusItem] = []
 
-        targets = ScrappingTarget.objects.filter(owner_id=user_id).order_by("id")
+        targets = ScrappingTarget.objects.for_user(user_id).order_by("id")
         for target in targets:
+            owner_id = target.owner_id or user_id
+            target_url_quota = QuotaService._get_or_create_url_quota(user_id=owner_id)
             current_target_urls = ScrapingUrl.objects.filter(scraping_target_id=target.id).count()
             quotas.append(
                 QuotaStatusItem(
                     slug="scraping_urls",
                     used=current_target_urls,
-                    limit=url_quota.max_urls,
+                    limit=target_url_quota.max_urls,
                     target_id=target.id,
                     target_name=target.name,
                 )
             )
 
-            quota = QuotaService._get_or_create_active_offer_quota(user_id=user_id, target_id=target.id)
+            quota = QuotaService._get_or_create_active_offer_quota(user_id=owner_id, target_id=target.id)
             quotas.append(
                 QuotaStatusItem(
                     slug="offers",

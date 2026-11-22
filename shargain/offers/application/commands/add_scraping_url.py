@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from shargain.commons.application.actor import Actor
+from shargain.offers.application.access import can_manage_urls
 from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
-from shargain.offers.application.exceptions import QuotaExceeded, TargetDoesNotExist
+from shargain.offers.application.exceptions import QuotaExceeded, TargetDoesNotExist, TargetPermissionDenied
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
 from shargain.quotas.services.quota import QuotaService
 
@@ -28,11 +29,15 @@ def add_scraping_url(
         filters: Optional filter configuration for notifications
     """
     try:
-        target = ScrappingTarget.objects.get(id=target_id, owner=actor.user_id)
+        target = ScrappingTarget.objects.for_user(actor.user_id).get(id=target_id)
     except ScrappingTarget.DoesNotExist as e:
         raise TargetDoesNotExist() from e
 
-    if not QuotaService.check_can_add_url(user_id=actor.user_id, target_id=target.id):
+    if not can_manage_urls(actor.user_id, target):
+        raise TargetPermissionDenied()
+
+    target_owner_id = target.owner_id or actor.user_id
+    if not QuotaService.check_can_add_url(user_id=target_owner_id, target_id=target.id):
         raise QuotaExceeded()
 
     scraping_url = ScrapingUrl.objects.create(

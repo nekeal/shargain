@@ -16,6 +16,19 @@ from shargain.offers.db_fields import PydanticField
 from shargain.offers.field_extraction import NotificationFieldsSelection
 
 
+class TargetRole(models.TextChoices):
+    VIEWER = "viewer", _("Viewer")
+    EDITOR = "editor", _("Editor")
+    ADMIN = "admin", _("Admin")
+
+
+class ScrappingTargetQuerySet(QuerySet):
+    def for_user(self, user_id: int | None) -> QuerySet["ScrappingTarget"]:
+        if not user_id:
+            return self.none()
+        return self.filter(Q(owner_id=user_id) | Q(accesses__user_id=user_id)).distinct()
+
+
 class ScrappingTarget(models.Model):  # type: ignore[django-manager-missing]
     name = models.CharField(verbose_name=_("Name"), max_length=100)
     url = ArrayField(models.URLField(max_length=1024), default=list, blank=True)
@@ -38,12 +51,65 @@ class ScrappingTarget(models.Model):  # type: ignore[django-manager-missing]
         CustomUser, verbose_name=_("Owner"), null=True, on_delete=models.CASCADE, related_name="scraping_targets"
     )
 
+    objects = Manager.from_queryset(ScrappingTargetQuerySet)()
+
     class Meta:
         verbose_name = _("Scrapping target")
         verbose_name_plural = _("Scrapping targets")
 
     def __str__(self):
         return f"{self.name} ({self.id})"
+
+
+class TargetAccess(TimeStampedModel):
+    target = models.ForeignKey(
+        "ScrappingTarget",
+        on_delete=models.CASCADE,
+        related_name="accesses",
+        verbose_name=_("Scraping target"),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="target_accesses",
+        verbose_name=_("User"),
+    )
+    role = models.CharField(
+        verbose_name=_("Role"),
+        max_length=20,
+        choices=TargetRole,
+        default=TargetRole.EDITOR,
+    )
+    granted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("Granted by"),
+    )
+
+    class Meta:
+        verbose_name = _("Target access")
+        verbose_name_plural = _("Target accesses")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["target", "user"],
+                name="uniq_target_user_access",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user} - {self.target} ({self.get_role_display()})"
+
+
+class ScrapingUrlQuerySet(QuerySet):
+    def for_user(self, user_id: int | None) -> QuerySet["ScrapingUrl"]:
+        if not user_id:
+            return self.none()
+        return self.filter(
+            Q(scraping_target__owner_id=user_id) | Q(scraping_target__accesses__user_id=user_id)
+        ).distinct()
 
 
 class ScrapingUrl(models.Model):
@@ -100,6 +166,8 @@ class ScrapingUrl(models.Model):
         help_text=_("Group of scraping URLs"),
     )
 
+    objects = Manager.from_queryset(ScrapingUrlQuerySet)()
+
     class Meta:
         verbose_name = _("Scraping URL")
         verbose_name_plural = _("Scraping URLs")
@@ -123,6 +191,11 @@ class ScrapingCheckin(models.Model):
 
 
 class OfferQueryset(QuerySet):
+    def for_user(self, user_id: int | None) -> QuerySet["Offer"]:
+        if not user_id:
+            return self.none()
+        return self.filter(Q(target__owner_id=user_id) | Q(target__accesses__user_id=user_id)).distinct()
+
     def opened(self):
         return self.filter(closed_at=None)
 

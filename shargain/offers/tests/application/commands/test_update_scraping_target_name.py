@@ -1,13 +1,14 @@
 import pytest
 from telebot.types import User
 
+from shargain.accounts.tests.factories import UserFactory
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.update_scraping_target_name import (
     update_scraping_target_name,
 )
-from shargain.offers.application.exceptions import TargetDoesNotExist
-from shargain.offers.models import ScrappingTarget
-from shargain.offers.tests.factories import ScrappingTargetFactory
+from shargain.offers.application.exceptions import TargetDoesNotExist, TargetPermissionDenied
+from shargain.offers.models import ScrappingTarget, TargetRole
+from shargain.offers.tests.factories import ScrappingTargetFactory, TargetAccessFactory
 
 
 class TestUpdateScrapingTargetName:
@@ -32,3 +33,22 @@ class TestUpdateScrapingTargetName:
 
         with pytest.raises(TargetDoesNotExist):
             update_scraping_target_name(Actor(user.id), different_scraping_target.pk, "New Name")
+
+    def test_admin_can_update_target_name(self, scraping_target: ScrappingTarget):
+        admin = UserFactory()
+        TargetAccessFactory(target=scraping_target, user=admin, role=TargetRole.ADMIN)
+        update_scraping_target_name(Actor(admin.id), scraping_target.pk, "Admin Name")
+        scraping_target.refresh_from_db()
+        assert scraping_target.name == "Admin Name"
+
+    def test_editor_cannot_update_target_name(self, scraping_target: ScrappingTarget):
+        editor = UserFactory()
+        TargetAccessFactory(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        with pytest.raises(TargetPermissionDenied):
+            update_scraping_target_name(Actor(editor.id), scraping_target.pk, "Editor Name")
+
+    def test_viewer_cannot_update_target_name(self, scraping_target: ScrappingTarget):
+        viewer = UserFactory()
+        TargetAccessFactory(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
+        with pytest.raises(TargetPermissionDenied):
+            update_scraping_target_name(Actor(viewer.id), scraping_target.pk, "Viewer Name")
