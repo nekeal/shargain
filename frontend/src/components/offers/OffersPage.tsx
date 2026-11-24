@@ -225,25 +225,32 @@ export function OffersPage({
         </div>
 
         {/* Filter Controls Bar (Consolidated with Target Selector) */}
-        <div className="bg-card border border-border rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-sm">
-          {/* Group 1: Tabs + Target Selector */}
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+        <div className="bg-card border border-border rounded-xl p-2 sm:px-3 sm:py-2 shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-2.5">
+          {/* Left Area: View Triage (Tabs + Target Selector) + Filter Controls (Search + Price) */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
+            {/* Tabs: Unseen, Liked, All */}
             <Tabs
               value={activeTab}
               onValueChange={(val) =>
                 setActiveTab(val as "unseen" | "liked" | "all")
               }
             >
-              <TabsList className="bg-muted/70 h-8">
-                <TabsTrigger value="unseen" className="gap-1.5 text-xs h-7 px-2.5">
+              <TabsList className="bg-muted/70 p-0.5 h-8">
+                <TabsTrigger value="unseen" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
                   <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                   <span>{t("offers.tabs.unseen")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="liked" className="gap-1.5 text-xs h-7 px-2.5">
-                  <Heart className="w-3.5 h-3.5 text-red-500" />
+                <TabsTrigger value="liked" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
+                  <Heart
+                    className={`w-3.5 h-3.5 ${
+                      activeTab === "liked"
+                        ? "fill-red-500 text-red-500"
+                        : "text-muted-foreground"
+                    }`}
+                  />
                   <span>{t("offers.tabs.liked")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="all" className="gap-1.5 text-xs h-7 px-2.5">
+                <TabsTrigger value="all" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
                   <Filter className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>{t("offers.tabs.all")}</span>
                 </TabsTrigger>
@@ -252,103 +259,136 @@ export function OffersPage({
 
             {/* Target Selector Inline when multiple targets */}
             {targets && targets.length > 1 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap hidden sm:inline">
                   {t("offers.targetLabel")}
                 </span>
                 <TargetSelectorInline
                   targets={targets}
                   selectedTargetId={selectedTargetId}
                   onSelect={handleSelectTarget}
+                  className="h-8 text-xs min-w-[150px] sm:min-w-[175px] max-w-[220px]"
                 />
               </div>
             )}
+
+            {/* Subtle separator between view scope and query filters */}
+            <div
+              className="hidden md:block h-4 w-px bg-border/80 self-center mx-0.5"
+              aria-hidden="true"
+            />
+
+            {/* Query Filter Controls */}
+            <div
+              role="group"
+              aria-label={t("offers.filters.groupLabel")}
+              className="flex flex-wrap items-center gap-2"
+            >
+              {/* Title Search */}
+              <div className="relative flex items-center">
+                <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                <Input
+                  ref={searchInputRef}
+                  value={searchInput}
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  aria-label={t("offers.filters.searchLabel")}
+                  placeholder={t("offers.filters.searchPlaceholder")}
+                  className="h-8 pl-8 pr-7 text-xs w-44 sm:w-52 md:w-56 lg:w-60 bg-background/60 shadow-2xs focus-visible:bg-background transition-colors"
+                />
+                {searchInput !== "" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchInput("");
+                      setSearch(undefined);
+                      searchInputRef.current?.focus();
+                    }}
+                    className="absolute right-2 p-0.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                    title={t("offers.filters.clearSearch")}
+                    aria-label={t("offers.filters.clearSearch")}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Price Range Segmented Group */}
+              <div
+                className={`flex items-center h-8 rounded-md border bg-background/60 px-2 shadow-2xs transition-[border-color,box-shadow] ${
+                  priceInvalid
+                    ? "border-destructive ring-1 ring-destructive/40"
+                    : "border-input hover:border-input/80 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 focus-within:bg-background"
+                }`}
+              >
+                <span className="text-[11px] font-medium text-muted-foreground select-none mr-1.5 hidden sm:inline">
+                  {t("offers.filters.priceLabel", "Cena:")}
+                </span>
+                <input
+                  value={minPriceInput}
+                  onChange={(event) => setMinPriceInput(event.target.value)}
+                  inputMode="numeric"
+                  aria-label={t("offers.filters.minPriceLabel")}
+                  aria-invalid={minPriceInvalid || undefined}
+                  aria-describedby={
+                    minPriceInvalid ? "offers-price-hint" : undefined
+                  }
+                  placeholder={t("offers.filters.minPrice")}
+                  className="h-full w-12 sm:w-14 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 outline-none text-right font-medium"
+                />
+                <span
+                  aria-hidden="true"
+                  className="mx-1 text-xs text-muted-foreground/50 select-none"
+                >
+                  –
+                </span>
+                <input
+                  value={maxPriceInput}
+                  onChange={(event) => setMaxPriceInput(event.target.value)}
+                  inputMode="numeric"
+                  aria-label={t("offers.filters.maxPriceLabel")}
+                  aria-invalid={maxPriceInvalid || undefined}
+                  aria-describedby={
+                    maxPriceInvalid ? "offers-price-hint" : undefined
+                  }
+                  placeholder={t("offers.filters.maxPrice")}
+                  className="h-full w-12 sm:w-14 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 outline-none text-left font-medium"
+                />
+                <span className="ml-1 text-[11px] font-medium text-muted-foreground select-none">
+                  {t("offers.filters.currency", "zł")}
+                </span>
+              </div>
+
+              {/* Clear All Filters Button */}
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-8 text-xs px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-lg gap-1.5 cursor-pointer shrink-0"
+                  title={t("offers.filters.clear")}
+                  aria-label={t("offers.filters.clear")}
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">
+                    {t("offers.filters.clear")}
+                  </span>
+                </Button>
+              )}
+
+              {priceInvalid && (
+                <span
+                  id="offers-price-hint"
+                  className="text-[11px] font-medium text-destructive whitespace-nowrap animate-in fade-in"
+                >
+                  {t("offers.filters.invalidPrice")}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Group 2: Inline title search & price range */}
-          <div
-            role="group"
-            aria-label={t("offers.filters.groupLabel")}
-            className="flex flex-wrap items-center gap-2"
-          >
-            <div className="relative flex items-center">
-              <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-              <Input
-                ref={searchInputRef}
-                value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
-                aria-label={t("offers.filters.searchLabel")}
-                placeholder={t("offers.filters.searchPlaceholder")}
-                className="h-8 pl-8 pr-2 text-xs w-full sm:w-48 md:w-56 lg:w-64"
-              />
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <Input
-                value={minPriceInput}
-                onChange={(event) => setMinPriceInput(event.target.value)}
-                inputMode="numeric"
-                aria-label={t("offers.filters.minPriceLabel")}
-                aria-invalid={minPriceInvalid || undefined}
-                aria-describedby={
-                  minPriceInvalid ? "offers-price-hint" : undefined
-                }
-                placeholder={t("offers.filters.minPrice")}
-                className={`h-8 w-24 sm:w-28 text-xs${
-                  minPriceInvalid
-                    ? " border-destructive ring-1 ring-destructive/40"
-                    : ""
-                }`}
-              />
-              <span aria-hidden="true" className="text-xs text-muted-foreground select-none">
-                –
-              </span>
-              <Input
-                value={maxPriceInput}
-                onChange={(event) => setMaxPriceInput(event.target.value)}
-                inputMode="numeric"
-                aria-label={t("offers.filters.maxPriceLabel")}
-                aria-invalid={maxPriceInvalid || undefined}
-                aria-describedby={
-                  maxPriceInvalid ? "offers-price-hint" : undefined
-                }
-                placeholder={t("offers.filters.maxPrice")}
-                className={`h-8 w-24 sm:w-28 text-xs${
-                  maxPriceInvalid
-                    ? " border-destructive ring-1 ring-destructive/40"
-                    : ""
-                }`}
-              />
-              <span className="text-xs text-muted-foreground font-medium select-none">
-                {t("offers.filters.currency", "zł")}
-              </span>
-            </div>
-
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearFilters}
-                className="h-8 text-xs px-2 text-muted-foreground hover:text-foreground cursor-pointer"
-                title={t("offers.filters.clear")}
-                aria-label={t("offers.filters.clear")}
-              >
-                <X className="w-3.5 h-3.5" />
-              </Button>
-            )}
-            {priceInvalid && (
-              <span
-                id="offers-price-hint"
-                className="text-[11px] text-destructive whitespace-nowrap"
-              >
-                {t("offers.filters.invalidPrice")}
-              </span>
-            )}
-          </div>
-
-          {/* Group 3: Ordering & Count & Refresh */}
-          <div className="flex items-center gap-2.5 sm:gap-3 ml-auto sm:ml-0">
-            <span className="text-xs text-muted-foreground">
+          {/* Right Area: Results Count, Ordering Toggle, Refresh */}
+          <div className="flex items-center justify-between xl:justify-end gap-2 sm:gap-2.5 pt-1.5 xl:pt-0 border-t border-border/40 xl:border-t-0 shrink-0">
+            <span className="text-xs text-muted-foreground font-medium px-2 py-1 rounded-md bg-muted/40 border border-border/40 whitespace-nowrap select-none">
               {totalCount > displayedOffers.length
                 ? t("offers.resultsCountWithTotal", {
                     count: displayedOffers.length,
@@ -365,12 +405,12 @@ export function OffersPage({
               onClick={() =>
                 setOrdering(ordering === "oldest" ? "newest" : "oldest")
               }
-              className="h-8 text-xs gap-1.5 px-2.5 cursor-pointer"
+              className="h-8 text-xs gap-1.5 px-2.5 cursor-pointer shadow-2xs hover:bg-accent hover:text-accent-foreground"
             >
               <ArrowUpDown className="w-3 h-3 text-muted-foreground" />
               <span>
                 {t("offers.ordering.label")}{" "}
-                <strong className="text-foreground">
+                <strong className="text-foreground font-semibold">
                   {ordering === "oldest"
                     ? t("offers.ordering.oldest")
                     : t("offers.ordering.newest")}
@@ -382,7 +422,8 @@ export function OffersPage({
               variant="outline"
               size="sm"
               onClick={handleRefresh}
-              className="h-8 text-xs gap-1.5 px-2.5 text-muted-foreground hover:text-foreground hover:border-primary/50 cursor-pointer"
+              disabled={isBusy}
+              className="h-8 text-xs gap-1.5 px-2.5 text-muted-foreground hover:text-foreground hover:border-primary/50 cursor-pointer shadow-2xs"
               title={t("offers.actions.refreshServer")}
               aria-label={t("offers.actions.refreshServer")}
             >
@@ -391,7 +432,9 @@ export function OffersPage({
                   isBusy ? "animate-spin text-primary" : ""
                 }`}
               />
-              <span className="hidden sm:inline">{t("offers.actions.refresh")}</span>
+              <span className="hidden sm:inline">
+                {t("offers.actions.refresh")}
+              </span>
             </Button>
           </div>
         </div>
