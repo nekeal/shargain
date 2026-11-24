@@ -3,7 +3,8 @@ from django.test import Client
 
 from shargain.accounts.tests.factories import UserFactory
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 FILTERS = {
     "ruleGroups": [{"logic": "and", "rules": [{"field": "title", "operator": "contains", "value": "apartment"}]}]
@@ -98,7 +99,7 @@ class TestUpdateScrapingUrlEndpoint:
         owner = UserFactory()
         editor = UserFactory()
         target = ScrappingTargetFactory(owner=owner)
-        TargetAccessFactory(target=target, user=editor, role=TargetRole.EDITOR)
+        grant_access(target=target, user=editor, role=TargetRole.EDITOR)
         url = ScrapingUrlFactory(scraping_target=target, send_map_in_notifications=True)
 
         client = Client()
@@ -116,7 +117,7 @@ class TestUpdateScrapingUrlEndpoint:
         owner = UserFactory()
         viewer = UserFactory()
         target = ScrappingTargetFactory(owner=owner)
-        TargetAccessFactory(target=target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=target, user=viewer, role=TargetRole.VIEWER)
         url = ScrapingUrlFactory(scraping_target=target, send_map_in_notifications=True)
 
         client = Client()
@@ -150,7 +151,7 @@ class TestUpdateScrapingUrlEndpoint:
         owner = UserFactory()
         viewer = UserFactory()
         target = ScrappingTargetFactory(owner=owner)
-        TargetAccessFactory(target=target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=target, user=viewer, role=TargetRole.VIEWER)
         url = ScrapingUrlFactory(scraping_target=target, url="https://www.olx.pl/d/nieruchomosci/mieszkania/")
 
         invalid_field_filters = {

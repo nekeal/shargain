@@ -5,7 +5,8 @@ from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.set_scraping_url_active_status import set_scraping_url_active_status
 from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist, TargetPermissionDenied
 from shargain.offers.models import ScrapingUrl, TargetRole
-from shargain.offers.tests.factories import ScrapingUrlFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrapingUrlFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -54,7 +55,7 @@ class TestSetScrapingUrlActiveStatus:
 
     def test_editor_can_set_active_status(self, inactive_scraping_url):
         editor = UserFactory()
-        TargetAccessFactory(target=inactive_scraping_url.scraping_target, user=editor, role=TargetRole.EDITOR)
+        grant_access(target=inactive_scraping_url.scraping_target, user=editor, role=TargetRole.EDITOR)
         actor = Actor(user_id=editor.id)
 
         set_scraping_url_active_status(
@@ -66,7 +67,7 @@ class TestSetScrapingUrlActiveStatus:
 
     def test_viewer_cannot_set_active_status(self, inactive_scraping_url):
         viewer = UserFactory()
-        TargetAccessFactory(target=inactive_scraping_url.scraping_target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=inactive_scraping_url.scraping_target, user=viewer, role=TargetRole.VIEWER)
         actor = Actor(user_id=viewer.id)
 
         with pytest.raises(TargetPermissionDenied):

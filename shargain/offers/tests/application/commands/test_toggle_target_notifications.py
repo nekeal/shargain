@@ -9,7 +9,8 @@ from shargain.offers.application.commands.toggle_target_notifications import (
 )
 from shargain.offers.application.exceptions import TargetDoesNotExist, TargetPermissionDenied
 from shargain.offers.models import ScrappingTarget, TargetRole
-from shargain.offers.tests.factories import ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -74,7 +75,7 @@ class TestToggleTargetNotifications:
 
     def test_admin_can_toggle_target_notifications(self, target_with_notifications):
         admin = UserFactory()
-        TargetAccessFactory(target=target_with_notifications, user=admin, role=TargetRole.ADMIN)
+        grant_access(target=target_with_notifications, user=admin, role=TargetRole.ADMIN)
         actor = Actor(user_id=admin.id)
 
         result = toggle_target_notifications(actor, target_with_notifications.id, enable=False)
@@ -84,7 +85,7 @@ class TestToggleTargetNotifications:
 
     def test_editor_cannot_toggle_target_notifications(self, target_with_notifications):
         editor = UserFactory()
-        TargetAccessFactory(target=target_with_notifications, user=editor, role=TargetRole.EDITOR)
+        grant_access(target=target_with_notifications, user=editor, role=TargetRole.EDITOR)
         actor = Actor(user_id=editor.id)
 
         with pytest.raises(TargetPermissionDenied):

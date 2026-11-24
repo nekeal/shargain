@@ -5,7 +5,8 @@ from shargain.accounts.tests.factories import UserFactory
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.offer_state import like_offers, mark_offers_seen
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -29,7 +30,7 @@ class TestOffersApi:
         user = UserFactory()
         other_user = UserFactory()
         target = ScrappingTargetFactory(owner=other_user)
-        TargetAccessFactory(target=target, user=user, role=TargetRole.VIEWER)
+        grant_access(target=target, user=user, role=TargetRole.VIEWER)
         OfferFactory(target=target, passed_filters=True, title="Shared Offer")
         client = Client()
         client.force_login(user)
@@ -191,7 +192,7 @@ class TestOffersApi:
         owner = UserFactory()
         viewer = UserFactory()
         target = ScrappingTargetFactory(owner=owner)
-        TargetAccessFactory(target=target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=target, user=viewer, role=TargetRole.VIEWER)
         offer = OfferFactory(target=target, passed_filters=True)
 
         viewer_client = Client()

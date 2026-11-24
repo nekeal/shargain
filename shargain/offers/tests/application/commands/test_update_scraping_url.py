@@ -7,7 +7,8 @@ from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
 from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist, TargetPermissionDenied
 from shargain.offers.application.queries.get_target import get_target
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import ScrapingUrlFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrapingUrlFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -105,7 +106,7 @@ class TestUpdateScrapingUrl:
 
     def test_update_scraping_url_by_editor_succeeds(self, scraping_target):
         editor = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        grant_access(target=scraping_target, user=editor, role=TargetRole.EDITOR)
         scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, name="Old Name")
         actor = Actor(user_id=editor.id)
 
@@ -116,7 +117,7 @@ class TestUpdateScrapingUrl:
 
     def test_update_scraping_url_by_viewer_raises_permission_denied(self, scraping_target):
         viewer = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
         scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, name="Old Name")
         actor = Actor(user_id=viewer.id)
 

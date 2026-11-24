@@ -6,7 +6,8 @@ from shargain.offers.application.dto import TargetDTO
 from shargain.offers.application.exceptions import TargetDoesNotExist
 from shargain.offers.application.queries.get_target import get_target, get_target_by_user
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -44,7 +45,7 @@ class TestGetTargetQuery:
 
     def test_get_target_succeeds_for_shared_user(self, scraping_target):
         shared_user = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=shared_user, role=TargetRole.VIEWER)
+        grant_access(target=scraping_target, user=shared_user, role=TargetRole.VIEWER)
         actor = Actor(user_id=shared_user.id)
 
         result = get_target(actor, target_id=scraping_target.id)
@@ -54,7 +55,7 @@ class TestGetTargetQuery:
         user = UserFactory()
         other_user = UserFactory()
         shared_target = ScrappingTargetFactory(owner=other_user)
-        TargetAccessFactory(target=shared_target, user=user, role=TargetRole.VIEWER)
+        grant_access(target=shared_target, user=user, role=TargetRole.VIEWER)
         owned_target = ScrappingTargetFactory(owner=user)
 
         actor = Actor(user_id=user.id)
@@ -64,7 +65,7 @@ class TestGetTargetQuery:
     def test_get_target_by_user_returns_shared_when_no_owned(self):
         user = UserFactory()
         shared_target = ScrappingTargetFactory()
-        TargetAccessFactory(target=shared_target, user=user, role=TargetRole.VIEWER)
+        grant_access(target=shared_target, user=user, role=TargetRole.VIEWER)
 
         actor = Actor(user_id=user.id)
         result = get_target_by_user(actor)

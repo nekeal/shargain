@@ -7,7 +7,8 @@ from shargain.offers.application.queries.get_scraping_url import (
     get_scraping_url,
 )
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import ScrapingUrlFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrapingUrlFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -38,7 +39,7 @@ class TestGetScrapingUrl:
 
     def test_get_scraping_url_shared_member_can_retrieve_url(self, scraping_target):
         viewer = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
         scraping_url = ScrapingUrlFactory(scraping_target=scraping_target)
         actor = Actor(user_id=viewer.id)
 

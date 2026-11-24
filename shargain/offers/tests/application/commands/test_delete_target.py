@@ -5,7 +5,7 @@ from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.delete_target import delete_target
 from shargain.offers.application.exceptions import TargetPermissionDenied
 from shargain.offers.models import ScrappingTarget, TargetRole
-from shargain.offers.tests.factories import TargetAccessFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -28,7 +28,7 @@ class TestDeleteTarget:
     def test_admin_member_cannot_delete_target(self, scraping_target):
         """Only the target owner can delete a target; admin members are denied."""
         admin = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=admin, role=TargetRole.ADMIN)
+        grant_access(target=scraping_target, user=admin, role=TargetRole.ADMIN)
         actor = Actor(user_id=admin.id)
 
         with pytest.raises(TargetPermissionDenied):

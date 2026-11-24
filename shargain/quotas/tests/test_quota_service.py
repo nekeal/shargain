@@ -6,7 +6,8 @@ from django.utils import timezone
 
 from shargain.accounts.tests.factories import UserFactory
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 from shargain.quotas.models import OfferQuota, ScrapingUrlQuota
 from shargain.quotas.services.quota import QuotaService
 from shargain.quotas.tests.factories import OfferQuotaFactory
@@ -112,7 +113,7 @@ class TestQuotaService:
     def test_scenario_get_quota_status_includes_shared_targets(self):
         target = ScrappingTargetFactory(name="Shared Cars")
         viewer = UserFactory()
-        TargetAccessFactory(target=target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=target, user=viewer, role=TargetRole.VIEWER)
         OfferQuotaFactory(
             user=target.owner,
             target=target,

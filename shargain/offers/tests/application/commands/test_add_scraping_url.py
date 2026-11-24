@@ -7,7 +7,7 @@ from shargain.offers.application.dto import ScrapingUrlDTO
 from shargain.offers.application.exceptions import QuotaExceeded, TargetDoesNotExist, TargetPermissionDenied
 from shargain.offers.application.queries.get_target import get_target
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import TargetAccessFactory
+from shargain.offers.tests.helpers import grant_access
 from shargain.quotas.tests.factories import ScrapingUrlQuotaFactory
 
 
@@ -91,7 +91,7 @@ class TestAddScrapingUrl:
 
     def test_add_scraping_url_by_editor_succeeds(self, scraping_target):
         editor = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        grant_access(target=scraping_target, user=editor, role=TargetRole.EDITOR)
         actor = Actor(user_id=editor.id)
         url = "https://example.com/editor-url"
 
@@ -103,7 +103,7 @@ class TestAddScrapingUrl:
 
     def test_add_scraping_url_by_viewer_raises_permission_denied(self, scraping_target):
         viewer = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
         actor = Actor(user_id=viewer.id)
 
         with pytest.raises(TargetPermissionDenied):
@@ -114,7 +114,7 @@ class TestAddScrapingUrl:
 
     def test_add_scraping_url_by_editor_enforces_owner_quota(self, scraping_target):
         editor = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        grant_access(target=scraping_target, user=editor, role=TargetRole.EDITOR)
         actor = Actor(user_id=editor.id)
 
         # Set owner quota to 0

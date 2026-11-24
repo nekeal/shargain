@@ -8,7 +8,8 @@ from shargain.offers.application.commands.update_scraping_target_name import (
 )
 from shargain.offers.application.exceptions import TargetDoesNotExist, TargetPermissionDenied
 from shargain.offers.models import ScrappingTarget, TargetRole
-from shargain.offers.tests.factories import ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 class TestUpdateScrapingTargetName:
@@ -36,19 +37,19 @@ class TestUpdateScrapingTargetName:
 
     def test_admin_can_update_target_name(self, scraping_target: ScrappingTarget):
         admin = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=admin, role=TargetRole.ADMIN)
+        grant_access(target=scraping_target, user=admin, role=TargetRole.ADMIN)
         update_scraping_target_name(Actor(admin.id), scraping_target.pk, "Admin Name")
         scraping_target.refresh_from_db()
         assert scraping_target.name == "Admin Name"
 
     def test_editor_cannot_update_target_name(self, scraping_target: ScrappingTarget):
         editor = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        grant_access(target=scraping_target, user=editor, role=TargetRole.EDITOR)
         with pytest.raises(TargetPermissionDenied):
             update_scraping_target_name(Actor(editor.id), scraping_target.pk, "Editor Name")
 
     def test_viewer_cannot_update_target_name(self, scraping_target: ScrappingTarget):
         viewer = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
         with pytest.raises(TargetPermissionDenied):
             update_scraping_target_name(Actor(viewer.id), scraping_target.pk, "Viewer Name")

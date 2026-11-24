@@ -12,7 +12,7 @@ from shargain.offers.application.exceptions import (
     TargetPermissionDenied,
 )
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import TargetAccessFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -51,7 +51,7 @@ class TestSendTestNotification:
         scraping_target.save()
 
         admin = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=admin, role=TargetRole.ADMIN)
+        grant_access(target=scraping_target, user=admin, role=TargetRole.ADMIN)
         actor = Actor(user_id=admin.id)
 
         with patch(
@@ -66,7 +66,7 @@ class TestSendTestNotification:
         scraping_target.save()
 
         editor = UserFactory()
-        TargetAccessFactory(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        grant_access(target=scraping_target, user=editor, role=TargetRole.EDITOR)
         actor = Actor(user_id=editor.id)
 
         with pytest.raises(TargetPermissionDenied):

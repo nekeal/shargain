@@ -4,7 +4,8 @@ from shargain.accounts.tests.factories import UserFactory
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.queries.list_targets import list_targets
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 class TestListTargets:
@@ -43,7 +44,7 @@ class TestListTargets:
         user = UserFactory()
         owned_target = ScrappingTargetFactory(owner=user)
         shared_target = ScrappingTargetFactory()
-        TargetAccessFactory(target=shared_target, user=user, role=TargetRole.VIEWER)
+        grant_access(target=shared_target, user=user, role=TargetRole.VIEWER)
 
         result = list_targets(actor=Actor(user_id=user.id))
         target_ids = {t.id_ for t in result}

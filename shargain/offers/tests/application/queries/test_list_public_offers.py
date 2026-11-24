@@ -15,7 +15,8 @@ from shargain.offers.field_extraction import (
     RichValue,
 )
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -33,7 +34,7 @@ class TestListPublicOffers:
         owner = UserFactory()
         viewer = UserFactory()
         target = ScrappingTargetFactory(owner=owner)
-        TargetAccessFactory(target=target, user=viewer, role=TargetRole.VIEWER)
+        grant_access(target=target, user=viewer, role=TargetRole.VIEWER)
 
         offer = OfferFactory(target=target, passed_filters=True)
 

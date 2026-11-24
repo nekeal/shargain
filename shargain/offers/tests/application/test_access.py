@@ -9,7 +9,8 @@ from shargain.offers.application.access import (
     get_user_role,
 )
 from shargain.offers.models import TargetRole
-from shargain.offers.tests.factories import ScrappingTargetFactory, TargetAccessFactory
+from shargain.offers.tests.factories import ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -27,7 +28,7 @@ class TestTargetAccessPolicies:
     def test_admin_role_permissions(self):
         admin_user = UserFactory()
         target = ScrappingTargetFactory()
-        TargetAccessFactory(target=target, user=admin_user, role=TargetRole.ADMIN)
+        grant_access(target=target, user=admin_user, role=TargetRole.ADMIN)
 
         assert get_user_role(admin_user.id, target) == TargetRole.ADMIN
         assert can_view_target(admin_user.id, target) is True
@@ -38,7 +39,7 @@ class TestTargetAccessPolicies:
     def test_editor_role_permissions(self):
         editor_user = UserFactory()
         target = ScrappingTargetFactory()
-        TargetAccessFactory(target=target, user=editor_user, role=TargetRole.EDITOR)
+        grant_access(target=target, user=editor_user, role=TargetRole.EDITOR)
 
         assert get_user_role(editor_user.id, target) == TargetRole.EDITOR
         assert can_view_target(editor_user.id, target) is True
@@ -49,7 +50,7 @@ class TestTargetAccessPolicies:
     def test_viewer_role_permissions(self):
         viewer_user = UserFactory()
         target = ScrappingTargetFactory()
-        TargetAccessFactory(target=target, user=viewer_user, role=TargetRole.VIEWER)
+        grant_access(target=target, user=viewer_user, role=TargetRole.VIEWER)
 
         assert get_user_role(viewer_user.id, target) == TargetRole.VIEWER
         assert can_view_target(viewer_user.id, target) is True
