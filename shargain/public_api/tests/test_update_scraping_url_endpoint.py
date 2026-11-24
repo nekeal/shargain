@@ -2,6 +2,7 @@ import pytest
 from django.test import Client
 
 from shargain.accounts.tests.factories import UserFactory
+from shargain.offers.application.exceptions import TargetPermissionDenied
 from shargain.offers.models import TargetRole
 from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
 from shargain.offers.tests.helpers import grant_access
@@ -128,7 +129,7 @@ class TestUpdateScrapingUrlEndpoint:
             content_type="application/json",
         )
         assert response.status_code == 403
-        assert response.json()["code"] == "target_permission_denied"
+        assert response.json()["code"] == TargetPermissionDenied.code
         url.refresh_from_db()
         assert url.send_map_in_notifications is True
 
@@ -168,4 +169,4 @@ class TestUpdateScrapingUrlEndpoint:
             content_type="application/json",
         )
         assert response.status_code == 403
-        assert response.json()["code"] == "target_permission_denied"
+        assert response.json()["code"] == TargetPermissionDenied.code

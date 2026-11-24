@@ -44,9 +44,7 @@ class TestUpdateScrapingUrl:
                 {
                     "logic": "and",
                     "logicWithNext": None,
-                    "rules": [
-                        {"case_sensitive": False, "field": "title", "operator": "contains", "value": "test"}
-                    ],
+                    "rules": [{"case_sensitive": False, "field": "title", "operator": "contains", "value": "test"}],
                 }
             ]
         }
