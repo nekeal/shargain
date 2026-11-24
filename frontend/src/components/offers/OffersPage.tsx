@@ -5,10 +5,10 @@ import {
   ArrowUpDown,
   CheckCircle2,
   Filter,
-  Globe,
   Heart,
   Inbox,
   RefreshCw,
+  Search,
   X,
 } from "lucide-react";
 import {
@@ -17,6 +17,7 @@ import {
   useToggleSeenMutation,
 } from "./useOffers";
 import { OfferSplitReader } from "./OfferSplitReader";
+import { OffersSkeleton } from "./OffersSkeleton";
 import type { PublicOfferSchema } from "@/lib/api/types.gen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -224,9 +225,9 @@ export function OffersPage({
         </div>
 
         {/* Filter Controls Bar (Consolidated with Target Selector) */}
-        <div className="bg-card border border-border rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-          {/* Tabs: Unseen, Liked, All */}
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="bg-card border border-border rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-sm">
+          {/* Group 1: Tabs + Target Selector */}
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
             <Tabs
               value={activeTab}
               onValueChange={(val) =>
@@ -251,7 +252,7 @@ export function OffersPage({
 
             {/* Target Selector Inline when multiple targets */}
             {targets && targets.length > 1 && (
-              <div className="flex items-center gap-2 border-l border-border pl-3">
+              <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
                   {t("offers.targetLabel")}
                 </span>
@@ -262,21 +263,27 @@ export function OffersPage({
                 />
               </div>
             )}
+          </div>
 
-            {/* Inline title search & price range */}
-            <div
-              role="group"
-              aria-label={t("offers.filters.groupLabel")}
-              className="flex flex-wrap items-center gap-1.5 border-l border-border pl-3"
-            >
+          {/* Group 2: Inline title search & price range */}
+          <div
+            role="group"
+            aria-label={t("offers.filters.groupLabel")}
+            className="flex flex-wrap items-center gap-2"
+          >
+            <div className="relative flex items-center">
+              <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 ref={searchInputRef}
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 aria-label={t("offers.filters.searchLabel")}
                 placeholder={t("offers.filters.searchPlaceholder")}
-                className="h-7 w-36 text-xs"
+                className="h-8 pl-8 pr-2 text-xs w-full sm:w-48 md:w-56 lg:w-64"
               />
+            </div>
+
+            <div className="flex items-center gap-1.5">
               <Input
                 value={minPriceInput}
                 onChange={(event) => setMinPriceInput(event.target.value)}
@@ -287,13 +294,13 @@ export function OffersPage({
                   minPriceInvalid ? "offers-price-hint" : undefined
                 }
                 placeholder={t("offers.filters.minPrice")}
-                className={`h-7 w-20 text-xs${
+                className={`h-8 w-24 sm:w-28 text-xs${
                   minPriceInvalid
                     ? " border-destructive ring-1 ring-destructive/40"
                     : ""
                 }`}
               />
-              <span aria-hidden="true" className="text-xs text-muted-foreground">
+              <span aria-hidden="true" className="text-xs text-muted-foreground select-none">
                 –
               </span>
               <Input
@@ -306,37 +313,41 @@ export function OffersPage({
                   maxPriceInvalid ? "offers-price-hint" : undefined
                 }
                 placeholder={t("offers.filters.maxPrice")}
-                className={`h-7 w-20 text-xs${
+                className={`h-8 w-24 sm:w-28 text-xs${
                   maxPriceInvalid
                     ? " border-destructive ring-1 ring-destructive/40"
                     : ""
                 }`}
               />
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearFilters}
-                  className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground"
-                  title={t("offers.filters.clear")}
-                  aria-label={t("offers.filters.clear")}
-                >
-                  <X className="w-3.5 h-3.5" />
-                </Button>
-              )}
-              {priceInvalid && (
-                <span
-                  id="offers-price-hint"
-                  className="text-[11px] text-destructive whitespace-nowrap"
-                >
-                  {t("offers.filters.invalidPrice")}
-                </span>
-              )}
+              <span className="text-xs text-muted-foreground font-medium select-none">
+                {t("offers.filters.currency", "zł")}
+              </span>
             </div>
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearFilters}
+                className="h-8 text-xs px-2 text-muted-foreground hover:text-foreground cursor-pointer"
+                title={t("offers.filters.clear")}
+                aria-label={t("offers.filters.clear")}
+              >
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            )}
+            {priceInvalid && (
+              <span
+                id="offers-price-hint"
+                className="text-[11px] text-destructive whitespace-nowrap"
+              >
+                {t("offers.filters.invalidPrice")}
+              </span>
+            )}
           </div>
 
-          {/* Ordering & Count */}
-          <div className="flex items-center gap-3">
+          {/* Group 3: Ordering & Count & Refresh */}
+          <div className="flex items-center gap-2.5 sm:gap-3 ml-auto sm:ml-0">
             <span className="text-xs text-muted-foreground">
               {totalCount > displayedOffers.length
                 ? t("offers.resultsCountWithTotal", {
@@ -354,7 +365,7 @@ export function OffersPage({
               onClick={() =>
                 setOrdering(ordering === "oldest" ? "newest" : "oldest")
               }
-              className="h-7 text-xs gap-1.5 px-2.5"
+              className="h-8 text-xs gap-1.5 px-2.5 cursor-pointer"
             >
               <ArrowUpDown className="w-3 h-3 text-muted-foreground" />
               <span>
@@ -371,7 +382,7 @@ export function OffersPage({
               variant="outline"
               size="sm"
               onClick={handleRefresh}
-              className="h-7 text-xs gap-1.5 px-2.5 text-muted-foreground hover:text-foreground hover:border-primary/50"
+              className="h-8 text-xs gap-1.5 px-2.5 text-muted-foreground hover:text-foreground hover:border-primary/50 cursor-pointer"
               title={t("offers.actions.refreshServer")}
               aria-label={t("offers.actions.refreshServer")}
             >
@@ -385,29 +396,26 @@ export function OffersPage({
           </div>
         </div>
 
-        {/* Loading indicator while there are no offers to show */}
-        {isLoadingOffers && (
-          <div className="p-12 text-center text-muted-foreground animate-pulse">
-            <Globe className="w-8 h-8 mx-auto mb-2 opacity-50 animate-spin" />
-            <p className="text-sm">{t("offers.loadingFromBackend")}</p>
+        {/* Loading skeleton while initial offers are loading */}
+        {isLoadingOffers ? (
+          <OffersSkeleton />
+        ) : (
+          /* Active SplitReader View */
+          <div className="flex-1 min-h-0 flex flex-col">
+            <OfferSplitReader
+              offers={displayedOffers}
+              onToggleLike={handleToggleLike}
+              onToggleSeen={handleToggleSeen}
+              onRefresh={handleRefresh}
+              isRefreshing={isBusy}
+              hasMore={hasMore}
+              onLoadMore={handleLoadMore}
+              isLoadingMore={isFetching && displayedOffers.length > 0}
+              isLoading={isLoadingOffers}
+              totalCount={totalCount}
+            />
           </div>
         )}
-
-        {/* Active SplitReader View */}
-        <div className="flex-1 min-h-0 flex flex-col">
-          <OfferSplitReader
-            offers={displayedOffers}
-            onToggleLike={handleToggleLike}
-            onToggleSeen={handleToggleSeen}
-            onRefresh={handleRefresh}
-            isRefreshing={isBusy}
-            hasMore={hasMore}
-            onLoadMore={handleLoadMore}
-            isLoadingMore={isFetching && displayedOffers.length > 0}
-            isLoading={isLoadingOffers}
-            totalCount={totalCount}
-          />
-        </div>
       </main>
     </div>
   );

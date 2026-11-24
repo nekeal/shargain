@@ -370,6 +370,7 @@
       "maxPriceLabel": "Cena do",
       "maxPrice": "Cena do",
       "clear": "Wyczyść filtry",
+      "currency": "zł",
       "invalidPrice": "Tylko pełne złote — filtr ceny pominięty",
       "groupLabel": "Filtry ofert"
     },
@@ -389,6 +390,7 @@
       "newest": "Najnowsze"
     },
     "actions": {
+      "backToList": "Wróć do listy",
       "refresh": "Odśwież",
       "refreshServer": "Odśwież listę z serwera",
       "refreshOffers": "Odśwież listę ofert",

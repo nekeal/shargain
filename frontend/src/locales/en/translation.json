@@ -370,6 +370,7 @@
       "maxPriceLabel": "Maximum price",
       "maxPrice": "Max price",
       "clear": "Clear filters",
+      "currency": "zł",
       "invalidPrice": "Whole złoty only — price filter ignored",
       "groupLabel": "Offer filters"
     },
@@ -389,6 +390,7 @@
       "newest": "Newest"
     },
     "actions": {
+      "backToList": "Back to list",
       "refresh": "Refresh",
       "refreshServer": "Refresh list from server",
       "refreshOffers": "Refresh offers list",
