@@ -25,13 +25,3 @@ class TargetAccessForm(ModelForm):
     class Meta:
         model = TargetAccess
         fields = "__all__"  # noqa: DJ007
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if not cleaned_data:
-            return cleaned_data
-        user = cleaned_data.get("user")
-        target = cleaned_data.get("target") or getattr(self.instance, "target", None)
-        if target and user and target.owner_id == user.id:
-            raise ValidationError({"user": _("Target owner cannot be added to target access.")})
-        return cleaned_data

@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib.postgres.indexes import HashIndex
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Manager, Q, QuerySet
 from django.utils import timezone
@@ -98,6 +99,11 @@ class TargetAccess(TimeStampedModel):
                 name="uniq_target_user_access",
             ),
         ]
+
+    def clean(self) -> None:
+        super().clean()
+        if self.target_id and self.user_id and self.target.owner_id == self.user_id:
+            raise ValidationError({"user": _("Target owner cannot be added to target access.")})
 
     def __str__(self) -> str:
         return f"{self.user} - {self.target} ({self.get_role_display()})"
