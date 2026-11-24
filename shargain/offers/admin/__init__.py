@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib import admin
+from django.contrib.auth.models import AnonymousUser
 from django.db.models import QuerySet
 from django.db.models.expressions import F
 from django.http import HttpRequest
@@ -14,8 +15,15 @@ from django_admin_display import admin_display
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 from django_better_admin_arrayfield.models.fields import ArrayField
 
-from shargain.offers.admin.forms import ScrappingTargetAdminForm
-from shargain.offers.models import Offer, ScrapingCheckin, ScrapingUrl, ScrappingTarget, UserOfferState
+from shargain.offers.admin.forms import ScrappingTargetAdminForm, TargetAccessForm
+from shargain.offers.models import (
+    Offer,
+    ScrapingCheckin,
+    ScrapingUrl,
+    ScrappingTarget,
+    TargetAccess,
+    UserOfferState,
+)
 from shargain.offers.widgets import AdminDynamicArrayWidget
 
 
@@ -77,6 +85,15 @@ class ScrapingUrlInlineAdmin(admin.TabularInline):
     show_change_link = True
 
 
+class TargetAccessInline(admin.TabularInline):
+    model = TargetAccess
+    form = TargetAccessForm
+    extra = 1
+    autocomplete_fields = ("user",)
+    fields = ("user", "role", "created_at")
+    readonly_fields = ("created_at",)
+
+
 @admin.register(ScrappingTarget)
 class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
     form = ScrappingTargetAdminForm
@@ -89,13 +106,14 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
         "owner",
         "display_grafana_panel",
     )
-    list_display = ("__str__", "enable_notifications", "is_active")
+    list_display = ("__str__", "owner", "enable_notifications", "is_active")
+    search_fields = ("name",)
     readonly_fields = (
         "display_grafana_panel",
         "show_scraping_urls",
     )
     formfield_overrides = {ArrayField: {"widget": AdminDynamicArrayWidget}}
-    inlines = [ScrapingUrlInlineAdmin]
+    inlines = [ScrapingUrlInlineAdmin, TargetAccessInline]
 
     def get_readonly_fields(self, request: HttpRequest, obj: ScrappingTarget | None = None) -> list[str] | tuple:
         readonly_fields = list(super().get_readonly_fields(request, obj))
@@ -115,6 +133,18 @@ class ScrappingTargetAdmin(admin.ModelAdmin, DynamicArrayMixin):
             "admin/fields/read_only_urls_to_scrap.html",
             context={"scraping_urls": obj.scrapingurl_set.all()},
         )
+
+    def save_formset(self, request: HttpRequest, form, formset, change: bool):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if (
+                isinstance(instance, TargetAccess)
+                and not instance.granted_by_id
+                and not isinstance(request.user, AnonymousUser)
+            ):
+                instance.granted_by = request.user
+            instance.save()
+        formset.save_m2m()
 
 
 class StaleUrlFilter(admin.SimpleListFilter):
@@ -182,3 +212,17 @@ class UserOfferStateAdmin(admin.ModelAdmin):
     list_filter = ("offer__target",)
     search_fields = ("offer__url", "offer__title", "user__email")
     list_select_related = ("user", "offer")
+
+
+@admin.register(TargetAccess)
+class TargetAccessAdmin(admin.ModelAdmin):
+    form = TargetAccessForm
+    list_display = ("target", "user", "role", "granted_by", "created_at")
+    list_filter = ("role",)
+    search_fields = ("target__name", "user__email", "user__username")
+    autocomplete_fields = ("target", "user")
+
+    def save_model(self, request: HttpRequest, obj: TargetAccess, form, change: bool):
+        if not obj.granted_by_id and not isinstance(request.user, AnonymousUser):
+            obj.granted_by = request.user
+        super().save_model(request, obj, form, change)

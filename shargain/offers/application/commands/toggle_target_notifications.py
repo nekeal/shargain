@@ -5,8 +5,9 @@ This command enables or disables notifications for an existing scraping target.
 """
 
 from shargain.commons.application.actor import Actor
+from shargain.offers.application.access import can_manage_target
 from shargain.offers.application.dto import TargetDTO
-from shargain.offers.application.exceptions import TargetDoesNotExist
+from shargain.offers.application.exceptions import TargetDoesNotExist, TargetPermissionDenied
 from shargain.offers.models import ScrappingTarget
 
 
@@ -32,9 +33,12 @@ def toggle_target_notifications(
         TargetDoesNotExist: If the target doesn't exist or doesn't belong to the user.
     """
     try:
-        target = ScrappingTarget.objects.get(id=target_id, owner_id=actor.user_id)
+        target = ScrappingTarget.objects.for_user(actor.user_id).get(id=target_id)
     except ScrappingTarget.DoesNotExist as exc:
         raise TargetDoesNotExist() from exc
+
+    if not can_manage_target(actor.user_id, target):
+        raise TargetPermissionDenied()
 
     # Determine a new notification state
     new_state = not target.enable_notifications if enable is None else enable

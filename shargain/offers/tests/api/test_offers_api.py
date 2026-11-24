@@ -4,7 +4,9 @@ from django.test import Client
 from shargain.accounts.tests.factories import UserFactory
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.offer_state import like_offers, mark_offers_seen
+from shargain.offers.models import TargetRole
 from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -23,6 +25,21 @@ class TestOffersApi:
 
         resp = client.get(f"/api/public/targets/{target.id}/offers")
         assert resp.status_code == 404
+
+    def test_list_offers_for_shared_user_succeeds(self):
+        user = UserFactory()
+        other_user = UserFactory()
+        target = ScrappingTargetFactory(owner=other_user)
+        grant_access(target=target, user=user, role=TargetRole.VIEWER)
+        OfferFactory(target=target, passed_filters=True, title="Shared Offer")
+        client = Client()
+        client.force_login(user)
+
+        resp = client.get(f"/api/public/targets/{target.id}/offers")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["count"] == 1
+        assert data["items"][0]["title"] == "Shared Offer"
 
     def test_list_offers_returns_page_and_does_not_mark_seen(self):
         user = UserFactory()
@@ -170,3 +187,30 @@ class TestOffersApi:
 
         resp_del_like = client.delete(f"/api/public/targets/{target2.id}/offers/{offer.id}/like")
         assert resp_del_like.status_code == 404
+
+    def test_shared_member_can_triage_offers_independently(self):
+        owner = UserFactory()
+        viewer = UserFactory()
+        target = ScrappingTargetFactory(owner=owner)
+        grant_access(target=target, user=viewer, role=TargetRole.VIEWER)
+        offer = OfferFactory(target=target, passed_filters=True)
+
+        viewer_client = Client()
+        viewer_client.force_login(viewer)
+
+        # Viewer marks offer as seen
+        resp_seen = viewer_client.post(f"/api/public/targets/{target.id}/offers/{offer.id}/seen")
+        assert resp_seen.status_code == 200
+        assert resp_seen.json()["isSeen"] is True
+
+        # Viewer sees it in seen list
+        resp_viewer_seen = viewer_client.get(f"/api/public/targets/{target.id}/offers?seen=true")
+        assert resp_viewer_seen.status_code == 200
+        assert [i["id"] for i in resp_viewer_seen.json()["items"]] == [offer.id]
+
+        # Owner still sees it as unseen
+        owner_client = Client()
+        owner_client.force_login(owner)
+        resp_owner_unseen = owner_client.get(f"/api/public/targets/{target.id}/offers?seen=false")
+        assert resp_owner_unseen.status_code == 200
+        assert [i["id"] for i in resp_owner_unseen.json()["items"]] == [offer.id]

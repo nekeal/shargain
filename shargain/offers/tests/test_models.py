@@ -1,7 +1,9 @@
 import pytest
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from shargain.offers.models import Offer, ScrappingTarget
+from shargain.offers.models import Offer, ScrappingTarget, TargetAccess, TargetRole
+from shargain.offers.tests.factories import ScrappingTargetFactory
 
 
 @pytest.fixture
@@ -36,3 +38,14 @@ def test_create_offer_without_list_url(offer_data):
     offer = Offer.objects.create(**offer_data)
 
     assert offer.list_url == ""
+
+
+@pytest.mark.django_db
+def test_target_access_rejects_owner_as_member():
+    target = ScrappingTargetFactory()
+    access = TargetAccess(target=target, user=target.owner, role=TargetRole.VIEWER)
+
+    with pytest.raises(ValidationError) as exc:
+        access.full_clean()
+
+    assert "user" in exc.value.message_dict

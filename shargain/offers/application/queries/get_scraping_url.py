@@ -28,7 +28,7 @@ def get_scraping_url(actor: Actor, url_id: int) -> ScrapingUrlDTO:
         A dictionary containing the URL details if found and accessible.
     """
     try:
-        url = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
+        url = ScrapingUrl.objects.for_user(actor.user_id).get(id=url_id)
     except ScrapingUrl.DoesNotExist as e:
         raise ScrapingUrlDoesNotExist() from e
 

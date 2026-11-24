@@ -1,8 +1,11 @@
 import pytest
 
+from shargain.accounts.tests.factories import UserFactory
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.queries.list_targets import list_targets
+from shargain.offers.models import TargetRole
 from shargain.offers.tests.factories import ScrapingUrlFactory, ScrappingTargetFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 class TestListTargets:
@@ -36,6 +39,16 @@ class TestListTargets:
         assert len(result) == 1
         assert result[0].id_ == scraping_target.id
         assert result[0].id_ != other_user_target.id
+
+    def test_returns_shared_targets_for_user(self):
+        user = UserFactory()
+        owned_target = ScrappingTargetFactory(owner=user)
+        shared_target = ScrappingTargetFactory()
+        grant_access(target=shared_target, user=user, role=TargetRole.VIEWER)
+
+        result = list_targets(actor=Actor(user_id=user.id))
+        target_ids = {t.id_ for t in result}
+        assert target_ids == {owned_target.id, shared_target.id}
 
     def test_handles_pagination_parameters(self, scraping_target):
         """

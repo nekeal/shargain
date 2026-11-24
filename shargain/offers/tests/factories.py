@@ -3,7 +3,14 @@ from django.utils import timezone
 from faker import Faker
 
 from shargain.accounts.tests.factories import UserFactory
-from shargain.offers.models import Offer, ScrapingUrl, ScrappingTarget, UserOfferState
+from shargain.offers.models import (
+    Offer,
+    ScrapingUrl,
+    ScrappingTarget,
+    TargetAccess,
+    TargetRole,
+    UserOfferState,
+)
 
 fake = Faker()
 
@@ -46,3 +53,13 @@ class UserOfferStateFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = UserOfferState
+
+
+class TargetAccessFactory(factory.django.DjangoModelFactory):
+    target = factory.SubFactory(ScrappingTargetFactory)
+    user = factory.SubFactory(UserFactory)
+    role = TargetRole.EDITOR
+    granted_by = None
+
+    class Meta:
+        model = TargetAccess
