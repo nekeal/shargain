@@ -3,6 +3,7 @@ from shargain.offers.application.access import can_manage_urls
 from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
 from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist, TargetPermissionDenied
 from shargain.offers.field_extraction import NotificationFieldsSelection
+from shargain.offers.filtering import validate_filters_for_url
 from shargain.offers.models import ScrapingUrl
 
 
@@ -38,6 +39,9 @@ def update_scraping_url(
 
     if not can_manage_urls(actor.user_id, url.scraping_target):
         raise TargetPermissionDenied()
+
+    if isinstance(filters, dict):
+        filters = validate_filters_for_url(filters, url.url)
 
     update_fields = []
     if name is not None:

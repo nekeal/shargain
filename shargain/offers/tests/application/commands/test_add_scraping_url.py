@@ -122,3 +122,22 @@ class TestAddScrapingUrl:
 
         with pytest.raises(QuotaExceeded):
             add_scraping_url(actor=actor, target_id=scraping_target.id, url="https://example.com/editor-url")
+
+    def test_add_scraping_url_with_invalid_filters_raises_error(self, scraping_target):
+        actor = Actor(user_id=scraping_target.owner_id)
+        invalid_filters = {
+            "ruleGroups": [
+                {"logic": "and", "rules": [{"field": "nonexistent_field", "operator": "contains", "value": "x"}]}
+            ]
+        }
+
+        with pytest.raises(ValueError, match="not available for this URL"):
+            add_scraping_url(
+                actor=actor,
+                target_id=scraping_target.id,
+                url="https://www.olx.pl/d/nieruchomosci/mieszkania/",
+                filters=invalid_filters,
+            )
+
+        target_dto = get_target(actor=actor, target_id=scraping_target.id)
+        assert target_dto.urls == []

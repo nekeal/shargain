@@ -4,6 +4,7 @@ from shargain.commons.application.actor import Actor
 from shargain.offers.application.access import can_manage_urls
 from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
 from shargain.offers.application.exceptions import QuotaExceeded, TargetDoesNotExist, TargetPermissionDenied
+from shargain.offers.filtering import validate_filters_for_url
 from shargain.offers.models import ScrapingUrl, ScrappingTarget
 from shargain.quotas.services.quota import QuotaService
 
@@ -35,6 +36,8 @@ def add_scraping_url(
 
     if not can_manage_urls(actor.user_id, target):
         raise TargetPermissionDenied()
+
+    filters = validate_filters_for_url(filters, url)
 
     target_owner_id = target.owner_id or actor.user_id
     if not QuotaService.check_can_add_url(user_id=target_owner_id, target_id=target.id):

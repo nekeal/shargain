@@ -26,7 +26,6 @@ from shargain.notifications.models import NotificationChannelChoices
 
 # Import the offers router
 from shargain.offers.api import router as offers_router
-from shargain.offers.application.access import can_manage_urls
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.commands.change_notification_config import (
     change_notification_config,
@@ -63,7 +62,6 @@ from shargain.offers.application.queries.get_target import (
 )
 from shargain.offers.application.queries.list_targets import list_targets
 from shargain.offers.field_extraction import ListUrl, OfferFieldResolver
-from shargain.offers.filtering import validate_filters_for_url
 from shargain.offers.models import ScrapingUrl
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
@@ -381,12 +379,6 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
     actor = get_actor(request)
     filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
 
-    # Validate filter structure before saving
-    try:
-        validated_filters = validate_filters_for_url(filters_dict, str(payload.url))
-    except ValueError as e:
-        raise HttpError(400, str(e)) from e
-
     try:
         waypoints_list = (
             [WaypointData(name=w.name, lat=w.lat, lon=w.lon) for w in payload.waypoints] if payload.waypoints else None
@@ -396,11 +388,13 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
             str(payload.url),
             target_id,
             name=payload.name,
-            filters=validated_filters,
+            filters=filters_dict,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
             send_map_in_notifications=payload.send_map_in_notifications,
             waypoints=waypoints_list,
         )
+    except ValueError as e:
+        raise HttpError(400, str(e)) from e
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
     except QuotaExceeded as e:
@@ -450,22 +444,6 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
     else:
         filters_arg = payload.filters.model_dump(by_alias=True)
 
-    if isinstance(filters_arg, dict):
-        try:
-            existing_url = (
-                ScrapingUrl.objects.for_user(actor.user_id)
-                .select_related("scraping_target")
-                .get(id=url_id, scraping_target_id=target_id)
-            )
-        except ScrapingUrl.DoesNotExist as e:
-            raise HttpError(404, "Scraping URL not found") from e
-        if not can_manage_urls(actor.user_id, existing_url.scraping_target):
-            raise TargetPermissionDenied()
-        try:
-            filters_arg = validate_filters_for_url(filters_arg, existing_url.url)
-        except ValueError as e:
-            raise HttpError(400, str(e)) from e
-
     try:
         waypoints_list = (
             [WaypointData(name=w.name, lat=w.lat, lon=w.lon) for w in payload.waypoints] if payload.waypoints else None
@@ -483,6 +461,8 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
             waypoints=waypoints_list,
             notification_fields=notification_fields_dict,
         )
+    except ValueError as e:
+        raise HttpError(400, str(e)) from e
     except ScrapingUrlDoesNotExist as exc:
         raise HttpError(404, "Scraping URL not found") from exc
 

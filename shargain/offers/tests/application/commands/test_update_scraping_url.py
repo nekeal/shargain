@@ -39,10 +39,21 @@ class TestUpdateScrapingUrl:
         new_filters = {
             "ruleGroups": [{"logic": "and", "rules": [{"field": "title", "operator": "contains", "value": "test"}]}]
         }
+        normalized_filters = {
+            "ruleGroups": [
+                {
+                    "logic": "and",
+                    "logicWithNext": None,
+                    "rules": [
+                        {"case_sensitive": False, "field": "title", "operator": "contains", "value": "test"}
+                    ],
+                }
+            ]
+        }
 
         result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, filters=new_filters)
 
-        assert result_dto.filters == new_filters
+        assert result_dto.filters == normalized_filters
 
     def test_update_scraping_url_location_map_succeeds(self, scraping_target):
         scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, show_location_map_in_notifications=False)
@@ -139,3 +150,22 @@ class TestUpdateScrapingUrl:
             )
         scraping_url.refresh_from_db()
         assert scraping_url.name == "Old Name"
+
+    def test_update_scraping_url_with_invalid_filters_raises_error(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            url="https://www.olx.pl/d/nieruchomosci/mieszkania/",
+            filters=None,
+        )
+        actor = Actor(user_id=scraping_target.owner_id)
+        invalid_filters = {
+            "ruleGroups": [
+                {"logic": "and", "rules": [{"field": "nonexistent_field", "operator": "contains", "value": "x"}]}
+            ]
+        }
+
+        with pytest.raises(ValueError, match="not available for this URL"):
+            update_scraping_url(actor=actor, url_id=scraping_url.id, filters=invalid_filters)
+
+        scraping_url.refresh_from_db()
+        assert scraping_url.filters is None
