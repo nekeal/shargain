@@ -241,7 +241,7 @@ export function OfferLocationMap({
         ? { lon: 0.014, lat: 0.010 }
         : { lon: 0.007, lat: 0.005 };
 
-  const zoomLevel = zoomMode === "wide" ? 14 : zoomMode === "medium" ? 15 : 16;
+  const zoomLevel = zoomMode === "wide" ? 13 : zoomMode === "medium" ? 14 : 15;
 
   const srcDoc = effectiveCoords
     ? buildOsmLeafletHtml(
