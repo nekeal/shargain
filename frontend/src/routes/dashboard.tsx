@@ -83,11 +83,11 @@ function LoadingSkeleton() {
 function ErrorState({ message }: { message: string }) {
   return (
     <div
-      className="min-h-screen bg-secondary flex items-center justify-center"
+      className="min-h-screen bg-secondary flex items-center justify-center px-4"
       role="alert"
       aria-live="assertive"
     >
-      <div className="bg-card rounded-xl p-8 max-w-md text-center">
+      <div className="bg-card rounded-xl p-8 w-full max-w-md text-center">
         <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
         <h2 className="text-lg font-semibold text-foreground mb-2">
           {message}
@@ -101,11 +101,11 @@ function EmptyState({ onAddUrl }: { onAddUrl?: () => void }) {
   const { t } = useTranslation();
   return (
     <div
-      className="min-h-screen bg-secondary flex items-center justify-center"
+      className="min-h-screen bg-secondary flex items-center justify-center px-4"
       role="status"
       aria-live="polite"
     >
-      <div className="bg-card rounded-xl p-8 max-w-md text-center">
+      <div className="bg-card rounded-xl p-8 w-full max-w-md text-center">
         <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-lg font-semibold text-foreground mb-2">
           {t("dashboard.noData")}
@@ -232,7 +232,7 @@ function MultiTargetDashboard({
         <Card className="bg-card border border-border">
           <CardHeader>
             <CardTitle className="text-lg">
-              {t("dashboard.scrapingTarget")}
+              <h2>{t("dashboard.scrapingTarget")}</h2>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -249,6 +249,7 @@ function MultiTargetDashboard({
 }
 
 function SingleTargetDashboard({ onAddUrl }: { onAddUrl?: () => void }) {
+  const { t } = useTranslation();
   const { data: myTarget, isLoading, isError } = useGetMyTarget();
 
   if (isLoading) {
@@ -256,7 +257,7 @@ function SingleTargetDashboard({ onAddUrl }: { onAddUrl?: () => void }) {
   }
 
   if (isError) {
-    return <ErrorState message="Failed to load your target" />;
+    return <ErrorState message={t("dashboard.failedToLoadTarget")} />;
   }
 
   if (!myTarget) {
