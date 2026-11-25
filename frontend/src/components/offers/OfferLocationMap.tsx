@@ -8,6 +8,7 @@ import {
   MapPin,
   Navigation,
   Ruler,
+  Tag,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -48,6 +49,7 @@ export function buildOsmLeafletHtml(
   radiusMeters: number = 300,
   waypoints: Array<OfferWaypointSchema> = [],
   fitWaypoints: boolean = false,
+  showWaypointLabels: boolean = true,
 ): string {
   const waypointsScript = waypoints
     .map(
@@ -58,7 +60,7 @@ export function buildOsmLeafletHtml(
         fillColor: '#10b981',
         fillOpacity: 0.9,
         weight: 2
-      }).addTo(map).bindTooltip(${JSON.stringify(wp.name)}, { permanent: true, direction: 'top', offset: [0, -6] });`,
+      }).addTo(map).bindTooltip(${JSON.stringify(wp.name)}, { permanent: ${showWaypointLabels}, direction: 'top', offset: [0, -6] });`,
     )
     .join("\n");
 
@@ -134,6 +136,7 @@ export function OfferLocationMap({
   const { t } = useTranslation();
   const [zoomMode, setZoomMode] = useState<"wide" | "medium" | "close">(defaultZoom);
   const [fitWaypoints, setFitWaypoints] = useState(false);
+  const [showWaypointLabels, setShowWaypointLabels] = useState(true);
   const [isMapActive, setIsMapActive] = useState(false);
   const [copiedCoords, setCopiedCoords] = useState(false);
   const [debouncedEmbedUrl, setDebouncedEmbedUrl] = useState<string | null>(null);
@@ -248,6 +251,7 @@ export function OfferLocationMap({
         approximateRadiusMeters,
         activeWaypoints,
         fitWaypoints,
+        showWaypointLabels,
       )
     : null;
 
@@ -345,17 +349,32 @@ export function OfferLocationMap({
 
         <div className="flex items-center gap-1.5 shrink-0">
           {effectiveCoords && activeWaypoints.length > 0 && (
-            <Button
-              type="button"
-              variant={fitWaypoints ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFitWaypoints((prev) => !prev)}
-              className="h-7 px-2 text-[11px] gap-1 cursor-pointer"
-              title={t("offers.map.fitWaypoints")}
-            >
-              <LocateFixed className="w-3 h-3" />
-              <span>{t("offers.map.fitWaypoints")}</span>
-            </Button>
+            <>
+              <Button
+                type="button"
+                variant={showWaypointLabels ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowWaypointLabels((prev) => !prev)}
+                className="h-7 px-2 text-[11px] gap-1 cursor-pointer"
+                title={t("offers.map.toggleWaypointLabels")}
+                aria-pressed={showWaypointLabels}
+              >
+                <Tag className="w-3 h-3" />
+                <span>{t("offers.map.waypointLabels")}</span>
+              </Button>
+              <Button
+                type="button"
+                variant={fitWaypoints ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFitWaypoints((prev) => !prev)}
+                className="h-7 px-2 text-[11px] gap-1 cursor-pointer"
+                title={t("offers.map.fitWaypoints")}
+                aria-pressed={fitWaypoints}
+              >
+                <LocateFixed className="w-3 h-3" />
+                <span>{t("offers.map.fitWaypoints")}</span>
+              </Button>
+            </>
           )}
 
           {effectiveCoords && (

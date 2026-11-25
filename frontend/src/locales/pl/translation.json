@@ -466,6 +466,8 @@
       "loadingMap": "Ładowanie mapy...",
       "copyCoordinates": "Kopiuj współrzędne",
       "fitWaypoints": "Pokaż punkty",
+      "waypointLabels": "Etykiety",
+      "toggleWaypointLabels": "Przełącz stałe etykiety punktów",
       "distanceApproxTitle": "Przybliżona odległość na podstawie szacowanej lokalizacji"
     },
     "attributes": {

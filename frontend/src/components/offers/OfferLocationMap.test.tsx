@@ -346,7 +346,14 @@ describe("OfferLocationMap", () => {
       expect(srcDoc).toContain("L.circleMarker([52.232, 21.01]");
       expect(srcDoc).toContain('"Near Point"');
       expect(srcDoc).toContain('"Far Point"');
+      expect(srcDoc).toContain("permanent: true");
       expect(srcDoc).not.toContain("map.fitBounds");
+    });
+
+    fireEvent.click(screen.getByTitle("Przełącz stałe etykiety punktów"));
+    await waitFor(() => {
+      const iframe = screen.getByTitle("Lokalizacja na mapie");
+      expect(iframe.getAttribute("srcdoc")).toContain("permanent: false");
     });
 
     fireEvent.click(screen.getByTitle("Pokaż punkty"));
