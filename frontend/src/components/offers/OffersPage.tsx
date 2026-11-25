@@ -539,7 +539,7 @@ export function OffersPage({
   );
 
   return (
-    <div className="min-h-screen bg-secondary pb-3 flex flex-col">
+    <div className="min-h-screen lg:h-[calc(100dvh-4rem)] lg:overflow-hidden bg-secondary pb-3 flex flex-col">
       <main className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 max-w-[1700px] space-y-2.5 flex-1 flex flex-col min-h-0">
         {/* Header with Title and Target Selector */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
