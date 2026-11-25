@@ -1,14 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Check,
   Copy,
   ExternalLink,
-  LocateFixed,
   MapPin,
   Navigation,
   Ruler,
-  Tag,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -19,6 +17,7 @@ import type {
 import { formatDistance, haversineKm } from "@/lib/geo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 interface PhotonFeature {
   geometry?: {
@@ -134,6 +133,8 @@ export function OfferLocationMap({
   approximateRadiusMeters = 300,
 }: OfferLocationMapProps) {
   const { t } = useTranslation();
+  const labelsSwitchId = useId();
+  const fitSwitchId = useId();
   const [zoomMode, setZoomMode] = useState<"wide" | "medium" | "close">(defaultZoom);
   const [fitWaypoints, setFitWaypoints] = useState(false);
   const [showWaypointLabels, setShowWaypointLabels] = useState(true);
@@ -349,32 +350,34 @@ export function OfferLocationMap({
 
         <div className="flex items-center gap-1.5 shrink-0">
           {effectiveCoords && activeWaypoints.length > 0 && (
-            <>
-              <Button
-                type="button"
-                variant={showWaypointLabels ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowWaypointLabels((prev) => !prev)}
-                className="h-7 px-2 text-[11px] gap-1 cursor-pointer"
+            <div className="flex items-center gap-2.5 px-1">
+              <label
+                htmlFor={labelsSwitchId}
                 title={t("offers.map.toggleWaypointLabels")}
-                aria-pressed={showWaypointLabels}
+                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer select-none"
               >
-                <Tag className="w-3 h-3" />
+                <Switch
+                  id={labelsSwitchId}
+                  checked={showWaypointLabels}
+                  onCheckedChange={setShowWaypointLabels}
+                  aria-label={t("offers.map.toggleWaypointLabels")}
+                />
                 <span>{t("offers.map.waypointLabels")}</span>
-              </Button>
-              <Button
-                type="button"
-                variant={fitWaypoints ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFitWaypoints((prev) => !prev)}
-                className="h-7 px-2 text-[11px] gap-1 cursor-pointer"
+              </label>
+              <label
+                htmlFor={fitSwitchId}
                 title={t("offers.map.fitWaypoints")}
-                aria-pressed={fitWaypoints}
+                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer select-none"
               >
-                <LocateFixed className="w-3 h-3" />
+                <Switch
+                  id={fitSwitchId}
+                  checked={fitWaypoints}
+                  onCheckedChange={setFitWaypoints}
+                  aria-label={t("offers.map.fitWaypoints")}
+                />
                 <span>{t("offers.map.fitWaypoints")}</span>
-              </Button>
-            </>
+              </label>
+            </div>
           )}
 
           {effectiveCoords && (

@@ -350,13 +350,13 @@ describe("OfferLocationMap", () => {
       expect(srcDoc).not.toContain("map.fitBounds");
     });
 
-    fireEvent.click(screen.getByTitle("Przełącz stałe etykiety punktów"));
+    fireEvent.click(screen.getByRole("switch", { name: "Przełącz stałe etykiety punktów" }));
     await waitFor(() => {
       const iframe = screen.getByTitle("Lokalizacja na mapie");
       expect(iframe.getAttribute("srcdoc")).toContain("permanent: false");
     });
 
-    fireEvent.click(screen.getByTitle("Pokaż punkty"));
+    fireEvent.click(screen.getByRole("switch", { name: "Pokaż punkty" }));
     await waitFor(() => {
       const iframe = screen.getByTitle("Lokalizacja na mapie");
       expect(iframe.getAttribute("srcdoc")).toContain("map.fitBounds");
@@ -403,6 +403,6 @@ describe("OfferLocationMap", () => {
       />
     );
 
-    expect(screen.queryByTitle("Pokaż punkty")).not.toBeInTheDocument();
+    expect(screen.queryByRole("switch", { name: "Pokaż punkty" })).not.toBeInTheDocument();
   });
 });
