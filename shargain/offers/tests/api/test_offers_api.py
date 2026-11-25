@@ -188,6 +188,46 @@ class TestOffersApi:
         resp_del_like = client.delete(f"/api/public/targets/{target2.id}/offers/{offer.id}/like")
         assert resp_del_like.status_code == 404
 
+    def test_list_offers_search_and_price_params(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        match = OfferFactory(target=target, passed_filters=True, title="Mieszkanie Mokotów", price=600000)
+        OfferFactory(target=target, passed_filters=True, title="Mieszkanie Mokotów", price=900000)
+        OfferFactory(target=target, passed_filters=True, title="Kawalerka Wola", price=600000)
+        client = Client()
+        client.force_login(user)
+
+        resp = client.get(
+            f"/api/public/targets/{target.id}/offers",
+            {"search": "mokot", "minPrice": 500000, "maxPrice": 700000},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["count"] == 1
+        assert data["items"][0]["id"] == match.id
+
+    def test_list_offers_inverted_price_range_is_empty_not_error(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        OfferFactory(target=target, passed_filters=True, price=100)
+        client = Client()
+        client.force_login(user)
+
+        resp = client.get(f"/api/public/targets/{target.id}/offers", {"minPrice": 300, "maxPrice": 200})
+        assert resp.status_code == 200
+        assert resp.json()["count"] == 0
+
+    def test_list_offers_blank_search_is_ignored(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        OfferFactory(target=target, passed_filters=True, title="Rower")
+        client = Client()
+        client.force_login(user)
+
+        resp = client.get(f"/api/public/targets/{target.id}/offers", {"search": "   "})
+        assert resp.status_code == 200
+        assert resp.json()["count"] == 1
+
     def test_shared_member_can_triage_offers_independently(self):
         owner = UserFactory()
         viewer = UserFactory()

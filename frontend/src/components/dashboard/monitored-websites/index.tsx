@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Layers, Plus, Save, Trash2 } from "lucide-react"
-import { Link } from "@tanstack/react-router"
+import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2 } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
 import { OfferFilters } from "./OfferFilters"
@@ -66,21 +65,14 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
   return (
     <Card className="bg-card border border-border">
       <CardHeader>
-        <CardTitle className="flex items-center text-xl">
-          <Globe className="w-6 h-6 mr-3 text-primary" />
-          {t('dashboard.monitoredWebsites.title')}
+        <CardTitle className="text-xl">
+          <h2 className="flex items-center">
+            <Globe className="w-6 h-6 mr-3 text-primary" aria-hidden="true" />
+            {t('dashboard.monitoredWebsites.title')}
+          </h2>
         </CardTitle>
         <CardDescription>{t('dashboard.monitoredWebsites.description')}</CardDescription>
-        <CardAction className="flex items-center gap-2">
-          <Button asChild variant="outline" size="default">
-            <Link
-              to="/offers"
-              search={{ targetId: offerMonitor.id }}
-            >
-              <Layers className="w-4 h-4 mr-2 text-primary" />
-              {t('offers.viewOffers')}
-            </Link>
-          </Button>
+        <CardAction>
           <Button size="default" onClick={() => setIsAddUrlDialogOpen(true)} disabled={isUrlQuotaExceeded}>
             <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
             {t('dashboard.monitoredWebsites.addWebsite')}
@@ -98,6 +90,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
             <div className="flex sm:flex-row items-center gap-2">
               <Input
                 value={targetName}
+                aria-label={t('dashboard.monitoredWebsites.targetName')}
                 placeholder={t('dashboard.monitoredWebsites.targetNamePlaceholder')}
                 onChange={(e) => {
                   setTargetName(e.target.value)
@@ -119,10 +112,10 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                     {t('dashboard.monitoredWebsites.saving')}
                   </>
                 ) : updateSuccess ? (
-                  <CheckCircle className="w-5 h-5 text-white" />
+                  <CheckCircle className="w-5 h-5 text-primary-foreground" aria-hidden="true" />
                 ) : (
                   <>
-                    <Save className="w-4 h-4 m-2" />
+                    <Save className="w-4 h-4 m-2" aria-hidden="true" />
                     {/* {t('dashboard.monitoredWebsites.update')} */}
                   </>
                 )}
@@ -179,7 +172,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                   </>
                 </div>
 
-                <div className="flex items-center space-x-2 mt-4 md:mt-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+                <div className="flex items-center space-x-2 mt-4 md:mt-0 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity duration-300">
                   <Button
                     size="sm"
                     variant="outline"

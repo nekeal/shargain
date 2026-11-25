@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { Globe } from "lucide-react"
 import type { TargetSummaryResponse } from "@/lib/api/types.gen"
+import cn from "@/lib/utils"
 import {
     Select,
     SelectContent,
@@ -14,9 +15,10 @@ interface TargetSelectorInlineProps {
     targets: Array<TargetSummaryResponse>
     selectedTargetId: number | null
     onSelect: (targetId: number) => void
+    className?: string
 }
 
-export function TargetSelectorInline({ targets, selectedTargetId, onSelect }: TargetSelectorInlineProps) {
+export function TargetSelectorInline({ targets, selectedTargetId, onSelect, className }: TargetSelectorInlineProps) {
     const { t } = useTranslation()
 
     return (
@@ -28,8 +30,8 @@ export function TargetSelectorInline({ targets, selectedTargetId, onSelect }: Ta
             }}
             disabled={targets.length === 0}
         >
-            <SelectTrigger className="w-full" aria-label={t('dashboard.targetSelector.selectPlaceholder')}>
-                <Globe className="size-4 text-primary shrink-0" aria-hidden="true" />
+            <SelectTrigger className={cn("w-full h-8 text-xs", className)} aria-label={t('dashboard.targetSelector.selectPlaceholder')}>
+                <Globe className="size-3.5 text-primary shrink-0" aria-hidden="true" />
                 <SelectValue placeholder={t('dashboard.targetSelector.selectPlaceholder')} />
             </SelectTrigger>
             <SelectContent className="min-w-[var(--radix-select-trigger-width)]">

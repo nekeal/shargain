@@ -22,6 +22,7 @@ export interface OfferSplitReaderProps {
   hasMore?: boolean;
   onLoadMore?: () => void;
   isLoadingMore?: boolean;
+  isLoading?: boolean;
   totalCount?: number;
 }
 
@@ -34,9 +35,14 @@ export function OfferSplitReader({
   hasMore,
   onLoadMore,
   isLoadingMore,
+  isLoading,
   totalCount,
 }: OfferSplitReaderProps) {
   const { t } = useTranslation();
+
+  if (offers.length === 0 && isLoading) {
+    return null;
+  }
 
   if (offers.length === 0) {
     return (
@@ -130,12 +136,12 @@ function SplitReaderContent({
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch h-[calc(100vh-185px)] min-h-[540px]">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch flex-1 min-h-0">
       {/* LEFT COLUMN: Queue / Master List */}
       <div
         className={`${
-          isDetailsOpen ? "lg:col-span-4" : "lg:col-span-12"
-        } bg-card border border-border rounded-xl flex flex-col h-full overflow-hidden shadow-sm`}
+          isDetailsOpen ? "hidden lg:flex lg:col-span-4" : "flex lg:col-span-12"
+        } bg-card border border-border rounded-xl flex-col h-full overflow-hidden shadow-sm`}
       >
         {/* Queue Header */}
         <div className="p-3 border-b border-border flex items-center justify-between gap-2 bg-muted/20 shrink-0">
@@ -182,7 +188,7 @@ function SplitReaderContent({
                 onClick={onRefresh}
                 title={t("offers.actions.refreshOffers")}
                 aria-label={t("offers.actions.refreshOffers")}
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground ml-0.5 cursor-pointer"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground ml-0.5 cursor-pointer"
               >
                 <RefreshCw
                   className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`}

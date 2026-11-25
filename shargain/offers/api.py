@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Literal
 
 from django.http import HttpRequest
-from ninja import Router, Schema
+from ninja import Query, Router, Schema
 from ninja.errors import HttpError
 from pydantic import ConfigDict
 from pydantic.alias_generators import to_camel
@@ -95,6 +95,9 @@ def get_target_offers(
     ordering: Literal["oldest", "newest"] = "oldest",
     limit: int = 20,
     offset: int = 0,
+    search: str | None = None,
+    min_price: int | None = Query(None, alias="minPrice", title="Min price"),
+    max_price: int | None = Query(None, alias="maxPrice", title="Max price"),
 ):
     actor = _get_actor(request)
     limit = min(max(1, limit), 100)
@@ -107,6 +110,9 @@ def get_target_offers(
             ordering=ordering,
             limit=limit,
             offset=offset,
+            search=search,
+            min_price=min_price,
+            max_price=max_price,
         )
     except exceptions.TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e

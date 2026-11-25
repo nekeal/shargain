@@ -16,6 +16,9 @@ export interface OfferFilters {
   ordering?: "oldest" | "newest";
   limit?: number;
   offset?: number;
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export function useOffersQuery({
@@ -24,6 +27,9 @@ export function useOffersQuery({
   ordering = "oldest",
   limit = 50,
   offset = 0,
+  search,
+  minPrice,
+  maxPrice,
   enabled = true,
 }: {
   targetId: number | null;
@@ -31,13 +37,26 @@ export function useOffersQuery({
   ordering?: "oldest" | "newest";
   limit?: number;
   offset?: number;
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
   enabled?: boolean;
 }) {
   const seenParam = tab === "unseen" ? false : undefined;
   const likedParam = tab === "liked" ? true : undefined;
 
   return useQuery<PublicOfferPageSchema>({
-    queryKey: ["offers", targetId, tab, ordering, limit, offset],
+    queryKey: [
+      "offers",
+      targetId,
+      tab,
+      ordering,
+      limit,
+      offset,
+      search,
+      minPrice,
+      maxPrice,
+    ],
     queryFn: async () => {
       if (!targetId) {
         return { count: 0, items: [] };
@@ -50,12 +69,19 @@ export function useOffersQuery({
           ordering,
           limit,
           offset,
+          search,
+          minPrice,
+          maxPrice,
         },
       });
       return response.data;
     },
     enabled: enabled && targetId !== null,
     staleTime: 15_000,
+    // Keep the previous page while tabs/ordering/filters change, but never
+    // across a target switch: old-target offers are not actionable here.
+    placeholderData: (previousData, previousQuery) =>
+      previousQuery?.queryKey[1] === targetId ? previousData : undefined,
   });
 }
 

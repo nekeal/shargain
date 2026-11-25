@@ -126,15 +126,15 @@ export const OfferQueueRow = memo(function OfferQueueRow({
       ref={rowRef}
       className={`p-2.5 flex items-stretch gap-2.5 relative transition-colors ${
         isSelected
-          ? "bg-violet-500/10 dark:bg-violet-500/20 border-l-4 border-primary"
-          : "hover:bg-muted/40"
+          ? "bg-primary/[0.08] dark:bg-primary/[0.15] ring-1 ring-primary/40 rounded-lg"
+          : "hover:bg-muted/40 rounded-lg"
       }`}
     >
       <button
         type="button"
         onClick={() => onSelect(offer.id)}
-        className="flex flex-1 gap-2.5 text-left min-w-0 cursor-pointer focus:outline-none"
-        aria-label={offer.title}
+        className="flex flex-1 gap-2.5 text-left min-w-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none rounded-lg"
+        aria-label={`${offer.title}, ${formatPrice(offer.price, t)}, ${offer.location?.name ?? ""}`}
       >
         <OfferThumbnail offer={offer} size="sm" />
 
@@ -165,7 +165,7 @@ export const OfferQueueRow = memo(function OfferQueueRow({
         <button
           type="button"
           onClick={() => onToggleLike(offer.id, offer.isLiked)}
-          className="p-1 rounded hover:bg-muted text-muted-foreground transition-colors cursor-pointer"
+          className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none"
           title={offer.isLiked ? t("offers.actions.unlike") : t("offers.actions.like")}
           aria-label={offer.isLiked ? t("offers.actions.unlike") : t("offers.actions.like")}
         >
@@ -211,8 +211,8 @@ export const OfferExpandedCard = memo(function OfferExpandedCard({
         <button
           type="button"
           onClick={() => onSelect(offer.id)}
-          className="flex flex-1 gap-3 text-left min-w-0 cursor-pointer focus:outline-none"
-          aria-label={offer.title}
+          className="flex flex-1 gap-3 text-left min-w-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none rounded-lg"
+          aria-label={`${offer.title}, ${formatPrice(offer.price, t)}, ${offer.location?.name ?? ""}`}
         >
           <OfferThumbnail offer={offer} size="md" />
 
@@ -243,7 +243,7 @@ export const OfferExpandedCard = memo(function OfferExpandedCard({
         <button
           type="button"
           onClick={() => onToggleLike(offer.id, offer.isLiked)}
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground transition-colors shrink-0 cursor-pointer"
+          className="p-1.5 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none"
           title={offer.isLiked ? t("offers.actions.unlike") : t("offers.actions.like")}
           aria-label={offer.isLiked ? t("offers.actions.unlike") : t("offers.actions.like")}
         >

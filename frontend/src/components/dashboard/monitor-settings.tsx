@@ -52,7 +52,7 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
     mutationFn: () =>
       generateTelegramToken({}),
     onSuccess: (data) => {
-      window.open(data.data.telegramBotUrl, '_blank');
+      window.open(data.data.telegramBotUrl, '_blank', 'noopener,noreferrer');
     },
   })
 
@@ -79,9 +79,11 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
   return (
     <Card className="bg-card border border-border">
       <CardHeader>
-        <CardTitle className="flex items-center text-xl">
-          <Settings className="w-5 h-5 mr-3 text-primary" />
-          {t('dashboard.monitorSettings.title')}
+        <CardTitle className="text-xl">
+          <h2 className="flex items-center">
+            <Settings className="w-5 h-5 mr-3 text-primary" aria-hidden="true" />
+            {t('dashboard.monitorSettings.title')}
+          </h2>
         </CardTitle>
         <CardDescription>{t('dashboard.monitorSettings.description')}</CardDescription>
       </CardHeader>
@@ -95,6 +97,7 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
             checked={offerMonitor.enableNotifications}
             onCheckedChange={(checked: boolean) => toggleNotificationsMutation.mutate(checked)}
             disabled={toggleNotificationsMutation.isPending}
+            aria-label={t('dashboard.monitorSettings.enableNotifications')}
           />
         </div>
         {offerMonitor.enableNotifications && (
@@ -138,7 +141,7 @@ export default function MonitorSettings({ offerMonitor }: MonitorSettingsProps) 
                         updateNotificationConfigMutation.mutate(configId);
                       }}
                     >
-                      <SelectTrigger id="notification-config" className="max-w-50 sm:max-w-full">
+                      <SelectTrigger id="notification-config" className="w-full">
                         <SelectValue placeholder={t('dashboard.monitorSettings.activeChannelPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>

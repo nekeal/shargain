@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ArrowLeft,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -32,6 +33,7 @@ export interface OfferDetailCockpitProps {
   onToggleLike: (offerId: number, currentlyLiked: boolean) => void;
   onToggleSeen: (offerId: number, currentlySeen: boolean) => void;
   onClose: () => void;
+  className?: string;
 }
 
 export const OfferDetailCockpit = memo(function OfferDetailCockpit({
@@ -44,15 +46,31 @@ export const OfferDetailCockpit = memo(function OfferDetailCockpit({
   onToggleLike,
   onToggleSeen,
   onClose,
+  className,
 }: OfferDetailCockpitProps) {
   const { t } = useTranslation();
   const domain = extractDomain(activeOffer.url);
 
   return (
-    <div className="lg:col-span-8 bg-card border border-border rounded-xl flex flex-col h-full overflow-hidden shadow-sm">
+    <div
+      className={`lg:col-span-8 bg-card border border-border rounded-xl flex flex-col h-full overflow-hidden shadow-sm ${className ?? ""}`}
+    >
       {/* Sticky Command Bar */}
       <div className="p-3 border-b border-border flex flex-wrap items-center justify-between gap-3 bg-muted/25 shrink-0">
         <div className="flex items-center gap-2">
+          {/* Mobile Back to List Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="lg:hidden gap-1 text-xs h-8 px-2 mr-1 cursor-pointer"
+            title={t("offers.actions.backToList")}
+            aria-label={t("offers.actions.backToList")}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{t("offers.actions.backToList")}</span>
+          </Button>
+
           <Button
             onClick={onMarkSeenAndNext}
             size="sm"

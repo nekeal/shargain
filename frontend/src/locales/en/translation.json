@@ -362,6 +362,23 @@
     "viewOffers": "View offers",
     "viewOffersSplitReader": "View offers (Split Reader)",
     "browseTargetOffers": "Browse offers ({{name}})",
+    "filters": {
+      "searchLabel": "Search by title",
+      "searchPlaceholder": "Search title…",
+      "clearSearch": "Clear search",
+      "priceLabel": "Price:",
+      "minPriceLabel": "Minimum price",
+      "minPrice": "min",
+      "maxPriceLabel": "Maximum price",
+      "maxPrice": "max",
+      "clear": "Clear filters",
+      "currency": "zł",
+      "invalidPrice": "Whole złoty only — price filter ignored",
+      "groupLabel": "Offer filters",
+      "priceRangeTitle": "Price range",
+      "clearPrice": "Clear price filter",
+      "resetPrice": "Reset"
+    },
     "emptyState": {
       "title": "No offers in this tab",
       "description": "Change filters or target to view available offers.",
@@ -378,6 +395,7 @@
       "newest": "Newest"
     },
     "actions": {
+      "backToList": "Back to list",
       "refresh": "Refresh",
       "refreshServer": "Refresh list from server",
       "refreshOffers": "Refresh offers list",
