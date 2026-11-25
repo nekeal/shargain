@@ -374,7 +374,10 @@
       "clear": "Clear filters",
       "currency": "zł",
       "invalidPrice": "Whole złoty only — price filter ignored",
-      "groupLabel": "Offer filters"
+      "groupLabel": "Offer filters",
+      "priceRangeTitle": "Price range",
+      "clearPrice": "Clear price filter",
+      "resetPrice": "Reset"
     },
     "emptyState": {
       "title": "No offers in this tab",

@@ -404,9 +404,15 @@ describe("OffersPage", () => {
     });
   });
 
+  const openPriceFilter = () => {
+    const trigger = screen.getByRole("button", { name: /cena/i });
+    fireEvent.click(trigger);
+  };
+
   it("sends title search and price range to the API after typing", async () => {
     renderWithProviders(<OffersPage initialTargetId={1} />);
 
+    openPriceFilter();
     fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
       target: { value: "  rower  " },
     });
@@ -448,6 +454,7 @@ describe("OffersPage", () => {
   it("ignores price inputs that are not whole numbers", async () => {
     renderWithProviders(<OffersPage initialTargetId={1} />);
 
+    openPriceFilter();
     fireEvent.change(screen.getByLabelText("Cena od"), {
       target: { value: "100,50" },
     });
@@ -473,6 +480,7 @@ describe("OffersPage", () => {
   it("ignores dot-grouped price input and flags it invalid", async () => {
     renderWithProviders(<OffersPage initialTargetId={1} />);
 
+    openPriceFilter();
     fireEvent.change(screen.getByLabelText("Cena od"), {
       target: { value: "1.000" },
     });
@@ -498,6 +506,7 @@ describe("OffersPage", () => {
   it("parses space-grouped price input as a whole zloty amount", async () => {
     renderWithProviders(<OffersPage initialTargetId={1} />);
 
+    openPriceFilter();
     fireEvent.change(screen.getByLabelText("Cena od"), {
       target: { value: "650 000" },
     });
@@ -515,6 +524,7 @@ describe("OffersPage", () => {
   it("sends a literal zero price bound", async () => {
     renderWithProviders(<OffersPage initialTargetId={1} />);
 
+    openPriceFilter();
     fireEvent.change(screen.getByLabelText("Cena od"), {
       target: { value: "0" },
     });
@@ -533,6 +543,7 @@ describe("OffersPage", () => {
   it("clears all filters and restores focus to the search input", async () => {
     renderWithProviders(<OffersPage initialTargetId={1} />);
 
+    openPriceFilter();
     fireEvent.change(screen.getByLabelText("Szukaj po tytule"), {
       target: { value: "rower" },
     });
@@ -580,6 +591,7 @@ describe("OffersPage", () => {
   it("announces invalid price input with a linked hint", () => {
     renderWithProviders(<OffersPage initialTargetId={1} />);
 
+    openPriceFilter();
     fireEvent.change(screen.getByLabelText("Cena od"), {
       target: { value: "abc" },
     });

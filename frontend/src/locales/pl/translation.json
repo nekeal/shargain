@@ -374,7 +374,10 @@
       "clear": "Wyczyść filtry",
       "currency": "zł",
       "invalidPrice": "Tylko pełne złote — filtr ceny pominięty",
-      "groupLabel": "Filtry ofert"
+      "groupLabel": "Filtry ofert",
+      "priceRangeTitle": "Zakres cenowy",
+      "clearPrice": "Wyczyść filtr ceny",
+      "resetPrice": "Wyczyść"
     },
     "emptyState": {
       "title": "Brak ofert w tej zakładce",
