@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Layers, Plus, Save, Trash2 } from "lucide-react"
-import { Link } from "@tanstack/react-router"
+import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2 } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
 import { OfferFilters } from "./OfferFilters"
@@ -71,16 +70,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
           {t('dashboard.monitoredWebsites.title')}
         </CardTitle>
         <CardDescription>{t('dashboard.monitoredWebsites.description')}</CardDescription>
-        <CardAction className="flex items-center gap-2">
-          <Button asChild variant="outline" size="default">
-            <Link
-              to="/offers"
-              search={{ targetId: offerMonitor.id }}
-            >
-              <Layers className="w-4 h-4 mr-2 text-primary" />
-              {t('offers.viewOffers')}
-            </Link>
-          </Button>
+        <CardAction>
           <Button size="default" onClick={() => setIsAddUrlDialogOpen(true)} disabled={isUrlQuotaExceeded}>
             <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
             {t('dashboard.monitoredWebsites.addWebsite')}
