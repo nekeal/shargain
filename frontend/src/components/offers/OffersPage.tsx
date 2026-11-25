@@ -9,6 +9,7 @@ import {
   Inbox,
   RefreshCw,
   Search,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
 import {
@@ -22,6 +23,11 @@ import type { PublicOfferSchema } from "@/lib/api/types.gen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   loadStoredTargetId,
   saveStoredTargetId,
@@ -80,6 +86,25 @@ export function OffersPage({
 
   const { data: targets } = useGetTargets();
   const { data: myTarget } = useGetMyTarget();
+
+  // Prototype variants for design exploration: A (Natural Hierarchy), B (Unified Single Bar), C (Popover Filters)
+  const [prototypeVariant, setPrototypeVariant] = useState<"A" | "B" | "C">(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const v = params.get("variant")?.toUpperCase();
+      if (v === "A" || v === "B" || v === "C") return v;
+    }
+    return "A";
+  });
+
+  const handleVariantChange = (v: "A" | "B" | "C") => {
+    setPrototypeVariant(v);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("variant", v);
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
 
   // Debounce raw filter inputs into applied query values
   useEffect(() => {
@@ -204,6 +229,266 @@ export function OffersPage({
   const isLoadingOffers =
     liveLoading || (isFetching && displayedOffers.length === 0);
 
+  // Helper renderers for prototype variants
+  const renderTabs = () => (
+    <Tabs
+      value={activeTab}
+      onValueChange={(val) =>
+        setActiveTab(val as "unseen" | "liked" | "all")
+      }
+    >
+      <TabsList className="bg-muted/70 p-0.5 h-8">
+        <TabsTrigger value="unseen" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
+          <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+          <span>{t("offers.tabs.unseen")}</span>
+        </TabsTrigger>
+        <TabsTrigger value="liked" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
+          <Heart
+            className={`w-3.5 h-3.5 ${
+              activeTab === "liked"
+                ? "fill-red-500 text-red-500"
+                : "text-muted-foreground"
+            }`}
+          />
+          <span>{t("offers.tabs.liked")}</span>
+        </TabsTrigger>
+        <TabsTrigger value="all" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
+          <Filter className="w-3.5 h-3.5 text-muted-foreground" />
+          <span>{t("offers.tabs.all")}</span>
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
+  );
+
+  const renderTargetSelector = (className = "h-8 text-xs min-w-[150px] sm:min-w-[175px]") =>
+    targets && targets.length > 1 ? (
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap hidden sm:inline">
+          {t("offers.targetLabel")}
+        </span>
+        <TargetSelectorInline
+          targets={targets}
+          selectedTargetId={selectedTargetId}
+          onSelect={handleSelectTarget}
+          className={className}
+        />
+      </div>
+    ) : null;
+
+  const renderSearch = (widthClass = "w-44 sm:w-52") => (
+    <div className="relative flex items-center">
+      <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+      <Input
+        ref={searchInputRef}
+        value={searchInput}
+        onChange={(event) => setSearchInput(event.target.value)}
+        aria-label={t("offers.filters.searchLabel")}
+        placeholder={t("offers.filters.searchPlaceholder")}
+        className={`h-8 pl-8 pr-7 text-xs ${widthClass} bg-background/60 shadow-2xs focus-visible:bg-background transition-colors`}
+      />
+      {searchInput !== "" && (
+        <button
+          type="button"
+          onClick={() => {
+            setSearchInput("");
+            setSearch(undefined);
+            searchInputRef.current?.focus();
+          }}
+          className="absolute right-2 p-0.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+          title={t("offers.filters.clearSearch")}
+          aria-label={t("offers.filters.clearSearch")}
+        >
+          <X className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  );
+
+  const renderPriceSegment = () => (
+    <div
+      className={`flex items-center h-8 rounded-md border bg-background/60 px-2 shadow-2xs transition-[border-color,box-shadow] ${
+        priceInvalid
+          ? "border-destructive ring-1 ring-destructive/40"
+          : "border-input hover:border-input/80 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 focus-within:bg-background"
+      }`}
+    >
+      <span className="text-[11px] font-medium text-muted-foreground select-none mr-1.5 hidden sm:inline">
+        {t("offers.filters.priceLabel", "Cena:")}
+      </span>
+      <input
+        value={minPriceInput}
+        onChange={(event) => setMinPriceInput(event.target.value)}
+        inputMode="numeric"
+        aria-label={t("offers.filters.minPriceLabel")}
+        aria-invalid={minPriceInvalid || undefined}
+        aria-describedby={
+          minPriceInvalid ? "offers-price-hint" : undefined
+        }
+        placeholder={t("offers.filters.minPrice")}
+        className="h-full w-12 sm:w-14 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 outline-none text-right font-medium"
+      />
+      <span
+        aria-hidden="true"
+        className="mx-1 text-xs text-muted-foreground/50 select-none"
+      >
+        –
+      </span>
+      <input
+        value={maxPriceInput}
+        onChange={(event) => setMaxPriceInput(event.target.value)}
+        inputMode="numeric"
+        aria-label={t("offers.filters.maxPriceLabel")}
+        aria-invalid={maxPriceInvalid || undefined}
+        aria-describedby={
+          maxPriceInvalid ? "offers-price-hint" : undefined
+        }
+        placeholder={t("offers.filters.maxPrice")}
+        className="h-full w-12 sm:w-14 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 outline-none text-left font-medium"
+      />
+      <span className="ml-1 text-[11px] font-medium text-muted-foreground select-none">
+        {t("offers.filters.currency", "zł")}
+      </span>
+    </div>
+  );
+
+  const renderPricePopover = () => {
+    const isPriceActive = minPriceInput !== "" || maxPriceInput !== "";
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 text-xs gap-1.5 px-2.5 border rounded-lg cursor-pointer shadow-2xs ${
+              isPriceActive
+                ? "border-primary/50 bg-primary/10 text-primary font-semibold"
+                : "border-border bg-background hover:bg-muted text-foreground"
+            }`}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+            <span>
+              {isPriceActive
+                ? `${minPriceInput || "0"} – ${maxPriceInput || "∞"} zł`
+                : t("offers.filters.priceLabel", "Cena")}
+            </span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-72 p-3 space-y-3" align="start">
+          <div className="font-semibold text-xs text-foreground">
+            {t("offers.filters.groupLabel", "Filtruj cenę")}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 space-y-1">
+              <span className="text-[10px] text-muted-foreground font-medium">Od</span>
+              <Input
+                value={minPriceInput}
+                onChange={(e) => setMinPriceInput(e.target.value)}
+                placeholder="0"
+                inputMode="numeric"
+                aria-label={t("offers.filters.minPriceLabel")}
+                className="h-8 text-xs"
+              />
+            </div>
+            <span className="text-muted-foreground mt-4">–</span>
+            <div className="flex-1 space-y-1">
+              <span className="text-[10px] text-muted-foreground font-medium">Do</span>
+              <Input
+                value={maxPriceInput}
+                onChange={(e) => setMaxPriceInput(e.target.value)}
+                placeholder="Max"
+                inputMode="numeric"
+                aria-label={t("offers.filters.maxPriceLabel")}
+                className="h-8 text-xs"
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-border/50">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setMinPriceInput("");
+                setMaxPriceInput("");
+              }}
+              className="h-7 text-xs px-2 text-muted-foreground cursor-pointer"
+            >
+              Resetuj
+            </Button>
+            <span className="text-[11px] text-muted-foreground">w zł (PLN)</span>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
+  const renderClearButton = () =>
+    hasActiveFilters ? (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleClearFilters}
+        className="h-8 text-xs px-2 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-lg gap-1 cursor-pointer shrink-0"
+        title={t("offers.filters.clear")}
+        aria-label={t("offers.filters.clear")}
+      >
+        <X className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">{t("offers.filters.clear")}</span>
+      </Button>
+    ) : null;
+
+  const renderSortButton = () => (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() =>
+        setOrdering(ordering === "oldest" ? "newest" : "oldest")
+      }
+      className="h-8 text-xs gap-1.5 px-2.5 border border-border bg-background hover:bg-muted text-foreground rounded-lg cursor-pointer shadow-2xs"
+    >
+      <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+      <span>
+        {t("offers.ordering.label")}{" "}
+        <strong className="text-foreground font-semibold">
+          {ordering === "oldest"
+            ? t("offers.ordering.oldest")
+            : t("offers.ordering.newest")}
+        </strong>
+      </span>
+    </Button>
+  );
+
+  const renderRefreshButton = (showText = false) => (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleRefresh}
+      disabled={isBusy}
+      className="h-8 text-xs gap-1.5 px-2.5 border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg cursor-pointer shadow-2xs"
+      title={t("offers.actions.refreshServer")}
+      aria-label={t("offers.actions.refreshServer")}
+    >
+      <RefreshCw
+        className={`w-3.5 h-3.5 ${
+          isBusy ? "animate-spin text-primary" : ""
+        }`}
+      />
+      {showText && <span className="hidden sm:inline">{t("offers.actions.refresh")}</span>}
+    </Button>
+  );
+
+  const renderCountBadge = () => (
+    <span className="text-xs text-muted-foreground font-medium px-2 py-1 rounded-md bg-muted/40 border border-border/40 whitespace-nowrap select-none">
+      {totalCount > displayedOffers.length
+        ? t("offers.resultsCountWithTotal", {
+            count: displayedOffers.length,
+            total: totalCount,
+          })
+        : t("offers.resultsCount", {
+            count: displayedOffers.length,
+          })}
+    </span>
+  );
+
   return (
     <div className="min-h-screen bg-secondary pb-3 flex flex-col">
       <main className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 max-w-[1700px] space-y-2.5 flex-1 flex flex-col min-h-0">
@@ -222,221 +507,123 @@ export function OffersPage({
               </p>
             </div>
           </div>
+
+          {/* Variants A & C: Target Selector belongs in header */}
+          {(prototypeVariant === "A" || prototypeVariant === "C") && (
+            <div className="shrink-0">{renderTargetSelector("h-8 text-xs min-w-[170px] sm:min-w-[200px]")}</div>
+          )}
         </div>
 
-        {/* Filter Controls Bar (Consolidated with Target Selector) */}
-        <div className="bg-card border border-border rounded-xl p-2 sm:px-3 sm:py-2 shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-2.5">
-          {/* Left Area: View Triage (Tabs + Target Selector) + Filter Controls (Search + Price) */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
-            {/* Tabs: Unseen, Liked, All */}
-            <Tabs
-              value={activeTab}
-              onValueChange={(val) =>
-                setActiveTab(val as "unseen" | "liked" | "all")
-              }
-            >
-              <TabsList className="bg-muted/70 p-0.5 h-8">
-                <TabsTrigger value="unseen" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-                  <span>{t("offers.tabs.unseen")}</span>
-                </TabsTrigger>
-                <TabsTrigger value="liked" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
-                  <Heart
-                    className={`w-3.5 h-3.5 ${
-                      activeTab === "liked"
-                        ? "fill-red-500 text-red-500"
-                        : "text-muted-foreground"
-                    }`}
-                  />
-                  <span>{t("offers.tabs.liked")}</span>
-                </TabsTrigger>
-                <TabsTrigger value="all" className="gap-1.5 text-xs h-7 px-2.5 font-medium cursor-pointer">
-                  <Filter className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>{t("offers.tabs.all")}</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            {/* Target Selector Inline when multiple targets */}
-            {targets && targets.length > 1 && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap hidden sm:inline">
-                  {t("offers.targetLabel")}
-                </span>
-                <TargetSelectorInline
-                  targets={targets}
-                  selectedTargetId={selectedTargetId}
-                  onSelect={handleSelectTarget}
-                  className="h-8 text-xs min-w-[150px] sm:min-w-[175px] max-w-[220px]"
-                />
-              </div>
-            )}
-
-            {/* Subtle separator between view scope and query filters */}
-            <div
-              className="hidden md:block h-4 w-px bg-border/80 self-center mx-0.5"
-              aria-hidden="true"
-            />
-
-            {/* Query Filter Controls */}
+        {/* VARIANT A: Natural Hierarchy (Linear/GitHub style) */}
+        {prototypeVariant === "A" && (
+          <div className="bg-card border border-border rounded-xl px-3 py-2 shadow-xs flex flex-wrap items-center justify-between gap-2.5">
+            {renderTabs()}
             <div
               role="group"
               aria-label={t("offers.filters.groupLabel")}
-              className="flex flex-wrap items-center gap-2"
+              className="flex flex-wrap items-center gap-2 sm:gap-2.5 ml-auto"
             >
-              {/* Title Search */}
-              <div className="relative flex items-center">
-                <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                <Input
-                  ref={searchInputRef}
-                  value={searchInput}
-                  onChange={(event) => setSearchInput(event.target.value)}
-                  aria-label={t("offers.filters.searchLabel")}
-                  placeholder={t("offers.filters.searchPlaceholder")}
-                  className="h-8 pl-8 pr-7 text-xs w-44 sm:w-52 md:w-56 lg:w-60 bg-background/60 shadow-2xs focus-visible:bg-background transition-colors"
-                />
-                {searchInput !== "" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchInput("");
-                      setSearch(undefined);
-                      searchInputRef.current?.focus();
-                    }}
-                    className="absolute right-2 p-0.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                    title={t("offers.filters.clearSearch")}
-                    aria-label={t("offers.filters.clearSearch")}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-
-              {/* Price Range Segmented Group */}
-              <div
-                className={`flex items-center h-8 rounded-md border bg-background/60 px-2 shadow-2xs transition-[border-color,box-shadow] ${
-                  priceInvalid
-                    ? "border-destructive ring-1 ring-destructive/40"
-                    : "border-input hover:border-input/80 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20 focus-within:bg-background"
-                }`}
-              >
-                <span className="text-[11px] font-medium text-muted-foreground select-none mr-1.5 hidden sm:inline">
-                  {t("offers.filters.priceLabel", "Cena:")}
-                </span>
-                <input
-                  value={minPriceInput}
-                  onChange={(event) => setMinPriceInput(event.target.value)}
-                  inputMode="numeric"
-                  aria-label={t("offers.filters.minPriceLabel")}
-                  aria-invalid={minPriceInvalid || undefined}
-                  aria-describedby={
-                    minPriceInvalid ? "offers-price-hint" : undefined
-                  }
-                  placeholder={t("offers.filters.minPrice")}
-                  className="h-full w-12 sm:w-14 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 outline-none text-right font-medium"
-                />
-                <span
-                  aria-hidden="true"
-                  className="mx-1 text-xs text-muted-foreground/50 select-none"
-                >
-                  –
-                </span>
-                <input
-                  value={maxPriceInput}
-                  onChange={(event) => setMaxPriceInput(event.target.value)}
-                  inputMode="numeric"
-                  aria-label={t("offers.filters.maxPriceLabel")}
-                  aria-invalid={maxPriceInvalid || undefined}
-                  aria-describedby={
-                    maxPriceInvalid ? "offers-price-hint" : undefined
-                  }
-                  placeholder={t("offers.filters.maxPrice")}
-                  className="h-full w-12 sm:w-14 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/60 outline-none text-left font-medium"
-                />
-                <span className="ml-1 text-[11px] font-medium text-muted-foreground select-none">
-                  {t("offers.filters.currency", "zł")}
-                </span>
-              </div>
-
-              {/* Clear All Filters Button */}
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearFilters}
-                  className="h-8 text-xs px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-lg gap-1.5 cursor-pointer shrink-0"
-                  title={t("offers.filters.clear")}
-                  aria-label={t("offers.filters.clear")}
-                >
-                  <X className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">
-                    {t("offers.filters.clear")}
-                  </span>
-                </Button>
-              )}
-
+              {renderSearch("w-44 sm:w-52 md:w-56")}
+              {renderPriceSegment()}
+              {renderClearButton()}
+              <div className="h-4 w-px bg-border/80 self-center hidden sm:block mx-0.5" aria-hidden="true" />
+              {renderCountBadge()}
+              {renderSortButton()}
+              {renderRefreshButton(false)}
               {priceInvalid && (
-                <span
-                  id="offers-price-hint"
-                  className="text-[11px] font-medium text-destructive whitespace-nowrap animate-in fade-in"
-                >
+                <span id="offers-price-hint" className="text-[11px] font-medium text-destructive whitespace-nowrap animate-in fade-in">
                   {t("offers.filters.invalidPrice")}
                 </span>
               )}
             </div>
           </div>
+        )}
 
-          {/* Right Area: Results Count, Ordering Toggle, Refresh */}
-          <div className="flex items-center justify-between xl:justify-end gap-2 sm:gap-2.5 pt-1.5 xl:pt-0 border-t border-border/40 xl:border-t-0 shrink-0">
-            <span className="text-xs text-muted-foreground font-medium px-2 py-1 rounded-md bg-muted/40 border border-border/40 whitespace-nowrap select-none">
-              {totalCount > displayedOffers.length
-                ? t("offers.resultsCountWithTotal", {
-                    count: displayedOffers.length,
-                    total: totalCount,
-                  })
-                : t("offers.resultsCount", {
-                    count: displayedOffers.length,
-                  })}
-            </span>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setOrdering(ordering === "oldest" ? "newest" : "oldest")
-              }
-              className="h-8 text-xs gap-1.5 px-2.5 cursor-pointer shadow-2xs hover:bg-accent hover:text-accent-foreground"
+        {/* VARIANT B: Unified Single Bar (all in 1 continuous row with count) */}
+        {prototypeVariant === "B" && (
+          <div className="bg-card border border-border rounded-xl px-3 py-2 shadow-xs flex flex-wrap items-center gap-2 sm:gap-2.5">
+            {renderTabs()}
+            {renderTargetSelector()}
+            <div className="hidden md:block h-4 w-px bg-border/80 self-center mx-0.5" aria-hidden="true" />
+            <div
+              role="group"
+              aria-label={t("offers.filters.groupLabel")}
+              className="flex flex-wrap items-center gap-2"
             >
-              <ArrowUpDown className="w-3 h-3 text-muted-foreground" />
-              <span>
-                {t("offers.ordering.label")}{" "}
-                <strong className="text-foreground font-semibold">
-                  {ordering === "oldest"
-                    ? t("offers.ordering.oldest")
-                    : t("offers.ordering.newest")}
-                </strong>
-              </span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isBusy}
-              className="h-8 text-xs gap-1.5 px-2.5 text-muted-foreground hover:text-foreground hover:border-primary/50 cursor-pointer shadow-2xs"
-              title={t("offers.actions.refreshServer")}
-              aria-label={t("offers.actions.refreshServer")}
-            >
-              <RefreshCw
-                className={`w-3.5 h-3.5 ${
-                  isBusy ? "animate-spin text-primary" : ""
-                }`}
-              />
-              <span className="hidden sm:inline">
-                {t("offers.actions.refresh")}
-              </span>
-            </Button>
+              {renderSearch("w-40 sm:w-48")}
+              {renderPriceSegment()}
+              {renderClearButton()}
+              {priceInvalid && (
+                <span id="offers-price-hint" className="text-[11px] font-medium text-destructive whitespace-nowrap animate-in fade-in">
+                  {t("offers.filters.invalidPrice")}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 ml-auto">
+              {renderCountBadge()}
+              {renderSortButton()}
+              {renderRefreshButton(true)}
+            </div>
           </div>
+        )}
+
+        {/* VARIANT C: Minimalist Popover Filter */}
+        {prototypeVariant === "C" && (
+          <div className="bg-card border border-border rounded-xl px-3 py-2 shadow-xs flex flex-wrap items-center justify-between gap-2.5">
+            {renderTabs()}
+            <div
+              role="group"
+              aria-label={t("offers.filters.groupLabel")}
+              className="flex flex-wrap items-center gap-2 sm:gap-2.5 ml-auto"
+            >
+              {renderSearch("w-52 sm:w-64")}
+              {renderPricePopover()}
+              {renderClearButton()}
+              <div className="h-4 w-px bg-border/80 self-center hidden sm:block mx-0.5" aria-hidden="true" />
+              {renderSortButton()}
+              {renderRefreshButton(false)}
+            </div>
+          </div>
+        )}
+
+        {/* Floating Prototype Switcher */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-neutral-900/90 dark:bg-neutral-100/90 text-white dark:text-neutral-900 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 border border-white/20 text-xs font-medium select-none">
+          <span className="text-[10px] uppercase tracking-wider font-bold opacity-60 mr-1.5">
+            Wariant:
+          </span>
+          <button
+            type="button"
+            onClick={() => handleVariantChange("A")}
+            className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+              prototypeVariant === "A"
+                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                : "opacity-75 hover:opacity-100 hover:bg-white/10 dark:hover:bg-black/10"
+            }`}
+          >
+            A: Hierarchia (Linear)
+          </button>
+          <button
+            type="button"
+            onClick={() => handleVariantChange("B")}
+            className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+              prototypeVariant === "B"
+                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                : "opacity-75 hover:opacity-100 hover:bg-white/10 dark:hover:bg-black/10"
+            }`}
+          >
+            B: Jeden pasek
+          </button>
+          <button
+            type="button"
+            onClick={() => handleVariantChange("C")}
+            className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+              prototypeVariant === "C"
+                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                : "opacity-75 hover:opacity-100 hover:bg-white/10 dark:hover:bg-black/10"
+            }`}
+          >
+            C: Popover ceny
+          </button>
         </div>
 
         {/* Loading skeleton while initial offers are loading */}
