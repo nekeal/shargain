@@ -71,9 +71,11 @@ export default function DashboardSidebar({ offerMonitor }: DashboardSidebarProps
       {/* Status Card */}
       <Card className="bg-card border border-border">
         <CardHeader>
-          <CardTitle className="flex items-center text-base font-medium">
-            <AlertCircle className="w-4 h-4 mr-2 text-primary" aria-hidden="true" />
-            {t('dashboard.sidebar.status.title')}
+          <CardTitle className="text-base font-medium">
+            <h2 className="flex items-center">
+              <AlertCircle className="w-4 h-4 mr-2 text-primary" aria-hidden="true" />
+              {t('dashboard.sidebar.status.title')}
+            </h2>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -99,7 +101,9 @@ export default function DashboardSidebar({ offerMonitor }: DashboardSidebarProps
       {/* Quota Card */}
       <Card className="bg-card border border-border">
         <CardHeader>
-          <CardTitle className="text-base font-medium">{t('dashboard.sidebar.quotas.title')}</CardTitle>
+          <CardTitle className="text-base font-medium">
+            <h2>{t('dashboard.sidebar.quotas.title')}</h2>
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {scrapingUrlQuota ? (
@@ -142,7 +146,9 @@ export default function DashboardSidebar({ offerMonitor }: DashboardSidebarProps
       {/* Quick Actions */}
       <Card className="bg-card border border-border">
         <CardHeader>
-          <CardTitle className="text-base font-medium">{t('dashboard.sidebar.quickActions.title')}</CardTitle>
+          <CardTitle className="text-base font-medium">
+            <h2>{t('dashboard.sidebar.quickActions.title')}</h2>
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Button

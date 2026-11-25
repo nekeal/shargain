@@ -365,13 +365,19 @@
     "filters": {
       "searchLabel": "Search by title",
       "searchPlaceholder": "Search title…",
+      "clearSearch": "Clear search",
+      "priceLabel": "Price:",
       "minPriceLabel": "Minimum price",
-      "minPrice": "Min price",
+      "minPrice": "min",
       "maxPriceLabel": "Maximum price",
-      "maxPrice": "Max price",
+      "maxPrice": "max",
       "clear": "Clear filters",
+      "currency": "zł",
       "invalidPrice": "Whole złoty only — price filter ignored",
-      "groupLabel": "Offer filters"
+      "groupLabel": "Offer filters",
+      "priceRangeTitle": "Price range",
+      "clearPrice": "Clear price filter",
+      "resetPrice": "Reset"
     },
     "emptyState": {
       "title": "No offers in this tab",
@@ -389,6 +395,7 @@
       "newest": "Newest"
     },
     "actions": {
+      "backToList": "Back to list",
       "refresh": "Refresh",
       "refreshServer": "Refresh list from server",
       "refreshOffers": "Refresh offers list",

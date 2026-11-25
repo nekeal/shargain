@@ -365,13 +365,19 @@
     "filters": {
       "searchLabel": "Szukaj po tytule",
       "searchPlaceholder": "Szukaj w tytule…",
+      "clearSearch": "Wyczyść wyszukiwanie",
+      "priceLabel": "Cena:",
       "minPriceLabel": "Cena od",
-      "minPrice": "Cena od",
+      "minPrice": "od",
       "maxPriceLabel": "Cena do",
-      "maxPrice": "Cena do",
+      "maxPrice": "do",
       "clear": "Wyczyść filtry",
+      "currency": "zł",
       "invalidPrice": "Tylko pełne złote — filtr ceny pominięty",
-      "groupLabel": "Filtry ofert"
+      "groupLabel": "Filtry ofert",
+      "priceRangeTitle": "Zakres cenowy",
+      "clearPrice": "Wyczyść filtr ceny",
+      "resetPrice": "Wyczyść"
     },
     "emptyState": {
       "title": "Brak ofert w tej zakładce",
@@ -389,6 +395,7 @@
       "newest": "Najnowsze"
     },
     "actions": {
+      "backToList": "Wróć do listy",
       "refresh": "Odśwież",
       "refreshServer": "Odśwież listę z serwera",
       "refreshOffers": "Odśwież listę ofert",
