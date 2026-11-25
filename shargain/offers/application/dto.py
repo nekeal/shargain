@@ -136,6 +136,7 @@ class PublicOffer:
     images: list[str] = dataclasses.field(default_factory=list)
     scraping_url_name: str | None = None
     description: str | None = None
+    waypoints: list[WaypointData] = dataclasses.field(default_factory=list)
 
 
 @dataclasses.dataclass(frozen=True)

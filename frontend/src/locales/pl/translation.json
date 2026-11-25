@@ -463,7 +463,10 @@
       "cityArea": "Miasto / Rejon",
       "openGoogleMaps": "Google Maps",
       "clickToInteract": "Kliknij, aby korzystać z mapy",
-      "loadingMap": "Ładowanie mapy..."
+      "loadingMap": "Ładowanie mapy...",
+      "copyCoordinates": "Kopiuj współrzędne",
+      "fitWaypoints": "Pokaż punkty",
+      "distanceApproxTitle": "Przybliżona odległość na podstawie szacowanej lokalizacji"
     },
     "attributes": {
       "yes": "Tak",

@@ -14,7 +14,7 @@ from shargain.offers.field_extraction import (
     OfferFieldResolver,
     RichValue,
 )
-from shargain.offers.models import TargetRole
+from shargain.offers.models import ScrapingUrl, TargetRole
 from shargain.offers.tests.factories import OfferFactory, ScrappingTargetFactory
 from shargain.offers.tests.helpers import grant_access
 
@@ -487,3 +487,30 @@ class TestListPublicOffers:
         page = list_public_offers(actor, target.id, search="rower", max_price=500, seen=False, limit=1)
         assert page.count == 1
         assert [i.title for i in page.items] == ["Rower B"]
+
+    def test_waypoints_resolved_from_scraping_url(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        actor = Actor(user_id=user.id)
+        waypoints = [{"name": "Metro Centrum", "lat": 52.2302, "lon": 21.0106}]
+        ScrapingUrl.objects.create(
+            scraping_target=target,
+            url="https://example.com/list?page=1",
+            name="Warsaw Search",
+            waypoints=waypoints,
+        )
+        OfferFactory(
+            target=target,
+            passed_filters=True,
+            list_url="https://example.com/list?page=2",
+        )
+        OfferFactory(
+            target=target,
+            passed_filters=True,
+            list_url="https://other.com/list",
+        )
+
+        page = list_public_offers(actor, target.id, ordering="oldest")
+        assert page.items[0].scraping_url_name == "Warsaw Search"
+        assert page.items[0].waypoints == waypoints
+        assert page.items[1].waypoints == []

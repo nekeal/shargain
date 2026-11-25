@@ -259,6 +259,7 @@ export const OfferDetailCockpit = memo(function OfferDetailCockpit({
 
           <OfferLocationMap
             location={activeOffer.location}
+            waypoints={activeOffer.waypoints}
             interactiveMap={true}
             mapHeightClassName="h-[300px] sm:h-[360px]"
           />

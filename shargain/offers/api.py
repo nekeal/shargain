@@ -41,6 +41,12 @@ class OfferLocationSchema(BaseSchema):
     is_exact: bool
 
 
+class OfferWaypointSchema(BaseSchema):
+    name: str
+    lat: float
+    lon: float
+
+
 class PublicOfferSchema(BaseSchema):
     id: int
     url: str
@@ -60,6 +66,7 @@ class PublicOfferSchema(BaseSchema):
     location: OfferLocationSchema | None = None
     scraping_url_name: str | None = None
     description: str | None = None
+    waypoints: list[OfferWaypointSchema] = []
 
 
 class PublicOfferPageSchema(BaseSchema):
