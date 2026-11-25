@@ -4,9 +4,11 @@ Send a test notification to the configured channel for a ScrapingTarget.
 
 from shargain.commons.application.actor import Actor
 from shargain.notifications.senders import TelegramNotificationSender
+from shargain.offers.application.access import can_manage_target
 from shargain.offers.application.exceptions import (
     NotificationConfigDoesNotExist,
     TargetDoesNotExist,
+    TargetPermissionDenied,
 )
 from shargain.offers.models import ScrappingTarget
 
@@ -24,9 +26,12 @@ def send_test_notification(actor: Actor, target_id: int) -> None:
         NotificationConfigDoesNotExist: If the target does not have a notification channel configured.
     """
     try:
-        target = ScrappingTarget.objects.get(id=target_id, owner=actor.user_id)
+        target = ScrappingTarget.objects.for_user(actor.user_id).get(id=target_id)
     except ScrappingTarget.DoesNotExist as exc:
         raise TargetDoesNotExist() from exc
+
+    if not can_manage_target(actor.user_id, target):
+        raise TargetPermissionDenied()
 
     if not target.notification_config:
         raise NotificationConfigDoesNotExist()

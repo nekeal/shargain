@@ -1,10 +1,13 @@
 import pytest
 
+from shargain.accounts.tests.factories import UserFactory
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.add_scraping_url import add_scraping_url
 from shargain.offers.application.dto import ScrapingUrlDTO
-from shargain.offers.application.exceptions import QuotaExceeded, TargetDoesNotExist
+from shargain.offers.application.exceptions import QuotaExceeded, TargetDoesNotExist, TargetPermissionDenied
 from shargain.offers.application.queries.get_target import get_target
+from shargain.offers.models import TargetRole
+from shargain.offers.tests.helpers import grant_access
 from shargain.quotas.tests.factories import ScrapingUrlQuotaFactory
 
 
@@ -85,3 +88,56 @@ class TestAddScrapingUrl:
         )
 
         assert result_dto.send_map_in_notifications is False
+
+    def test_add_scraping_url_by_editor_succeeds(self, scraping_target):
+        editor = UserFactory()
+        grant_access(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        actor = Actor(user_id=editor.id)
+        url = "https://example.com/editor-url"
+
+        result_dto = add_scraping_url(actor=actor, target_id=scraping_target.id, url=url)
+
+        assert result_dto.url == url
+        target_dto = get_target(actor=actor, target_id=scraping_target.id)
+        assert any(u.url == url for u in target_dto.urls)
+
+    def test_add_scraping_url_by_viewer_raises_permission_denied(self, scraping_target):
+        viewer = UserFactory()
+        grant_access(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
+        actor = Actor(user_id=viewer.id)
+
+        with pytest.raises(TargetPermissionDenied):
+            add_scraping_url(actor=actor, target_id=scraping_target.id, url="https://example.com/viewer-url")
+
+        target_dto = get_target(actor=Actor(user_id=scraping_target.owner_id), target_id=scraping_target.id)
+        assert not any(u.url == "https://example.com/viewer-url" for u in target_dto.urls)
+
+    def test_add_scraping_url_by_editor_enforces_owner_quota(self, scraping_target):
+        editor = UserFactory()
+        grant_access(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        actor = Actor(user_id=editor.id)
+
+        # Set owner quota to 0
+        ScrapingUrlQuotaFactory(user=scraping_target.owner, max_urls=0)
+
+        with pytest.raises(QuotaExceeded):
+            add_scraping_url(actor=actor, target_id=scraping_target.id, url="https://example.com/editor-url")
+
+    def test_add_scraping_url_with_invalid_filters_raises_error(self, scraping_target):
+        actor = Actor(user_id=scraping_target.owner_id)
+        invalid_filters = {
+            "ruleGroups": [
+                {"logic": "and", "rules": [{"field": "nonexistent_field", "operator": "contains", "value": "x"}]}
+            ]
+        }
+
+        with pytest.raises(ValueError, match="not available for this URL"):
+            add_scraping_url(
+                actor=actor,
+                target_id=scraping_target.id,
+                url="https://www.olx.pl/d/nieruchomosci/mieszkania/",
+                filters=invalid_filters,
+            )
+
+        target_dto = get_target(actor=actor, target_id=scraping_target.id)
+        assert target_dto.urls == []

@@ -1,11 +1,14 @@
 import pytest
 
+from shargain.accounts.tests.factories import UserFactory
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.commands.update_scraping_url import update_scraping_url
 from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
-from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist
+from shargain.offers.application.exceptions import ScrapingUrlDoesNotExist, TargetPermissionDenied
 from shargain.offers.application.queries.get_target import get_target
+from shargain.offers.models import TargetRole
 from shargain.offers.tests.factories import ScrapingUrlFactory
+from shargain.offers.tests.helpers import grant_access
 
 
 @pytest.mark.django_db
@@ -36,10 +39,19 @@ class TestUpdateScrapingUrl:
         new_filters = {
             "ruleGroups": [{"logic": "and", "rules": [{"field": "title", "operator": "contains", "value": "test"}]}]
         }
+        normalized_filters = {
+            "ruleGroups": [
+                {
+                    "logic": "and",
+                    "logicWithNext": None,
+                    "rules": [{"case_sensitive": False, "field": "title", "operator": "contains", "value": "test"}],
+                }
+            ]
+        }
 
         result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, filters=new_filters)
 
-        assert result_dto.filters == new_filters
+        assert result_dto.filters == normalized_filters
 
     def test_update_scraping_url_location_map_succeeds(self, scraping_target):
         scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, show_location_map_in_notifications=False)
@@ -100,3 +112,58 @@ class TestUpdateScrapingUrl:
 
         with pytest.raises(ScrapingUrlDoesNotExist):
             update_scraping_url(actor=actor, url_id=scraping_url.id, name="New Name")
+
+    def test_update_scraping_url_by_editor_succeeds(self, scraping_target):
+        editor = UserFactory()
+        grant_access(target=scraping_target, user=editor, role=TargetRole.EDITOR)
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, name="Old Name")
+        actor = Actor(user_id=editor.id)
+
+        result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, name="Editor Name")
+        assert result_dto.name == "Editor Name"
+        scraping_url.refresh_from_db()
+        assert scraping_url.name == "Editor Name"
+
+    def test_update_scraping_url_by_viewer_raises_permission_denied(self, scraping_target):
+        viewer = UserFactory()
+        grant_access(target=scraping_target, user=viewer, role=TargetRole.VIEWER)
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, name="Old Name")
+        actor = Actor(user_id=viewer.id)
+
+        with pytest.raises(TargetPermissionDenied):
+            update_scraping_url(actor=actor, url_id=scraping_url.id, name="Viewer Name")
+        scraping_url.refresh_from_db()
+        assert scraping_url.name == "Old Name"
+
+    def test_update_scraping_url_with_mismatched_target_id_raises_error(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target, name="Old Name")
+        actor = Actor(user_id=scraping_target.owner_id)
+
+        with pytest.raises(ScrapingUrlDoesNotExist):
+            update_scraping_url(
+                actor=actor,
+                url_id=scraping_url.id,
+                target_id=scraping_target.id + 999,
+                name="New Name",
+            )
+        scraping_url.refresh_from_db()
+        assert scraping_url.name == "Old Name"
+
+    def test_update_scraping_url_with_invalid_filters_raises_error(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            url="https://www.olx.pl/d/nieruchomosci/mieszkania/",
+            filters=None,
+        )
+        actor = Actor(user_id=scraping_target.owner_id)
+        invalid_filters = {
+            "ruleGroups": [
+                {"logic": "and", "rules": [{"field": "nonexistent_field", "operator": "contains", "value": "x"}]}
+            ]
+        }
+
+        with pytest.raises(ValueError, match="not available for this URL"):
+            update_scraping_url(actor=actor, url_id=scraping_url.id, filters=invalid_filters)
+
+        scraping_url.refresh_from_db()
+        assert scraping_url.filters is None

@@ -191,7 +191,7 @@ def list_public_offers(
     min_price: int | None = None,
     max_price: int | None = None,
 ) -> PublicOfferPage:
-    if not ScrappingTarget.objects.filter(pk=target_id, owner_id=actor.user_id).exists():
+    if not ScrappingTarget.objects.for_user(actor.user_id).filter(pk=target_id).exists():
         raise TargetDoesNotExist()
 
     qs = Offer.objects.filter(target_id=target_id, passed_filters=True).defer("source_html")

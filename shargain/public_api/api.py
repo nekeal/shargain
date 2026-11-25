@@ -54,6 +54,7 @@ from shargain.offers.application.exceptions import (
     QuotaExceeded,
     ScrapingUrlDoesNotExist,
     TargetDoesNotExist,
+    TargetPermissionDenied,
 )
 from shargain.offers.application.queries.get_target import (
     get_target,
@@ -61,7 +62,6 @@ from shargain.offers.application.queries.get_target import (
 )
 from shargain.offers.application.queries.list_targets import list_targets
 from shargain.offers.field_extraction import ListUrl, OfferFieldResolver
-from shargain.offers.filtering import validate_filters_for_url
 from shargain.offers.models import ScrapingUrl
 from shargain.quotas.services.quota import QuotaService
 from shargain.telegram.application.commands.generate_telegram_token import (
@@ -79,6 +79,11 @@ router = NinjaAPI()
 router.add_router("/auth", auth_router)
 router.add_router("/", protected_router)
 router.add_router("/", offers_router)
+
+
+@router.exception_handler(TargetPermissionDenied)
+def target_permission_denied_handler(request: HttpRequest, exc: TargetPermissionDenied):
+    return router.create_response(request, {"detail": exc.message, "code": exc.code}, status=403)
 
 
 class ErrorSchema(Schema):
@@ -254,7 +259,7 @@ def get_available_fields(request: HttpRequest, url_id: int):
     actor = get_actor(request)
 
     try:
-        url_dto = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
+        url_dto = ScrapingUrl.objects.for_user(actor.user_id).get(id=url_id)
     except ScrapingUrl.DoesNotExist as e:
         raise HttpError(404, "Scraping URL not found") from e
 
@@ -374,12 +379,6 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
     actor = get_actor(request)
     filters_dict = payload.filters.model_dump(by_alias=True) if payload.filters else None
 
-    # Validate filter structure before saving
-    try:
-        validated_filters = validate_filters_for_url(filters_dict, str(payload.url))
-    except ValueError as e:
-        raise HttpError(400, str(e)) from e
-
     try:
         waypoints_list = (
             [WaypointData(name=w.name, lat=w.lat, lon=w.lon) for w in payload.waypoints] if payload.waypoints else None
@@ -389,11 +388,13 @@ def add_url_to_target(request: HttpRequest, target_id: int, payload: AddUrlReque
             str(payload.url),
             target_id,
             name=payload.name,
-            filters=validated_filters,
+            filters=filters_dict,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
             send_map_in_notifications=payload.send_map_in_notifications,
             waypoints=waypoints_list,
         )
+    except ValueError as e:
+        raise HttpError(400, str(e)) from e
     except TargetDoesNotExist as e:
         raise HttpError(404, "Target not found") from e
     except QuotaExceeded as e:
@@ -422,7 +423,7 @@ def get_quota_status(request: HttpRequest):
 )
 def delete_target_url(request: HttpRequest, target_id: int, url_id: int):
     actor = get_actor(request)
-    delete_scraping_url(actor, url_id)
+    delete_scraping_url(actor, url_id=url_id, target_id=target_id)
     return 204, None
 
 
@@ -443,16 +444,6 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
     else:
         filters_arg = payload.filters.model_dump(by_alias=True)
 
-    if isinstance(filters_arg, dict):
-        try:
-            existing_url = ScrapingUrl.objects.get(id=url_id, scraping_target__owner=actor.user_id)
-        except ScrapingUrl.DoesNotExist as e:
-            raise HttpError(404, "Scraping URL not found") from e
-        try:
-            filters_arg = validate_filters_for_url(filters_arg, existing_url.url)
-        except ValueError as e:
-            raise HttpError(400, str(e)) from e
-
     try:
         waypoints_list = (
             [WaypointData(name=w.name, lat=w.lat, lon=w.lon) for w in payload.waypoints] if payload.waypoints else None
@@ -463,12 +454,15 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
         return update_scraping_url(
             actor=actor,
             url_id=url_id,
+            target_id=target_id,
             filters=filters_arg,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
             send_map_in_notifications=payload.send_map_in_notifications,
             waypoints=waypoints_list,
             notification_fields=notification_fields_dict,
         )
+    except ValueError as e:
+        raise HttpError(400, str(e)) from e
     except ScrapingUrlDoesNotExist as exc:
         raise HttpError(404, "Scraping URL not found") from exc
 

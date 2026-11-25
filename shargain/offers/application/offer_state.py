@@ -16,10 +16,10 @@ def _validate_actor_offers(actor: Actor, offer_ids: Sequence[int], target_id: in
     if not offer_ids:
         return []
     unique_ids = list(dict.fromkeys(offer_ids))
-    filters = {"pk__in": unique_ids, "target__owner_id": actor.user_id}
+    qs = Offer.objects.for_user(actor.user_id).filter(pk__in=unique_ids)
     if target_id is not None:
-        filters["target_id"] = target_id
-    offers = list(Offer.objects.filter(**filters).values_list("pk", flat=True))
+        qs = qs.filter(target_id=target_id)
+    offers = list(qs.values_list("pk", flat=True))
     if len(offers) != len(unique_ids):
         raise OfferDoesNotExist()
     return unique_ids

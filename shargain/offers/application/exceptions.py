@@ -45,3 +45,8 @@ class QuotaExceeded(ApplicationException):
 class OfferDoesNotExist(ApplicationException):
     code = "offer_does_not_exist"
     message = "Offer does not exist."
+
+
+class TargetPermissionDenied(ApplicationException):
+    code = "target_permission_denied"
+    message = "You do not have permission to perform this action on the target."

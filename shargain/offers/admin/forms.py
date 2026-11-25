@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 
-from shargain.offers.models import ScrappingTarget
+from shargain.offers.models import ScrappingTarget, TargetAccess
 
 
 class ScrappingTargetAdminForm(ModelForm):
@@ -19,3 +19,9 @@ class ScrappingTargetAdminForm(ModelForm):
         if not notification_config.chatid:
             raise ValidationError(_("You must first register a channel (or specify a chat_id manually)"))
         return notification_config
+
+
+class TargetAccessForm(ModelForm):
+    class Meta:
+        model = TargetAccess
+        fields = "__all__"  # noqa: DJ007
