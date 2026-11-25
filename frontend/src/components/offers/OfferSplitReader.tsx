@@ -120,7 +120,6 @@ function SplitReaderContent({
     offers,
     selectedOfferId,
     setSelectedOfferId,
-    isDetailsOpen,
     onToggleLike,
     onToggleSeen,
   });

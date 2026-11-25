@@ -5,7 +5,6 @@ export interface UseOfferKeyboardTriageOptions {
   offers: Array<PublicOfferSchema>;
   selectedOfferId: number;
   setSelectedOfferId: React.Dispatch<React.SetStateAction<number>>;
-  isDetailsOpen: boolean;
   onToggleLike: (offerId: number, currentlyLiked: boolean) => void;
   onToggleSeen: (offerId: number, currentlySeen: boolean) => void;
 }
@@ -14,7 +13,6 @@ export function useOfferKeyboardTriage({
   offers,
   selectedOfferId,
   setSelectedOfferId,
-  isDetailsOpen,
   onToggleLike,
   onToggleSeen,
 }: UseOfferKeyboardTriageOptions) {
@@ -31,17 +29,6 @@ export function useOfferKeyboardTriage({
   useEffect(() => {
     selectedOfferIdRef.current = selectedOfferId;
   }, [selectedOfferId]);
-
-  // Auto-mark offer as seen after 1 second of inspection ONLY when details panel is open
-  useEffect(() => {
-    if (!isDetailsOpen || activeOffer == null || activeOffer.isSeen) return;
-
-    const timer = setTimeout(() => {
-      onToggleSeen(activeOffer.id, false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [activeOffer, isDetailsOpen, onToggleSeen]);
 
   // Preload adjacent offers' main images in background for instant switching
   useEffect(() => {
