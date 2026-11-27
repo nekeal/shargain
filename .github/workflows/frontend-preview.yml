@@ -81,7 +81,7 @@ jobs:
 
             | Item | Details |
             | :--- | :--- |
-            | **Preview URL** | [${previewUrl}](${previewUrl}) |
+            | **Preview URL** | <a href="${previewUrl}" target="_blank" rel="noopener noreferrer">${previewUrl}</a> |
             | **Branch** | \`${branchName}\` |
             | **Commit** | \`${commitSha}\` |
 
