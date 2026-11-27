@@ -1,11 +1,13 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Plus, Save, Trash2 } from "lucide-react"
+import { AlertCircle, CheckCircle, ExternalLink, Eye, EyeOff, Globe, Pencil, Plus, Save, Trash2 } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRemoveUrlMutation, useToggleUrlActiveMutation } from "./useMonitors"
+import { EditUrlParamsDialog } from "./EditUrlParamsDialog"
 import { OfferFilters } from "./OfferFilters"
 import { UrlNotificationSettings } from "./UrlNotificationSettings"
 import type { OfferMonitor } from "@/types/dashboard"
+import type { ScrapingUrlResponse } from "@/lib/api/types.gen"
 import cn from "@/lib/utils"
 import { getQuotaStatus, updateTargetName } from "@/lib/api/sdk.gen"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,6 +27,7 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
   const [updateSuccess, setUpdateSuccess] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null)
   const [isAddUrlDialogOpen, setIsAddUrlDialogOpen] = useState(false)
+  const [urlToEdit, setUrlToEdit] = useState<ScrapingUrlResponse | null>(null)
   const [urlToRemove, setUrlToRemove] = useState<number | null>(null)
 
   const queryClient = useQueryClient()
@@ -176,6 +179,14 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
                   <Button
                     size="sm"
                     variant="outline"
+                    onClick={() => setUrlToEdit(url)}
+                    aria-label={t('dashboard.monitoredWebsites.editParams')}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => toggleUrlActiveMutation.mutate({ urlId: url.id, isActive: url.isActive })}
                     aria-label={url.isActive ? t('dashboard.monitoredWebsites.pause') : t('dashboard.monitoredWebsites.resume')}
                     className={cn(url.isActive ? "text-muted-foreground hover:bg-accent" : "text-success hover:bg-success/10")}
@@ -226,6 +237,12 @@ export function MonitoredWebsites({ offerMonitor }: MonitoredWebsitesProps) {
         isOpen={isAddUrlDialogOpen}
         onClose={() => setIsAddUrlDialogOpen(false)}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['target'] })}
+      />
+      <EditUrlParamsDialog
+        targetId={offerMonitor.id}
+        url={urlToEdit}
+        isOpen={urlToEdit !== null}
+        onClose={() => setUrlToEdit(null)}
       />
       <Dialog open={urlToRemove !== null} onOpenChange={(open) => { if (!open) setUrlToRemove(null) }}>
         <DialogContent>

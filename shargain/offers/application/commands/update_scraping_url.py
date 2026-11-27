@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from shargain.commons.application.actor import Actor
 from shargain.offers.application.access import can_manage_urls
 from shargain.offers.application.dto import ScrapingUrlDTO, WaypointData
@@ -24,10 +26,41 @@ def _get_scraping_url(user_id: int, url_id: int, target_id: int | None) -> Scrap
         raise ScrapingUrlDoesNotExist() from e
 
 
+def _validate_url_update(existing_url: str, new_url: str) -> None:
+    if len(new_url) > 1024:
+        raise ValueError("URL must be at most 1024 characters")
+    existing_parts = urlparse(existing_url)
+    new_parts = urlparse(new_url)
+    if (
+        new_parts.scheme,
+        new_parts.netloc,
+        new_parts.path or "/",
+        new_parts.params,
+        new_parts.fragment,
+    ) != (
+        existing_parts.scheme,
+        existing_parts.netloc,
+        existing_parts.path or "/",
+        existing_parts.params,
+        existing_parts.fragment,
+    ):
+        raise ValueError("Only query parameters can be modified")
+
+
+def _apply_simple_updates(scraping_url: ScrapingUrl, updates: dict[str, object]) -> list[str]:
+    update_fields = []
+    for field, value in updates.items():
+        if value is not None:
+            setattr(scraping_url, field, value)
+            update_fields.append(field)
+    return update_fields
+
+
 def update_scraping_url(
     actor: Actor,
     url_id: int,
     target_id: int | None = None,
+    url: str | None = None,
     name: str | None = None,
     filters: dict | None | ClearFilters = None,
     show_location_map_in_notifications: bool | None = None,
@@ -35,34 +68,35 @@ def update_scraping_url(
     waypoints: list[WaypointData] | None = None,
     notification_fields: dict | None = None,
 ) -> ScrapingUrlDTO:
-    url = _get_scraping_url(actor.user_id, url_id, target_id)
+    scraping_url = _get_scraping_url(actor.user_id, url_id, target_id)
 
-    if not can_manage_urls(actor.user_id, url.scraping_target):
+    if not can_manage_urls(actor.user_id, scraping_url.scraping_target):
         raise TargetPermissionDenied()
 
-    if isinstance(filters, dict):
-        filters = validate_filters_for_url(filters, url.url)
+    if url is not None:
+        _validate_url_update(scraping_url.url, url)
 
-    update_fields = []
-    if name is not None:
-        url.name = name
-        update_fields.append("name")
+    target_url = url if url is not None else scraping_url.url
+    if isinstance(filters, dict):
+        filters = validate_filters_for_url(filters, target_url)
+
+    update_fields = _apply_simple_updates(
+        scraping_url,
+        {
+            "url": url,
+            "name": name,
+            "show_location_map_in_notifications": show_location_map_in_notifications,
+            "send_map_in_notifications": send_map_in_notifications,
+            "waypoints": waypoints,
+            "notification_fields": (
+                NotificationFieldsSelection(**notification_fields) if notification_fields is not None else None
+            ),
+        },
+    )
     if filters is not None:
-        url.filters = None if filters is CLEAR_FILTERS else filters
+        scraping_url.filters = None if filters is CLEAR_FILTERS else filters
         update_fields.append("filters")
-    if show_location_map_in_notifications is not None:
-        url.show_location_map_in_notifications = show_location_map_in_notifications
-        update_fields.append("show_location_map_in_notifications")
-    if send_map_in_notifications is not None:
-        url.send_map_in_notifications = send_map_in_notifications
-        update_fields.append("send_map_in_notifications")
-    if waypoints is not None:
-        url.waypoints = waypoints
-        update_fields.append("waypoints")
-    if notification_fields is not None:
-        url.notification_fields = NotificationFieldsSelection(**notification_fields)
-        update_fields.append("notification_fields")
 
     if update_fields:
-        url.save(update_fields=update_fields)
-    return ScrapingUrlDTO.from_orm(url)
+        scraping_url.save(update_fields=update_fields)
+    return ScrapingUrlDTO.from_orm(scraping_url)

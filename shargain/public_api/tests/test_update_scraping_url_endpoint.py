@@ -170,3 +170,66 @@ class TestUpdateScrapingUrlEndpoint:
         )
         assert response.status_code == 403
         assert response.json()["code"] == TargetPermissionDenied.code
+
+    def test_updates_url_when_valid_url_is_sent(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        url = ScrapingUrlFactory(
+            scraping_target=target,
+            url="https://www.olx.pl/d/nieruchomosci/mieszkania/?page=1",
+        )
+        new_url = "https://www.olx.pl/d/nieruchomosci/mieszkania/?page=2"
+
+        client = Client()
+        client.force_login(user)
+        response = client.patch(
+            f"/api/public/targets/{target.id}/urls/{url.id}",
+            data={"url": new_url},
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        url.refresh_from_db()
+        assert url.url == new_url
+        assert response.json()["url"] == new_url
+
+    def test_rejects_changing_main_part_of_url(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        original_url = "https://www.olx.pl/d/nieruchomosci/mieszkania/?page=1"
+        url = ScrapingUrlFactory(
+            scraping_target=target,
+            url=original_url,
+        )
+
+        client = Client()
+        client.force_login(user)
+        response = client.patch(
+            f"/api/public/targets/{target.id}/urls/{url.id}",
+            data={"url": "https://www.olx.pl/d/nieruchomosci/domy/?page=2"},
+            content_type="application/json",
+        )
+
+        assert response.status_code == 400
+        url.refresh_from_db()
+        assert url.url == original_url
+
+    def test_updates_url_with_empty_path_normalized_by_http_url(self):
+        user = UserFactory()
+        target = ScrappingTargetFactory(owner=user)
+        url = ScrapingUrlFactory(
+            scraping_target=target,
+            url="https://www.olx.pl?page=1",
+        )
+
+        client = Client()
+        client.force_login(user)
+        response = client.patch(
+            f"/api/public/targets/{target.id}/urls/{url.id}",
+            data={"url": "https://www.olx.pl/?page=2"},
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        url.refresh_from_db()
+        assert url.url == "https://www.olx.pl/?page=2"

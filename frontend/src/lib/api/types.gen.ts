@@ -352,6 +352,10 @@ export type QuotaStatusResponse = {
  * UpdateScrapingUrlRequest
  */
 export type UpdateScrapingUrlRequest = {
+    /**
+     * Url
+     */
+    url?: string | null;
     filters?: FiltersConfigSchema | null;
     /**
      * Showlocationmapinnotifications

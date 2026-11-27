@@ -112,7 +112,28 @@
       },
       "confirmRemoveTitle": "Usuń stronę",
       "confirmRemoveDescription": "Czy na pewno chcesz usunąć tę stronę? Tej operacji nie można cofnąć.",
-      "removing": "Usuwanie..."
+      "removing": "Usuwanie...",
+      "editParams": "Edytuj parametry wyszukiwania",
+      "editParamsDialog": {
+        "title": "Edytuj parametry wyszukiwania",
+        "description": "Dostosuj parametry zapytania dla tego monitorowanego adresu URL. Bazowy adres URL jest zablokowany.",
+        "baseUrlLabel": "Zablokowany bazowy URL",
+        "openSearch": "Otwórz wyszukiwanie",
+        "paramsLabel": "Parametry zapytania",
+        "addParam": "Dodaj parametr",
+        "noParams": "Brak parametrów zapytania. Kliknij „Dodaj parametr”, aby dodać.",
+        "keyColumn": "Parametr",
+        "valueColumn": "Wartość",
+        "keyPlaceholder": "Nazwa parametru",
+        "valuePlaceholder": "Wartość",
+        "removeParam": "Usuń parametr",
+        "emptyKeyError": "Nazwa parametru nie może być pusta.",
+        "invalidUrlError": "Nie udało się przetworzyć tego adresu URL do edycji parametrów.",
+        "urlTooLongError": "Wynikowy adres URL przekracza maksymalną długość {{max}} znaków.",
+        "save": "Zapisz parametry",
+        "saveSuccess": "Parametry wyszukiwania zostały zaktualizowane",
+        "saveError": "Nie udało się zaktualizować parametrów wyszukiwania"
+      }
     },
     "monitorSettings": {
       "title": "Ustawienia monitora",
