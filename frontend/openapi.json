@@ -1862,6 +1862,20 @@
       },
       "UpdateScrapingUrlRequest": {
         "properties": {
+          "url": {
+            "anyOf": [
+              {
+                "format": "uri",
+                "maxLength": 2083,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
           "filters": {
             "anyOf": [
               {

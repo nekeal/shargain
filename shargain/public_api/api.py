@@ -362,6 +362,7 @@ class AddUrlRequest(BaseSchema):
 
 
 class UpdateScrapingUrlRequest(BaseSchema):
+    url: HttpUrl | None = None
     filters: FiltersConfigSchema | None = None
     show_location_map_in_notifications: bool | None = None
     send_map_in_notifications: bool | None = None
@@ -455,6 +456,7 @@ def update_scraping_url_view(request: HttpRequest, target_id: int, url_id: int, 
             actor=actor,
             url_id=url_id,
             target_id=target_id,
+            url=str(payload.url) if payload.url is not None else None,
             filters=filters_arg,
             show_location_map_in_notifications=payload.show_location_map_in_notifications,
             send_map_in_notifications=payload.send_map_in_notifications,

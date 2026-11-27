@@ -112,7 +112,28 @@
       },
       "confirmRemoveTitle": "Remove website",
       "confirmRemoveDescription": "Are you sure you want to remove this website? This action cannot be undone.",
-      "removing": "Removing..."
+      "removing": "Removing...",
+      "editParams": "Edit search parameters",
+      "editParamsDialog": {
+        "title": "Edit Search Parameters",
+        "description": "Tune query parameters for this monitored URL. The base URL cannot be changed.",
+        "baseUrlLabel": "Locked Base URL",
+        "openSearch": "Open search",
+        "paramsLabel": "Query Parameters",
+        "addParam": "Add parameter",
+        "noParams": "No query parameters. Click \"Add parameter\" to add one.",
+        "keyColumn": "Parameter",
+        "valueColumn": "Value",
+        "keyPlaceholder": "Parameter name",
+        "valuePlaceholder": "Value",
+        "removeParam": "Remove parameter",
+        "emptyKeyError": "Parameter name cannot be empty.",
+        "invalidUrlError": "This URL could not be parsed for parameter editing.",
+        "urlTooLongError": "Resulting URL exceeds the maximum length of {{max}} characters.",
+        "save": "Save parameters",
+        "saveSuccess": "Search parameters updated",
+        "saveError": "Failed to update search parameters"
+      }
     },
     "monitorSettings": {
       "title": "Monitor Settings",

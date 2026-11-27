@@ -167,3 +167,63 @@ class TestUpdateScrapingUrl:
 
         scraping_url.refresh_from_db()
         assert scraping_url.filters is None
+
+    def test_update_scraping_url_url_succeeds(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            url="https://www.olx.pl/d/nieruchomosci/mieszkania/?search%5Bfilter_float_price%3Ato%5D=500000",
+        )
+        actor = Actor(user_id=scraping_target.owner_id)
+        new_url = "https://www.olx.pl/d/nieruchomosci/mieszkania/?search%5Bfilter_float_price%3Ato%5D=600000"
+
+        result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, url=new_url)
+
+        assert result_dto.url == new_url
+        scraping_url.refresh_from_db()
+        assert scraping_url.url == new_url
+
+    def test_update_scraping_url_too_long_raises_error(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(scraping_target=scraping_target)
+        actor = Actor(user_id=scraping_target.owner_id)
+        too_long_url = "https://www.olx.pl/d/nieruchomosci/?" + "a=1&" * 300
+
+        with pytest.raises(ValueError, match="1024"):
+            update_scraping_url(actor=actor, url_id=scraping_url.id, url=too_long_url)
+
+    @pytest.mark.parametrize(
+        "modified_url",
+        [
+            "http://www.olx.pl/d/nieruchomosci/mieszkania/?page=1",
+            "https://www.otodom.pl/d/nieruchomosci/mieszkania/?page=1",
+            "https://www.olx.pl/d/nieruchomosci/domy/?page=1",
+            "https://www.olx.pl/d/nieruchomosci/mieszkania/;jsessionid=123?page=1",
+            "https://www.olx.pl/d/nieruchomosci/mieszkania/?page=1#section",
+        ],
+    )
+    def test_update_scraping_url_changing_main_part_raises_error(self, scraping_target, modified_url):
+        original_url = "https://www.olx.pl/d/nieruchomosci/mieszkania/?page=1"
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            url=original_url,
+        )
+        actor = Actor(user_id=scraping_target.owner_id)
+
+        with pytest.raises(ValueError, match="Only query parameters can be modified"):
+            update_scraping_url(actor=actor, url_id=scraping_url.id, url=modified_url)
+
+        scraping_url.refresh_from_db()
+        assert scraping_url.url == original_url
+
+    def test_update_scraping_url_allows_empty_param_value(self, scraping_target):
+        scraping_url = ScrapingUrlFactory(
+            scraping_target=scraping_target,
+            url="https://www.olx.pl/d/nieruchomosci/mieszkania/?page=1",
+        )
+        actor = Actor(user_id=scraping_target.owner_id)
+        new_url = "https://www.olx.pl/d/nieruchomosci/mieszkania/?page="
+
+        result_dto = update_scraping_url(actor=actor, url_id=scraping_url.id, url=new_url)
+
+        assert result_dto.url == new_url
+        scraping_url.refresh_from_db()
+        assert scraping_url.url == new_url
