@@ -318,4 +318,91 @@ describe("OfferLocationMap", () => {
       expect(iframe.getAttribute("srcdoc")).toContain("radius: 500");
     });
   });
+
+  it("displays sorted waypoint distances and renders waypoint markers for exact GPS coordinates", async () => {
+    render(
+      <OfferLocationMap
+        location={{
+          name: "Warszawa, Śródmieście",
+          latitude: 52.23,
+          longitude: 21.01,
+          isExact: true,
+        }}
+        waypoints={[
+          { name: "Far Point", lat: 52.25, lon: 21.01 },
+          { name: "Near Point", lat: 52.232, lon: 21.01 },
+        ]}
+      />
+    );
+
+    expect(screen.getByText("222 m")).toBeInTheDocument();
+    expect(screen.getByText("2.2 km")).toBeInTheDocument();
+    expect(screen.getByText(/Near Point/)).toBeInTheDocument();
+    expect(screen.getByText(/Far Point/)).toBeInTheDocument();
+
+    await waitFor(() => {
+      const iframe = screen.getByTitle("Lokalizacja na mapie");
+      const srcDoc = iframe.getAttribute("srcdoc") ?? "";
+      expect(srcDoc).toContain("L.circleMarker([52.232, 21.01]");
+      expect(srcDoc).toContain('"Near Point"');
+      expect(srcDoc).toContain('"Far Point"');
+      expect(srcDoc).toContain("permanent: true");
+      expect(srcDoc).not.toContain("map.fitBounds");
+    });
+
+    fireEvent.click(screen.getByRole("switch", { name: "Przełącz stałe etykiety punktów" }));
+    await waitFor(() => {
+      const iframe = screen.getByTitle("Lokalizacja na mapie");
+      expect(iframe.getAttribute("srcdoc")).toContain("permanent: false");
+    });
+
+    fireEvent.click(screen.getByRole("switch", { name: "Pokaż punkty" }));
+    await waitFor(() => {
+      const iframe = screen.getByTitle("Lokalizacja na mapie");
+      expect(iframe.getAttribute("srcdoc")).toContain("map.fitBounds");
+    });
+  });
+
+  it("displays approximate (~) waypoint distances for Photon-geocoded coordinates", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          features: [{ geometry: { coordinates: [21.01, 52.23] } }],
+        }),
+    } as Response);
+
+    render(
+      <OfferLocationMap
+        location={{
+          name: "Warszawa, Marszałkowska",
+          latitude: null,
+          longitude: null,
+          isExact: false,
+        }}
+        waypoints={[{ name: "Metro Centrum", lat: 52.232, lon: 21.01 }]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("~222 m")).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Metro Centrum/)).toBeInTheDocument();
+  });
+
+  it("hides fit waypoints button when no waypoints are provided", () => {
+    render(
+      <OfferLocationMap
+        location={{
+          name: "Warszawa, Mokotów",
+          latitude: 52.2,
+          longitude: 21.01,
+          isExact: true,
+        }}
+        waypoints={[]}
+      />
+    );
+
+    expect(screen.queryByRole("switch", { name: "Pokaż punkty" })).not.toBeInTheDocument();
+  });
 });

@@ -463,7 +463,12 @@
       "cityArea": "City / Region",
       "openGoogleMaps": "Google Maps",
       "clickToInteract": "Click to interact with map",
-      "loadingMap": "Loading map..."
+      "loadingMap": "Loading map...",
+      "copyCoordinates": "Copy coordinates",
+      "fitWaypoints": "Fit waypoints",
+      "waypointLabels": "Labels",
+      "toggleWaypointLabels": "Toggle always-on waypoint labels",
+      "distanceApproxTitle": "Approximate distance based on estimated location"
     },
     "attributes": {
       "yes": "Yes",

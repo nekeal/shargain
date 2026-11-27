@@ -1,9 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ExternalLink, MapPin, Navigation, ZoomIn, ZoomOut } from "lucide-react";
-import type { OfferLocationSchema } from "@/lib/api/types.gen";
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  MapPin,
+  Navigation,
+  Ruler,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
+import type {
+  OfferLocationSchema,
+  OfferWaypointSchema,
+} from "@/lib/api/types.gen";
+import { formatDistance, haversineKm } from "@/lib/geo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 interface PhotonFeature {
   geometry?: {
@@ -19,6 +33,7 @@ export const photonCache = new Map<string, { lat: number; lon: number } | null>(
 
 interface OfferLocationMapProps {
   location?: OfferLocationSchema | null;
+  waypoints?: Array<OfferWaypointSchema> | null;
   interactiveMap?: boolean;
   mapHeightClassName?: string;
   defaultZoom?: "wide" | "medium" | "close";
@@ -31,7 +46,28 @@ export function buildOsmLeafletHtml(
   zoomLevel: number,
   isExact: boolean,
   radiusMeters: number = 300,
+  waypoints: Array<OfferWaypointSchema> = [],
+  fitWaypoints: boolean = false,
+  showWaypointLabels: boolean = true,
 ): string {
+  const waypointsScript = waypoints
+    .map(
+      (wp) => `
+      L.circleMarker([${wp.lat}, ${wp.lon}], {
+        radius: 6,
+        color: '#059669',
+        fillColor: '#10b981',
+        fillOpacity: 0.9,
+        weight: 2
+      }).addTo(map).bindTooltip(${JSON.stringify(wp.name)}, { permanent: ${showWaypointLabels}, direction: 'top', offset: [0, -6] });`,
+    )
+    .join("\n");
+
+  const fitBoundsScript =
+    fitWaypoints && waypoints.length > 0
+      ? `map.fitBounds(${JSON.stringify([[lat, lon], ...waypoints.map((wp) => [wp.lat, wp.lon])])}, { padding: [28, 28] });`
+      : "";
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -81,6 +117,8 @@ export function buildOsmLeafletHtml(
             weight: 2
           }).addTo(map);`
     }
+    ${waypointsScript}
+    ${fitBoundsScript}
   </script>
 </body>
 </html>`;
@@ -88,14 +126,20 @@ export function buildOsmLeafletHtml(
 
 export function OfferLocationMap({
   location,
+  waypoints,
   interactiveMap = true,
   mapHeightClassName = "h-[260px] sm:h-[320px]",
   defaultZoom = "wide",
   approximateRadiusMeters = 300,
 }: OfferLocationMapProps) {
   const { t } = useTranslation();
+  const labelsSwitchId = useId();
+  const fitSwitchId = useId();
   const [zoomMode, setZoomMode] = useState<"wide" | "medium" | "close">(defaultZoom);
+  const [fitWaypoints, setFitWaypoints] = useState(false);
+  const [showWaypointLabels, setShowWaypointLabels] = useState(true);
   const [isMapActive, setIsMapActive] = useState(false);
+  const [copiedCoords, setCopiedCoords] = useState(false);
   const [debouncedEmbedUrl, setDebouncedEmbedUrl] = useState<string | null>(null);
   const [debouncedSrcDoc, setDebouncedSrcDoc] = useState<string | null>(null);
 
@@ -158,11 +202,37 @@ export function OfferLocationMap({
     };
   }, [hasCoords, location?.name]);
 
-  const effectiveCoords = hasCoords
-    ? { lat: location.latitude as number, lon: location.longitude as number }
-    : geocodedCoords;
+  const effectiveCoords = useMemo(
+    () =>
+      hasCoords
+        ? { lat: location.latitude as number, lon: location.longitude as number }
+        : geocodedCoords,
+    [hasCoords, location?.latitude, location?.longitude, geocodedCoords],
+  );
 
   const isExactLocation = Boolean(hasCoords && location.isExact);
+  const activeWaypoints = useMemo(() => waypoints ?? [], [waypoints]);
+
+  const distances = useMemo(() => {
+    if (!effectiveCoords || activeWaypoints.length === 0) {
+      return [];
+    }
+    return activeWaypoints
+      .map((wp) => {
+        const km = haversineKm(
+          effectiveCoords.lat,
+          effectiveCoords.lon,
+          wp.lat,
+          wp.lon,
+        );
+        return {
+          name: wp.name,
+          km,
+          formatted: `${isExactLocation ? "" : "~"}${formatDistance(km)}`,
+        };
+      })
+      .sort((a, b) => a.km - b.km);
+  }, [effectiveCoords, activeWaypoints, isExactLocation]);
 
   const osmDelta =
     zoomMode === "wide"
@@ -171,7 +241,7 @@ export function OfferLocationMap({
         ? { lon: 0.014, lat: 0.010 }
         : { lon: 0.007, lat: 0.005 };
 
-  const zoomLevel = zoomMode === "wide" ? 14 : zoomMode === "medium" ? 15 : 16;
+  const zoomLevel = zoomMode === "wide" ? 13 : zoomMode === "medium" ? 14 : 15;
 
   const srcDoc = effectiveCoords
     ? buildOsmLeafletHtml(
@@ -179,7 +249,10 @@ export function OfferLocationMap({
         effectiveCoords.lon,
         zoomLevel,
         isExactLocation,
-        approximateRadiusMeters
+        approximateRadiusMeters,
+        activeWaypoints,
+        fitWaypoints,
+        showWaypointLabels,
       )
     : null;
 
@@ -232,13 +305,23 @@ export function OfferLocationMap({
         : t("offers.map.cityArea");
 
   const handleZoomOut = () => {
+    setFitWaypoints(false);
     if (zoomMode === "close") setZoomMode("medium");
     else if (zoomMode === "medium") setZoomMode("wide");
   };
 
   const handleZoomIn = () => {
+    setFitWaypoints(false);
     if (zoomMode === "wide") setZoomMode("medium");
     else if (zoomMode === "medium") setZoomMode("close");
+  };
+
+  const handleCopyCoords = () => {
+    if (!effectiveCoords) return;
+    const text = `${effectiveCoords.lat.toFixed(5)}, ${effectiveCoords.lon.toFixed(5)}`;
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopiedCoords(true);
+    setTimeout(() => setCopiedCoords(false), 1500);
   };
 
   const zoomLabel =
@@ -249,37 +332,60 @@ export function OfferLocationMap({
         : t("offers.map.zoomClose");
 
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2 min-w-0">
-          <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground leading-snug break-words">
-              {location.name || t("offers.map.defaultTitle")}
-            </p>
-            {effectiveCoords ? (
-              <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
-                {t("offers.map.coordinates", {
-                  lat: effectiveCoords.lat.toFixed(4),
-                  lng: effectiveCoords.lon.toFixed(4),
-                })}
-              </p>
-            ) : (
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                {t("offers.map.streetSearch")}
-              </p>
-            )}
-          </div>
+    <div className="rounded-xl border border-border overflow-hidden bg-card">
+      {/* Header Bar */}
+      <div className="px-3 py-2 bg-muted/30 border-b border-border flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span className="text-xs font-semibold text-foreground truncate">
+            {location.name || t("offers.map.defaultTitle")}
+          </span>
+          <Badge
+            variant={isExactLocation ? "default" : "secondary"}
+            className="text-[10px] uppercase tracking-wider font-medium"
+          >
+            {locationTypeBadge}
+          </Badge>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Zoom Level Switcher only when map has coordinates */}
+          {effectiveCoords && activeWaypoints.length > 0 && (
+            <div className="flex items-center gap-2.5 px-1">
+              <label
+                htmlFor={labelsSwitchId}
+                title={t("offers.map.toggleWaypointLabels")}
+                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer select-none"
+              >
+                <Switch
+                  id={labelsSwitchId}
+                  checked={showWaypointLabels}
+                  onCheckedChange={setShowWaypointLabels}
+                  aria-label={t("offers.map.toggleWaypointLabels")}
+                />
+                <span>{t("offers.map.waypointLabels")}</span>
+              </label>
+              <label
+                htmlFor={fitSwitchId}
+                title={t("offers.map.fitWaypoints")}
+                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer select-none"
+              >
+                <Switch
+                  id={fitSwitchId}
+                  checked={fitWaypoints}
+                  onCheckedChange={setFitWaypoints}
+                  aria-label={t("offers.map.fitWaypoints")}
+                />
+                <span>{t("offers.map.fitWaypoints")}</span>
+              </label>
+            </div>
+          )}
+
           {effectiveCoords && (
             <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border text-xs">
               <button
                 type="button"
                 onClick={handleZoomOut}
-                disabled={zoomMode === "wide"}
+                disabled={!fitWaypoints && zoomMode === "wide"}
                 aria-label={t("offers.map.zoomOut")}
                 className="p-1 rounded text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 title={t("offers.map.zoomOut")}
@@ -294,7 +400,7 @@ export function OfferLocationMap({
               <button
                 type="button"
                 onClick={handleZoomIn}
-                disabled={zoomMode === "close"}
+                disabled={!fitWaypoints && zoomMode === "close"}
                 aria-label={t("offers.map.zoomIn")}
                 className="p-1 rounded text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 title={t("offers.map.zoomIn")}
@@ -304,19 +410,12 @@ export function OfferLocationMap({
             </div>
           )}
 
-          <Badge
-            variant={isExactLocation ? "default" : "secondary"}
-            className="text-[10px] uppercase tracking-wider font-medium"
-          >
-            {locationTypeBadge}
-          </Badge>
-
           {mapUrl && (
             <Button
               asChild
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="h-7 px-2.5 text-xs gap-1"
+              className="h-7 px-2 text-xs gap-1"
             >
               <a
                 href={mapUrl}
@@ -326,17 +425,18 @@ export function OfferLocationMap({
               >
                 <Navigation className="w-3 h-3 text-primary" />
                 <span>{t("offers.map.openGoogleMaps")}</span>
-                <ExternalLink className="w-2.5 h-2.5 ml-0.5 text-muted-foreground" />
+                <ExternalLink className="w-2.5 h-2.5 text-muted-foreground" />
               </a>
             </Button>
           )}
         </div>
       </div>
 
+      {/* Map Viewport */}
       {interactiveMap && (
         embedUrl ? (
           <div
-            className={`relative rounded-xl overflow-hidden border border-border bg-muted/40 w-full shadow-inner group ${mapHeightClassName}`}
+            className={`relative bg-muted/40 w-full group ${mapHeightClassName}`}
             onMouseLeave={() => setIsMapActive(false)}
           >
             {debouncedEmbedUrl ? (
@@ -374,7 +474,7 @@ export function OfferLocationMap({
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center p-6 rounded-xl border border-dashed border-border/80 bg-muted/20 text-center gap-2">
+          <div className="flex flex-col items-center justify-center p-6 bg-muted/20 text-center gap-2">
             <MapPin className="w-6 h-6 text-muted-foreground/60" />
             <p className="text-xs text-muted-foreground max-w-sm">
               {t("offers.map.noGpsNotice")}
@@ -390,6 +490,62 @@ export function OfferLocationMap({
           </div>
         )
       )}
+
+      {/* Footer Bar: Waypoint Distances & Copyable Coordinates */}
+      <div className="px-3 py-2.5 bg-muted/20 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        {distances.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-1 flex-1 min-w-0">
+            {distances.map((d) => (
+              <div
+                key={d.name}
+                title={
+                  isExactLocation
+                    ? undefined
+                    : t("offers.map.distanceApproxTitle")
+                }
+                className="flex items-center gap-1.5 text-xs min-w-0"
+              >
+                <Ruler className="w-3 h-3 text-primary shrink-0" />
+                <span className="font-mono font-semibold text-foreground shrink-0">
+                  {d.formatted}
+                </span>
+                <span className="text-muted-foreground truncate">
+                  → {d.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <span className="text-[11px] text-muted-foreground">
+            {!effectiveCoords ? t("offers.map.streetSearch") : null}
+          </span>
+        )}
+
+        {effectiveCoords && (
+          <button
+            type="button"
+            onClick={handleCopyCoords}
+            title={t("offers.map.copyCoordinates")}
+            className={`inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0 ${
+              distances.length > 0
+                ? "sm:border-l sm:border-border/70 sm:pl-3"
+                : ""
+            }`}
+          >
+            <span>
+              {t("offers.map.coordinates", {
+                lat: effectiveCoords.lat.toFixed(4),
+                lng: effectiveCoords.lon.toFixed(4),
+              })}
+            </span>
+            {copiedCoords ? (
+              <Check className="w-3 h-3 text-emerald-500" />
+            ) : (
+              <Copy className="w-3 h-3 opacity-60" />
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -684,6 +684,28 @@ export type PublicOfferSchema = {
      * Description
      */
     description?: string | null;
+    /**
+     * Waypoints
+     */
+    waypoints?: Array<OfferWaypointSchema>;
+};
+
+/**
+ * OfferWaypointSchema
+ */
+export type OfferWaypointSchema = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Lat
+     */
+    lat: number;
+    /**
+     * Lon
+     */
+    lon: number;
 };
 
 /**

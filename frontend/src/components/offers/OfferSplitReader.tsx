@@ -120,7 +120,6 @@ function SplitReaderContent({
     offers,
     selectedOfferId,
     setSelectedOfferId,
-    isDetailsOpen,
     onToggleLike,
     onToggleSeen,
   });
@@ -141,7 +140,7 @@ function SplitReaderContent({
       <div
         className={`${
           isDetailsOpen ? "hidden lg:flex lg:col-span-4" : "flex lg:col-span-12"
-        } bg-card border border-border rounded-xl flex-col h-full overflow-hidden shadow-sm`}
+        } bg-card border border-border rounded-xl flex-col h-full min-h-0 overflow-hidden shadow-sm`}
       >
         {/* Queue Header */}
         <div className="p-3 border-b border-border flex items-center justify-between gap-2 bg-muted/20 shrink-0">
@@ -200,7 +199,7 @@ function SplitReaderContent({
 
         {/* Scrollable Items List */}
         <div
-          className={`flex-1 overflow-y-auto divide-y divide-border/50 scrollbar-thin overscroll-contain [transform:translateZ(0)] ${
+          className={`flex-1 min-h-0 overflow-y-auto divide-y divide-border/50 scrollbar-thin [transform:translateZ(0)] ${
             !isDetailsOpen ? "grid sm:grid-cols-2 xl:grid-cols-3 divide-y-0 gap-3 p-3" : ""
           }`}
         >

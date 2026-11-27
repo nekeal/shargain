@@ -8,6 +8,7 @@ from shargain.offers.application.dto import (
     OfferLocation,
     PublicOffer,
     PublicOfferPage,
+    WaypointData,
 )
 from shargain.offers.application.exceptions import TargetDoesNotExist
 from shargain.offers.application.offer_state import get_offer_states
@@ -167,15 +168,26 @@ def _apply_filters_and_ordering(
     return qs.order_by("-created_at", "-id")
 
 
-def _resolve_scraping_url_name(list_url: str | None, scraping_url_map: dict[str, str]) -> str | None:
+class _ResolvedScrapingUrl:
+    __slots__ = ("name", "waypoints")
+
+    def __init__(self, name: str | None, waypoints: list[WaypointData] | None) -> None:
+        self.name = name
+        self.waypoints: list[WaypointData] = waypoints or []
+
+
+def _resolve_scraping_url(
+    list_url: str | None,
+    scraping_url_map: dict[str, _ResolvedScrapingUrl],
+) -> _ResolvedScrapingUrl | None:
     if not list_url:
         return None
     if list_url in scraping_url_map:
         return scraping_url_map[list_url]
     base_list_url = list_url.split("?")[0]
-    for su_url, su_name in scraping_url_map.items():
+    for su_url, su_data in scraping_url_map.items():
         if su_url.split("?")[0] == base_list_url:
-            return su_name
+            return su_data
     return None
 
 
@@ -206,13 +218,16 @@ def list_public_offers(
     offer_ids = [o.id for o in page_offers]
     state_map = get_offer_states(actor, offer_ids)
 
-    scraping_urls = list(ScrapingUrl.objects.filter(scraping_target_id=target_id).values("url", "name"))
-    scraping_url_map = {su["url"]: su["name"] for su in scraping_urls if su["url"]}
+    scraping_urls = list(ScrapingUrl.objects.filter(scraping_target_id=target_id).values("url", "name", "waypoints"))
+    scraping_url_map = {
+        su["url"]: _ResolvedScrapingUrl(name=su["name"], waypoints=su["waypoints"]) for su in scraping_urls if su["url"]
+    }
 
     items: list[PublicOffer] = []
     for o in page_offers:
         list_url = ListUrl(o.list_url) if o.list_url else None
         extracted = OfferFieldResolver.extract(o, list_url) if list_url else {}
+        resolved_su = _resolve_scraping_url(o.list_url, scraping_url_map)
         items.append(
             PublicOffer(
                 id=o.id,
@@ -231,8 +246,9 @@ def list_public_offers(
                 attributes=_build_attributes(o, list_url, extracted),
                 location=_build_location(o),
                 images=_build_images(o),
-                scraping_url_name=_resolve_scraping_url_name(o.list_url, scraping_url_map),
+                scraping_url_name=resolved_su.name if resolved_su else None,
                 description=_build_description(o, extracted),
+                waypoints=resolved_su.waypoints if resolved_su else [],
             )
         )
 

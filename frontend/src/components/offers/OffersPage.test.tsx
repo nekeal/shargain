@@ -327,7 +327,7 @@ describe("OffersPage", () => {
     expect(api.markOfferSeen).not.toHaveBeenCalled();
   });
 
-  it("auto-marks offer as seen after 1 second only when details panel is open", async () => {
+  it("does not auto-mark offer as seen when details panel is open", async () => {
     vi.mocked(api.markOfferSeen).mockResolvedValue({
       data: { ...mockOffer1, isSeen: true },
     } as any);
@@ -338,17 +338,10 @@ describe("OffersPage", () => {
       expect(screen.getAllByText("Mieszkanie 2-pokojowe Mokotów").length).toBeGreaterThan(0);
     });
 
-      await waitFor(
-        () => {
-          expect(api.markOfferSeen).toHaveBeenCalledWith(
-            expect.objectContaining({
-              path: { target_id: 1, offer_id: 1 },
-            }),
-          );
-        },
-        { timeout: 2000 },
-      );
-    });
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+
+    expect(api.markOfferSeen).not.toHaveBeenCalled();
+  });
 
     it("does not auto-mark offer as seen when details panel is closed", async () => {
       vi.mocked(api.markOfferSeen).mockResolvedValue({
@@ -655,7 +648,6 @@ describe("OffersPage", () => {
         offers: [],
         selectedOfferId: 0,
         setSelectedOfferId: vi.fn(),
-        isDetailsOpen: true,
         onToggleLike: vi.fn(),
         onToggleSeen: vi.fn(),
       }),
